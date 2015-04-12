@@ -17,6 +17,7 @@ typedef struct _Texture_Dictionary_Entry Texture_Dictionary_Entry;
 typedef struct _Texture_Dictionary Texture_Dictionary;
 
 #include "log.h"
+#include "tile.h"
 #include "texture.h"
 #include "mainconfig.h"
 #include "toolbar.h"
