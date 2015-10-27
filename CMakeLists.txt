@@ -7,6 +7,7 @@ add_definitions(-W)
 add_definitions(-Wshadow)
 add_definitions(-std=gnu11)
 add_definitions(-D_BSD_SOURCE)
+add_definitions(-D_DEFAULT_SOURCE)
 
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
 set(PROJECT_URL "http://www.jeanguyomarch.com/war2edit.php")
