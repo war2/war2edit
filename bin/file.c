@@ -42,7 +42,7 @@ _done_cb(void        *data,
 
    ed->save_file = eina_stringshare_ref(event);
    EINA_SAFETY_ON_NULL_GOTO(ed->save_file, hide_fileselector);
-   INF("Saving at path \"%s\"...", event);
+   INF("Saving at path \"%s\"...", file);
    file_save(ed);
 
 
