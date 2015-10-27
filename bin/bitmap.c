@@ -263,11 +263,11 @@ _hovered_cb(void        *data,
 }
 
 static void
-_clicked_cb(void        *data,
-            Evas_Object *bmp  EINA_UNUSED,
-            void        *info)
+_mouse_down_cb(void        *data,
+               Evas_Object *bmp  EINA_UNUSED,
+               void        *info)
 {
-   Elm_Bitmap_Event_Clicked *ev = info;
+   Elm_Bitmap_Event_Mouse_Down *ev = info;
    _click_handle(data, ev->cell_x, ev->cell_y);
 }
 
@@ -416,8 +416,8 @@ bitmap_add(Editor *ed)
       elm_obj_bitmap_cursor_visibility_set(EINA_TRUE),
       elm_obj_bitmap_draw_func_set(_bitmap_draw_func)
    );
-   evas_object_smart_callback_add(obj, "clicked", _clicked_cb, ed);
-   evas_object_smart_callback_add(obj, "hovered", _hovered_cb, ed);
+   evas_object_smart_callback_add(obj, "bitmap,mouse,down", _mouse_down_cb, ed);
+   evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
 
    ed->bitmap = obj;
    ed->cells = cell_matrix_new(ed);
