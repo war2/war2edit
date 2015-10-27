@@ -95,7 +95,6 @@ sprite_get(Editor        *ed,
    char key[64];
    Eet_File *ef;
    Eina_Bool chk;
-   int len;
    int orient;
    Eina_Bool flip;
    uint16_t sx, sy, sw, sh;
@@ -103,7 +102,7 @@ sprite_get(Editor        *ed,
    if (pud_unit_building_is(unit))
      {
         ef = ed->buildings;
-        len = snprintf(key, sizeof(key), "%s", pud_unit2str(unit));
+        snprintf(key, sizeof(key), "%s", pud_unit2str(unit));
         flip = EINA_FALSE;
      }
    else
@@ -138,18 +137,18 @@ sprite_get(Editor        *ed,
              if ((unit == PUD_UNIT_GNOMISH_SUBMARINE) ||
                  (unit == PUD_UNIT_GIANT_TURTLE))
                {
-                  len = snprintf(key, sizeof(key), "%s/%s/%i",
+                  snprintf(key, sizeof(key), "%s/%s/%i",
                                  pud_unit2str(unit), ed->era_str, orient);
                }
              else if ((unit == PUD_UNIT_HUMAN_START) ||
                       (unit == PUD_UNIT_ORC_START))
                {
-                  len = snprintf(key, sizeof(key), "%s/0",
+                  snprintf(key, sizeof(key), "%s/0",
                                  pud_unit2str(unit));
                }
              else
                {
-                  len = snprintf(key, sizeof(key), "%s/%i",
+                  snprintf(key, sizeof(key), "%s/%i",
                                  pud_unit2str(unit), orient);
                }
           }
