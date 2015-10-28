@@ -419,7 +419,8 @@ bitmap_add(Editor *ed)
    ed->cells = cell_matrix_new(ed);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
-   _bitmap_init(ed);
+   if (!ed->pud)
+     _bitmap_init(ed);
 
    return EINA_TRUE;
 }
