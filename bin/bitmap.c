@@ -416,7 +416,7 @@ bitmap_add(Editor *ed)
    evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
 
    ed->bitmap = obj;
-   ed->cells = cell_matrix_new(ed);
+   ed->cells = cell_matrix_new(ed->map_w, ed->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
    if (!ed->pud)
