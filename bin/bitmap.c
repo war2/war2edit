@@ -77,17 +77,13 @@ _draw(Editor *ed,
       Eina_Bool               hflip,
       int                     colorize)
 {
-   Draw_Data *draw_data;
+   Draw_Data draw_data;
 
-   draw_data = malloc(sizeof(*draw_data));
-   EINA_SAFETY_ON_NULL_RETURN(draw_data);
+   draw_data.ed = ed;
+   draw_data.hflip = hflip;
+   draw_data.colorize = colorize;
 
-   draw_data->ed = ed;
-   draw_data->hflip = hflip;
-   draw_data->colorize = colorize;
-
-   elm_bitmap_abs_draw(ed->bitmap, draw_data, img, img_w, img_h, at_x, at_y);
-   free(draw_data); /* XXX */
+   elm_bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 }
 
 static void
