@@ -90,7 +90,7 @@ static void
 _bitmap_init(Editor *restrict ed)
 {
    int i, j, tile;
-   const int init_tiles[] = {
+   const uint16_t init_tiles[] = {
       0x0050, 0x0051, 0x0052
    };
    const int tiles_count = EINA_C_ARRAY_LENGTH(init_tiles);
