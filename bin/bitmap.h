@@ -12,5 +12,7 @@ bitmap_refresh_zone(Editor *restrict ed,
                     int              w,
                     int              h);
 
+void bitmap_reset(Editor *ed);
+
 #endif /* ! _GRID_H_ */
 

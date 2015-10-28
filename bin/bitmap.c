@@ -425,3 +425,10 @@ bitmap_add(Editor *ed)
    return EINA_TRUE;
 }
 
+void
+bitmap_reset(Editor *ed)
+{
+   cell_matrix_zero(ed->cells, ed->map_w * ed->map_h);
+   elm_bitmap_clear(ed->bitmap, 0, 0, 0);
+}
+
