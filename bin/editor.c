@@ -114,7 +114,7 @@ end:
 
 
 Editor *
-editor_new(void)
+editor_new(const char *pud_file)
 {
    Editor *ed;
    char title[128], wins[32];
@@ -197,7 +197,10 @@ editor_new(void)
    /* Show window */
    evas_object_show(ed->win);
 
-   mainconfig_show(ed);
+   if (pud_file == NULL)
+     mainconfig_show(ed);
+   else
+     INF("Opening editor for file %s", pud_file);
 
    /* Add to list of editor windows */
    _editors = eina_list_append(_editors, ed);

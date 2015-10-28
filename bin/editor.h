@@ -96,7 +96,7 @@ Eina_Bool editor_init(void);
 void editor_shutdown(void);
 
 void editor_free(Editor *ed);
-Editor *editor_new(void);
+Editor *editor_new(const char *pud_file);
 void editor_error(Editor *ed, const char *msg);
 void editor_finalize(Editor *ed);
 
