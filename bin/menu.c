@@ -78,10 +78,10 @@ _win_save_cb(void        *data,
              void        *event EINA_UNUSED)
 {
    Editor *ed = data;
-   if (!ed->save_file)
+   if (!ed->pud->filename)
      file_save_prompt(ed);
    else
-     file_save(ed);
+     editor_save(ed, ed->pud->filename);
 }
 
 static void

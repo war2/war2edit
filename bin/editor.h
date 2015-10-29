@@ -37,27 +37,21 @@ typedef enum
 
 struct _Editor
 {
-   Pud          *pud;
+
+   /* === GUI === */
    Evas_Object  *win;
    Evas_Object  *menu;
    Evas_Object  *inwin;
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
    Evas_Object  *fs; /* File selector */
-   Cell   **cells;
+   Evas_Object  *bitmap;
 
-   Evas_Object   *bitmap;
+   Evas_Point bitmap_origin;
 
-   Eet_File     *units;
-   Eet_File     *buildings;
-   Eina_Hash    *sprites;
+   Cell        **cells;
 
-   char era_str[16];
-
-   Eet_File     *textures_src;
-   Eina_Hash    *textures;
-
-   /* Toolbar */
+   /* === Toolbar === */
    Editor_Action action;
    Editor_Spread spread;
    Editor_Radius radius;
@@ -65,8 +59,9 @@ struct _Editor
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
 
-   Eina_Stringshare *save_file;
-
+   /* === Mainconfig === */
+   // FIXME Dynamic? Overhead when starting the config, but
+   // less memory used throughout the whole program....
    struct _mainconfig {
       Evas_Object *container;
       Evas_Object *img;
@@ -74,21 +69,14 @@ struct _Editor
       Evas_Object *menu_era;
    } mainconfig;
 
-   Evas_Point start_locations[8];
    Evas_Object *radio_units_reset;
 
-   /* Orc, Human */
-   uint8_t sides[8];
-   unsigned int units_count;
 
-   Evas_Point bitmap_origin;
-
-   Pud_Dimensions size;
-   int map_w;
-   int map_h;
-
-   Pud_Era era;
-   Eina_Bool has_extension;
+   /* === PUD specific === */
+   // FIXME tooooooooo many duplicates!!!!!!
+   Pud             *pud;
+   uint8_t          sides[8]; /* Orc, Human */
+   Evas_Point start_locations[8];
 
 };
 
@@ -97,8 +85,12 @@ void editor_shutdown(void);
 
 void editor_free(Editor *ed);
 Editor *editor_new(const char *pud_file);
+void editor_finalize(Editor * restrict ed);
+Eina_Bool editor_load(Editor * restrict ed, const char *file);
+Eina_Bool editor_save(Editor * restrict ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
-void editor_finalize(Editor *ed);
+void editor_reload(Editor *ed);
+unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \

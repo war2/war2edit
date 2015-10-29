@@ -52,12 +52,6 @@ editor_free(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN(ed);
 
    _editors = eina_list_remove(_editors, ed);
-   if (ed->textures) eina_hash_free(ed->textures);
-   if (ed->textures_src) eet_close(ed->textures_src);
-   if (ed->units) eet_close(ed->units);
-   if (ed->buildings) eet_close(ed->buildings);
-   if (ed->sprites) eina_hash_free(ed->sprites);
-   if (ed->save_file) eina_stringshare_del(ed->save_file);
    cell_matrix_free(ed->cells);
    pud_close(ed->pud);
    evas_object_del(ed->win);
@@ -197,13 +191,30 @@ editor_new(const char *pud_file)
    /* Show window */
    evas_object_show(ed->win);
 
-   if (pud_file == NULL)
-     mainconfig_show(ed);
-   else
-     INF("Opening editor for file %s", pud_file);
-
    /* Add to list of editor windows */
    _editors = eina_list_append(_editors, ed);
+
+
+   menu_unit_selection_reset(ed);
+
+   if (pud_file)
+     {
+        INF("Opening editor for file %s", pud_file);
+        ed->pud = pud_open(pud_file, PUD_OPEN_MODE_R); // XXX mode
+        editor_finalize(ed);
+        editor_reload(ed);
+     }
+   else
+     {
+        /* Create PUD file */
+        ed->pud = pud_new();
+        if (EINA_UNLIKELY(!ed->pud))
+          {
+             CRI("Failed to create generic PUD file");
+             goto err_win_del;
+          }
+        mainconfig_show(ed);
+     }
 
    return ed;
 
@@ -215,28 +226,165 @@ err_ret:
    return NULL;
 }
 
-void
-editor_finalize(Editor *ed)
+Eina_Bool
+editor_save(Editor * restrict ed,
+            const char *      file)
 {
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
+
    Eina_Bool chk;
+   int x, y, k = 0;
+   struct _unit *u;
+   Cell c;
+   Pud *pud = ed->pud; /* Save indirections... */
 
-   pud_dimensions_to_size(ed->size, &(ed->map_w), &(ed->map_h));
+   eina_stringshare_replace((Eina_Stringshare **)(&pud->filename) ,file);
 
-   snprintf(ed->era_str, sizeof(ed->era_str), "%s", pud_era2str(ed->era));
-   ed->era_str[0] += 32; /* Lowercase */
+   //   /* Will never change, so set it once and for all */
+   //   pud_dimensions_set(ed->pud, ed->size);
+   //   pud_version_set(ed->pud, (ed->has_extension) ? 0x13 : 0x11);
+   //   pud_tag_set(ed->pud, rand() % UINT32_MAX);
+   //   strncpy(description, "No description available", sizeof(description));
+   //   pud_description_set(ed->pud, description);
+   //   pud_era_set(ed->pud, ed->era);
 
-   menu_unit_selection_reset(ed);
+   /* Set units count and allocate units */
+   ed->pud->units = realloc(ed->pud->units, ed->pud->units_count * sizeof((*ed->pud->units)));
+   if (EINA_UNLIKELY(ed->pud->units == NULL))
+     {
+        CRI("Failed to allocate memory!!");
+        goto panic;
+     }
 
-   ed->units = sprite_units_open();
-   ed->buildings = sprite_buildings_open(ed->era);
-   ed->sprites = sprite_hash_new();
+   // XXX owner ?
+   for (x = 0; x < 8; x++)
+     {
+        if (ed->start_locations[x].x >= 0)
+          ed->pud->starting_points++;
+        ed->pud->side.players[x] = ed->sides[x];
+     }
+   /* FIXME This is by default. Needs to be implemented */
+   ed->pud->human_players = 1;
+   ed->pud->computer_players = 1;
 
-   ed->textures_src = texture_tileset_open(ed->era);
-   ed->textures = texture_hash_new();
 
-   chk = bitmap_add(ed);
-   EINA_SAFETY_ON_FALSE_RETURN(chk);
-   elm_object_content_set(ed->scroller, ed->bitmap);
-   evas_object_show(ed->bitmap);
+   for (y = 0; y < ed->pud->map_h; y++)
+     {
+        for (x = 0; x < ed->pud->map_w; x++)
+          {
+             c = ed->cells[y][x];
+
+             if (c.unit_below != PUD_UNIT_NONE)
+               {
+                  u = &(ed->pud->units[k++]);
+                  u->x = x;
+                  u->y = y;
+                  u->type = c.unit_below;
+                  u->owner = c.player_below;
+                  u->alter = c.alter;
+               }
+             if (c.unit_above != PUD_UNIT_NONE)
+               {
+                  u = &(ed->pud->units[k++]);
+                  u->x = x;
+                  u->y = y;
+                  u->type = c.unit_above;
+                  u->owner = c.player_above;
+                  u->alter = c.alter;
+               }
+             // FIXME c.tile is wrong
+             pud_tile_set(ed->pud, x, y, c.tile);
+          }
+     }
+
+   if (!pud_check(ed->pud))
+     {
+        CRI("Pud is not valid.");
+        return EINA_FALSE;
+     }
+
+   chk = pud_write(ed->pud);
+   if (EINA_UNLIKELY(chk == EINA_FALSE))
+     {
+        CRI("Failed to save pud!!");
+        return EINA_FALSE;
+     }
+
+   return EINA_TRUE;
+
+panic:
+   return EINA_FALSE;
+}
+
+Eina_Bool
+editor_load(Editor * restrict ed,
+            const char *      file)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
+
+   ed->pud = pud_open(file, PUD_OPEN_MODE_R);
+   if (EINA_UNLIKELY(!ed->pud))
+     {
+        ERR("Failed to load editor from file \"%s\"", file);
+        goto fail;
+     }
+
+   return EINA_TRUE;
+
+fail:
+   return EINA_FALSE;
+}
+
+void
+editor_reload(Editor *ed)
+{
+   EINA_SAFETY_ON_NULL_RETURN(ed);
+
+   INF("Editor reload");
+   int i, j, k;
+   const Pud *pud = ed->pud;
+
+   if (EINA_UNLIKELY(!pud))
+     {
+        ERR("Attempt to reload an editor, but no pud was attached");
+        return;
+     }
+
+   bitmap_reset(ed);
+
+   for (j = 0; j < pud->map_h; ++j)
+     {
+        k = j * pud->map_w;
+        for (i = 0; i < pud->map_w; ++i)
+          bitmap_tile_set(ed, i, j, pud->tiles_map[i + k]);
+     }
+
+   /* TODO
+    *
+    * foreach (pud->tiles_map)
+    * foreach (pud->units)
+    */
+}
+
+unsigned char *
+editor_texture_tile_access(const Editor * restrict ed,
+                           unsigned int            x,
+                           unsigned int            y)
+{
+   unsigned int key;
+
+   key = ed->cells[y][x].tile;
+   return texture_get(key, ed->pud->era, NULL);
+}
+
+void
+editor_finalize(Editor * restrict ed)
+{
+//   pud_dimensions_to_size(ed->size, &(ed->map_w), &(ed->map_h));
+   texture_tileset_open(ed->pud->era);
+   sprite_units_open();
+   bitmap_add(ed);
 }
 

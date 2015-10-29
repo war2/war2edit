@@ -95,9 +95,9 @@ _bitmap_init(Editor *restrict ed)
    };
    const int tiles_count = EINA_C_ARRAY_LENGTH(init_tiles);
 
-   for (j = 0; j < ed->map_h; j++)
+   for (j = 0; j < ed->pud->map_h; j++)
      {
-        for (i = 0; i < ed->map_w; i++)
+        for (i = 0; i < ed->pud->map_w; i++)
           {
              tile = init_tiles[rand() % tiles_count];
              bitmap_tile_set(ed, i, j, tile);
@@ -128,7 +128,7 @@ _click_handle(Editor *ed,
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
                   bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
-                  if (ed->units_count > 0) ed->units_count++;
+                  if (ed->pud->units_count > 0) ed->pud->units_count++;
                }
 
              ed->start_locations[ed->sel_player].x = x;
@@ -138,7 +138,7 @@ _click_handle(Editor *ed,
         /* Draw the unit, and therefore lock the cursor. */
         orient = sprite_info_random_get();
         bitmap_sprite_draw(ed, ed->sel_unit, ed->sel_player, orient, x, y);
-        ed->units_count++;
+        ed->pud->units_count++;
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
    else if (ed->action != EDITOR_ACTION_NONE)
@@ -285,8 +285,8 @@ bitmap_refresh_zone(Editor *restrict ed,
    /* Bounds checking - needed */
    if (x < 0) x = 0;
    if (y < 0) y = 0;
-   if (x + w >= ed->map_w) w = ed->map_w - x - 1;
-   if (y + h >= ed->map_h) h = ed->map_h - y - 1;
+   if (x + w >= ed->pud->map_w) w = ed->pud->map_w - x - 1;
+   if (y + h >= ed->pud->map_h) h = ed->pud->map_h - y - 1;
 
    for (j = y; j < y + h; j++)
      {
@@ -327,7 +327,7 @@ bitmap_sprite_draw(Editor *restrict ed,
    /* Don't draw */
    if (unit == PUD_UNIT_NONE) return;
 
-   sprite = sprite_get(ed, unit, orient, NULL, NULL, &w, &h, &flip);
+   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &w, &h, &flip);
    EINA_SAFETY_ON_NULL_RETURN(sprite);
 
    eo_do(
@@ -381,7 +381,7 @@ bitmap_tile_set(Editor * restrict ed,
    unsigned char *tex;
    Eina_Bool missing;
 
-   tex = texture_get(ed, key, &missing);
+   tex = texture_get(key, ed->pud->era, &missing);
    /* If the texture could not be loaded because of an internal error,
     * return TRUE because we can do nothing about it.
     * If the texture was non-existant, let's try again: the tileset
@@ -401,7 +401,7 @@ bitmap_add(Editor *ed)
 
    Evas_Object *obj;
 
-   obj = elm_bitmap_init_add(ed->win, 32, 32, ed->map_w, ed->map_h);
+   obj = elm_bitmap_init_add(ed->win, 32, 32, ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
 
    eo_do(
@@ -416,11 +416,14 @@ bitmap_add(Editor *ed)
    evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
 
    ed->bitmap = obj;
-   ed->cells = cell_matrix_new(ed->map_w, ed->map_h);
+   ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
    if (!ed->pud)
      _bitmap_init(ed);
+
+   elm_object_content_set(ed->scroller, ed->bitmap);
+   evas_object_show(ed->bitmap);
 
    return EINA_TRUE;
 }
@@ -428,7 +431,7 @@ bitmap_add(Editor *ed)
 void
 bitmap_reset(Editor *ed)
 {
-   cell_matrix_zero(ed->cells, ed->map_w * ed->map_h);
-   elm_bitmap_clear(ed->bitmap, 0, 0, 0);
+   cell_matrix_zero(ed->cells, ed->pud->tiles);
+   elm_bitmap_clear(ed->bitmap, 0, 255, 0);
 }
 

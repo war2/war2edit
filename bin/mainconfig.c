@@ -19,8 +19,9 @@ _mc_create_cb(void        *data,
               void        *evt  EINA_UNUSED)
 {
    Editor *ed = data;
-   mainconfig_hide(ed);
+
    editor_finalize(ed);
+   mainconfig_hide(ed);
 }
 
 static void
@@ -34,14 +35,14 @@ _size_changed_cb(void        *data,
    id = elm_radio_value_get(obj);
    switch (id)
      {
-      case 1: ed->size = PUD_DIMENSIONS_32_32;   break;
-      case 2: ed->size = PUD_DIMENSIONS_64_64;   break;
-      case 3: ed->size = PUD_DIMENSIONS_96_96;   break;
-      case 4: ed->size = PUD_DIMENSIONS_128_128; break;
+      case 1: pud_dimensions_set(ed->pud, PUD_DIMENSIONS_32_32);   break;
+      case 2: pud_dimensions_set(ed->pud, PUD_DIMENSIONS_64_64);   break;
+      case 3: pud_dimensions_set(ed->pud, PUD_DIMENSIONS_96_96);   break;
+      case 4: pud_dimensions_set(ed->pud, PUD_DIMENSIONS_128_128); break;
 
       default:
               CRI("Invalid ID for size radio group [%i]", id);
-              break;
+              return;
      }
 }
 
@@ -56,10 +57,10 @@ _era_changed_cb(void        *data,
    id = elm_radio_value_get(obj);
    switch (id)
      {
-      case 1: ed->era = PUD_ERA_FOREST;    break;
-      case 2: ed->era = PUD_ERA_WINTER;    break;
-      case 3: ed->era = PUD_ERA_WASTELAND; break;
-      case 4: ed->era = PUD_ERA_SWAMP;     break;
+      case 1: pud_era_set(ed->pud, PUD_ERA_FOREST);    break;
+      case 2: pud_era_set(ed->pud, PUD_ERA_WINTER);    break;
+      case 3: pud_era_set(ed->pud, PUD_ERA_WASTELAND); break;
+      case 4: pud_era_set(ed->pud, PUD_ERA_SWAMP);     break;
 
       default:
               CRI("Invalid ID for era radio group [%i]", id);
@@ -75,13 +76,13 @@ _has_extension_cb(void        *data,
    Editor *ed = data;
    Eina_Bool state;
 
-   state = elm_check_state_get(obj);
+   state = !!elm_check_state_get(obj);
 
    // TODO Disable/Enable menu
    if (state == EINA_FALSE) {}
    else {}
 
-   ed->has_extension = state;
+   ed->pud->extension_pack = state;
 }
 
 
@@ -200,7 +201,6 @@ mainconfig_add(Editor *ed)
    elm_radio_group_add(o, grp);
    evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
    elm_radio_value_set(grp, 1);
-   ed->size = PUD_DIMENSIONS_32_32;
    ed->mainconfig.menu_size = grp;
 
    /* Frame for map era */
@@ -251,7 +251,6 @@ mainconfig_add(Editor *ed)
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
    elm_radio_group_add(o, grp);
    elm_radio_value_set(grp, 1);
-   ed->era = PUD_ERA_FOREST;
    ed->mainconfig.menu_era = grp;
 
    ed->mainconfig.container = box;

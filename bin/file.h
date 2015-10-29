@@ -5,6 +5,7 @@ Eina_Bool file_selector_add(Editor *ed);
 Eina_Bool file_save_prompt(Editor *ed);
 Eina_Bool file_load_prompt(Editor *ed);
 Eina_Bool file_save(Editor *ed);
+Eina_Bool file_load(Editor *ed, const Pud *pud);
 
 #endif /* ! _FILE_H_ */
 

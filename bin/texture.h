@@ -11,10 +11,7 @@ void texture_shutdown(void);
 Eet_File *texture_tileset_open(Pud_Era era);
 
 void *texture_load(Eet_File *src, unsigned int key, Eina_Bool *missing);
-unsigned char *texture_tile_access(Editor *ed, unsigned int x, unsigned int y);
-unsigned char *texture_get(Editor *ed, unsigned int key, Eina_Bool *missing);
-
-Eina_Hash *texture_hash_new(void);
+unsigned char *texture_get(unsigned int key, Pud_Era era, Eina_Bool *missing);
 
 Eina_Bool texture_water_is(unsigned int tile);
 Eina_Bool texture_wall_is(unsigned int tile);

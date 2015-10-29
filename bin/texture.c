@@ -1,5 +1,9 @@
 #include "war2edit.h"
 
+static Eina_Hash *_textures = NULL;
+static Eet_File *_tilesets[4] = { NULL, NULL, NULL, NULL };
+
+
 void *
 texture_load(Eet_File     *src,
              unsigned int  key,
@@ -42,8 +46,14 @@ texture_load(Eet_File     *src,
 Eet_File *
 texture_tileset_open(Pud_Era era)
 {
+   EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), NULL);
+
    Eet_File *ef;
    const char *file;
+
+   /* Don't load a tileset twice */
+   if (_tilesets[era])
+     return _tilesets[era];
 
    switch (era)
      {
@@ -57,44 +67,56 @@ texture_tileset_open(Pud_Era era)
    EINA_SAFETY_ON_NULL_RETURN_VAL(ef, NULL);
    DBG("Open tileset file [%s]", file);
 
+   _tilesets[era] = ef;
+
    return ef;
 }
 
 Eina_Bool
 texture_init(void)
 {
+   /* Used to load textures only when they are required */
+   _textures = eina_hash_int32_new(EINA_FREE_CB(free));
+   if (EINA_UNLIKELY(!_textures))
+     {
+        CRI("Failed to create Hash for textures");
+        goto fail;
+     }
    return EINA_TRUE;
+
+fail:
+   return EINA_FALSE;
 }
 
 void
 texture_shutdown(void)
 {
+   unsigned int i;
+
+   eina_hash_free(_textures);
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(_tilesets); ++i)
+     {
+        if (_tilesets[i])
+          {
+             eet_close(_tilesets[i]);
+             _tilesets[i] = NULL;
+          }
+     }
 }
 
-static void
-_hash_free_cb(void *data)
-{
-   free(data);
-}
-
-Eina_Hash *
-texture_hash_new(void)
-{
-   return eina_hash_int32_new(_hash_free_cb);
-}
 
 unsigned char *
-texture_get(Editor       *ed,
-            unsigned int  key,
+texture_get(unsigned int  key,
+            Pud_Era       tileset,
             Eina_Bool    *missing)
 {
    Eina_Bool chk;
    unsigned char *tex;
 
-   tex = eina_hash_find(ed->textures, &key);
+   tex = eina_hash_find(_textures, &key);
    if (tex == NULL)
      {
-        tex = texture_load(ed->textures_src, key, missing);
+        tex = texture_load(_tilesets[tileset], key, missing);
         if (tex == NULL)
           {
              /* See texture_load() */
@@ -106,7 +128,7 @@ texture_get(Editor       *ed,
                   return NULL;
                }
           }
-        chk = eina_hash_add(ed->textures, &key, tex);
+        chk = eina_hash_add(_textures, &key, tex);
         if (chk == EINA_FALSE)
           {
              ERR("Failed to add texture <%p> to hash", tex);
@@ -121,17 +143,6 @@ texture_get(Editor       *ed,
         DBG("Access key: [%u] (already registered). TEX = <%p>", key, tex);
         return tex;
      }
-}
-
-unsigned char *
-texture_tile_access(Editor       *ed,
-                    unsigned int  x,
-                    unsigned int  y)
-{
-   unsigned int key;
-
-   key = ed->cells[y][x].tile;
-   return texture_get(ed, key, NULL);
 }
 
 Eina_Bool
