@@ -240,8 +240,16 @@ sprite_init(void)
         goto sprites_fail;
      }
 
+   if (EINA_UNLIKELY(!sprite_units_open()))
+     {
+        CRI("Failed to load units");
+        goto units_fail;
+     }
+
    return EINA_TRUE;
 
+units_fail:
+   eina_hash_free(_sprites);
 sprites_fail:
    eet_close(_units_ef);
 fail:
