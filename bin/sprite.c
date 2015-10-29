@@ -4,7 +4,6 @@ static Eet_File *_units_ef = NULL;
 static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
 
-
 void *
 sprite_load(Eet_File   *src,
             const char *key,
@@ -34,7 +33,7 @@ sprite_load(Eet_File   *src,
         return NULL;
      }
 
-   DBG("Loaded sprite [%s] of size %ix%i (offsets: %i,%i)\n", key, w, h, x, y);
+   //DBG("Loaded sprite [%s] of size %ix%i (offsets: %i,%i)\n", key, w, h, x, y);
 
    if (x_ret) *x_ret = x;
    if (y_ret) *y_ret = y;
@@ -194,7 +193,7 @@ sprite_get(Pud_Unit       unit,
              free(data);
              return NULL;
           }
-        DBG("Access key [%s] (not yet registered). SRT = <%p>", key, data);
+        //DBG("Access key [%s] (not yet registered). SRT = <%p>", key, data);
         return data;
      }
    else
@@ -203,7 +202,7 @@ sprite_get(Pud_Unit       unit,
         if (y) { memcpy(&sy, data - 6, sizeof(uint16_t)); *y = sy; }
         if (w) { memcpy(&sw, data - 4, sizeof(uint16_t)); *w = sw; }
         if (h) { memcpy(&sh, data - 2, sizeof(uint16_t)); *h = sh; }
-        DBG("Access key [%s] (already registered). SRT = <%p>", key, data);
+        //DBG("Access key [%s] (already registered). SRT = <%p>", key, data);
         return data;
      }
 }

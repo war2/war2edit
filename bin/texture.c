@@ -38,7 +38,7 @@ texture_load(Eet_File     *src,
         return NULL;
      }
 
-   DBG("Loaded texture [%s] at <%p>", key_str, mem);
+   //DBG("Loaded texture [%s] at <%p>", key_str, mem);
 
    return mem;
 }
@@ -135,12 +135,12 @@ texture_get(unsigned int  key,
              free(tex);
              return NULL;
           }
-        DBG("Access key: [%u] (not yet registered). TEX = <%p>", key, tex);
+        //DBG("Access key: [%u] (not yet registered). TEX = <%p>", key, tex);
         return tex;
      }
    else
      {
-        DBG("Access key: [%u] (already registered). TEX = <%p>", key, tex);
+        //DBG("Access key: [%u] (already registered). TEX = <%p>", key, tex);
         return tex;
      }
 }
