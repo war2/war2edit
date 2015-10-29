@@ -349,7 +349,7 @@ editor_reload(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN(ed);
 
    INF("Editor reload");
-   unsigned int i, j, k;
+   unsigned int i, j;
    const Pud *pud = ed->pud;
 
    if (EINA_UNLIKELY(!pud))
@@ -358,14 +358,10 @@ editor_reload(Editor *ed)
         return;
      }
 
-   bitmap_reset(ed);
-
-   for (j = 0; j < pud->map_h; ++j)
-     {
-        k = j * pud->map_w;
-        for (i = 0; i < pud->map_w; ++i)
-          bitmap_tile_set(ed, i, j, pud->tiles_map[i + k]);
-     }
+   // TODO split the map into parts, and do a parallel load
+   for (j = 0; j < pud->map_h; j++)
+     for (i = 0; i < pud->map_w; i++)
+       bitmap_tile_set(ed, i, j, pud_tile_get(pud, i, j));
 
    /* TODO
     *

@@ -87,16 +87,6 @@ _draw(Editor *ed,
 }
 
 static void
-_bitmap_init(Editor *restrict ed)
-{
-   unsigned int i, j;
-
-   for (j = 0; j < ed->pud->map_h; j++)
-     for (i = 0; i < ed->pud->map_w; i++)
-       bitmap_tile_set(ed, i, j, pud_tile_get(ed->pud, i, j));
-}
-
-static void
 _click_handle(Editor *ed,
               int     x,
               int     y)
@@ -409,8 +399,6 @@ bitmap_add(Editor *ed)
    ed->bitmap = obj;
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
-
-   _bitmap_init(ed);
 
    elm_object_content_set(ed->scroller, ed->bitmap);
    evas_object_show(ed->bitmap);
