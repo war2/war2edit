@@ -199,8 +199,14 @@ editor_new(const char *pud_file)
 
    if (pud_file)
      {
+        // FIXME Test if file exists. If yes, load, else create
         INF("Opening editor for file %s", pud_file);
         ed->pud = pud_open(pud_file, PUD_OPEN_MODE_R); // XXX mode
+        if (EINA_UNLIKELY(!ed->pud))
+          {
+             CRI("Failed to open pud \"%s\"", pud_file);
+             goto err_win_del;
+          }
         editor_finalize(ed);
         editor_reload(ed);
      }
