@@ -133,76 +133,13 @@ _radio_units_changed_cb(void        *data,
                         Evas_Object *obj,
                         void        *event EINA_UNUSED)
 {
+   unsigned int w, h;
    Editor *ed = evas_object_data_get(obj, "editor");
-   Eina_Bool handled = EINA_FALSE;
    _radio_changed_common_do(data, (int *)(&(ed->sel_unit)));
    DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit));
 
-   switch (ed->sel_unit)
-     {
-      case PUD_UNIT_PIG_FARM:
-      case PUD_UNIT_FARM:
-      case PUD_UNIT_ORC_SCOUT_TOWER:
-      case PUD_UNIT_HUMAN_SCOUT_TOWER:
-      case PUD_UNIT_HUMAN_GUARD_TOWER:
-      case PUD_UNIT_HUMAN_CANNON_TOWER:
-      case PUD_UNIT_ORC_GUARD_TOWER:
-      case PUD_UNIT_ORC_CANNON_TOWER:
-      case PUD_UNIT_GOBLIN_ZEPPLIN:
-      case PUD_UNIT_GNOMISH_FLYING_MACHINE:
-      case PUD_UNIT_ORC_TANKER:
-      case PUD_UNIT_HUMAN_TANKER:
-      case PUD_UNIT_GRYPHON_RIDER:
-      case PUD_UNIT_DRAGON:
-      case PUD_UNIT_ELVEN_DESTROYER:
-      case PUD_UNIT_TROLL_DESTROYER:
-      case PUD_UNIT_GNOMISH_SUBMARINE:
-      case PUD_UNIT_GIANT_TURTLE:
-      case PUD_UNIT_JUGGERNAUGHT:
-      case PUD_UNIT_BATTLESHIP:
-      case PUD_UNIT_ORC_TRANSPORT:
-      case PUD_UNIT_HUMAN_TRANSPORT:
-      case PUD_UNIT_CIRCLE_OF_POWER:
-      case PUD_UNIT_RUNESTONE:
-         elm_bitmap_cursor_size_set(ed->bitmap, 2, 2);
-         handled = EINA_TRUE;
-         break;
-
-      default:
-         break;
-     }
-
-   if (!handled)
-     {
-        if (pud_unit_building_is(ed->sel_unit))
-          {
-            switch (ed->sel_unit)
-              {
-               case PUD_UNIT_GREAT_HALL:
-               case PUD_UNIT_TOWN_HALL:
-               case PUD_UNIT_STRONGHOLD:
-               case PUD_UNIT_KEEP:
-               case PUD_UNIT_CASTLE:
-               case PUD_UNIT_FORTRESS:
-                  elm_bitmap_cursor_size_set(ed->bitmap, 4, 4);
-                  handled = EINA_TRUE;
-                  break;
-
-               default:
-                  elm_bitmap_cursor_size_set(ed->bitmap, 3, 3);
-                  handled = EINA_TRUE;
-                  break;
-              }
-          }
-        else
-          {
-             elm_bitmap_cursor_size_set(ed->bitmap, 1, 1);
-             handled = EINA_TRUE;
-          }
-     }
-
-   if (EINA_UNLIKELY(!handled))
-     CRI("Unit [%s] cursor is not handled", pud_unit2str(ed->sel_unit));
+   sprite_tile_size_get(ed->sel_unit, &w, &h);
+   elm_bitmap_cursor_size_set(ed->bitmap, w, h);
 }
 
 static void

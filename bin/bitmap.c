@@ -92,6 +92,7 @@ _click_handle(Editor *ed,
               int     y)
 {
    Sprite_Info orient;
+   unsigned int w, h;
 
    if (!elm_bitmap_cursor_enabled_get(ed->bitmap)) return;
 
@@ -118,7 +119,10 @@ _click_handle(Editor *ed,
 
         /* Draw the unit, and therefore lock the cursor. */
         orient = sprite_info_random_get();
-        bitmap_sprite_draw(ed, ed->sel_unit, ed->sel_player, orient, x, y);
+
+        // FIXME cast --- change stuff in elm_bitmap
+        elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&w), (int*)(&h));
+        bitmap_sprite_draw(ed, ed->sel_unit, ed->sel_player, orient, x, y, w, h);
         ed->pud->units_count++;
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
@@ -260,7 +264,7 @@ bitmap_refresh_zone(Editor *restrict ed,
                     unsigned int     w,
                     unsigned int     h)
 {
-   unsigned int i, j;
+   unsigned int i, j, sw, sh;
    Cell c;
 
    /* Bounds checking - needed */
@@ -276,7 +280,11 @@ bitmap_refresh_zone(Editor *restrict ed,
              c = ed->cells[j][i];
              bitmap_tile_set(ed, i, j, c.tile);
              if (c.anchor_below)
-               bitmap_sprite_draw(ed, c.unit_below, c.player_below, c.orient_below, i, j);
+               {
+                  sprite_tile_size_get(c.unit_below, &sw, &sh);
+                  bitmap_sprite_draw(ed, c.unit_below, c.player_below,
+                                     c.orient_below, i, j, sw, sh);
+               }
           }
      }
 
@@ -287,7 +295,11 @@ bitmap_refresh_zone(Editor *restrict ed,
         for (i = x; i < x + w; i++)
           {
              if (c.anchor_above)
-               bitmap_sprite_draw(ed, c.unit_above, c.player_above, c.orient_above, i, j);
+               {
+                  sprite_tile_size_get(c.unit_above, &sw, &sh);
+                  bitmap_sprite_draw(ed, c.unit_above, c.player_above,
+                                     c.orient_above, i, j, sw, sh);
+               }
           }
      }
 }
@@ -298,36 +310,33 @@ bitmap_sprite_draw(Editor *restrict ed,
                    Pud_Player       color,
                    unsigned int     orient,
                    int              x,
-                   int              y)
+                   int              y,
+                   unsigned int     w,
+                   unsigned int     h)
 {
    unsigned char *sprite;
-   int w, h, cw, ch, cx, cy, at_x, at_y;
-   int i, j;
+   int at_x, at_y;
+   unsigned int sw, sh;
+   unsigned int i, j;
    Eina_Bool flip;
 
    /* Don't draw */
    if (unit == PUD_UNIT_NONE) return;
 
-   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &w, &h, &flip);
+   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
    EINA_SAFETY_ON_NULL_RETURN(sprite);
 
-   eo_do(
-      ed->bitmap,
-      elm_obj_bitmap_cursor_size_get(&cw, &ch),
-      elm_obj_bitmap_cursor_pos_get(&cx, &cy)
-   );
+   at_x = (x * TEXTURE_WIDTH) + ((w * TEXTURE_WIDTH) - sw) / 2;
+   at_y = (y * TEXTURE_HEIGHT) + ((h * TEXTURE_HEIGHT) - sh) / 2;
 
-   at_x = (cx * TEXTURE_WIDTH) + ((cw * TEXTURE_WIDTH) - w) / 2;
-   at_y = (cy * TEXTURE_HEIGHT) + ((ch * TEXTURE_HEIGHT) - h) / 2;
-
-   _draw(ed, sprite, at_x, at_y, w, h, flip, color);
+   _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
 
    /* Bitfields, cannot take addresses to shorten that */
    if (pud_unit_flying_is(unit))
      {
-        for (j = y; j < y + ch; ++j)
+        for (j = y; j < y + h; ++j)
           {
-             for (i = x; i < x + cw; ++i)
+             for (i = x; i < x + w; ++i)
                {
                   ed->cells[j][i].unit_above = unit;
                   ed->cells[j][i].orient_above = orient;
@@ -339,9 +348,9 @@ bitmap_sprite_draw(Editor *restrict ed,
      }
    else
      {
-        for (j = y; j < y + ch; ++j)
+        for (j = y; j < y + h; ++j)
           {
-             for (i = x; i < x + cw; ++i)
+             for (i = x; i < x + w; ++i)
                {
                   ed->cells[j][i].unit_below = unit;
                   ed->cells[j][i].orient_below = orient;

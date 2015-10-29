@@ -3,7 +3,7 @@
 
 Eina_Bool bitmap_add(Editor *ed);
 Eina_Bool bitmap_tile_set(Editor * restrict ed, int x, int y, unsigned int key);
-void bitmap_sprite_draw(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, int x, int y);
+void bitmap_sprite_draw(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, int x, int y, unsigned int w, unsigned int h);
 
 void
 bitmap_refresh_zone(Editor *restrict ed,

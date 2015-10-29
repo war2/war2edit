@@ -241,7 +241,7 @@ editor_save(Editor * restrict ed,
 
    Eina_Bool chk;
    unsigned int x, y, k = 0;
-   struct _unit *u;
+   struct _Pud_Unit *u;
    Cell c;
    Pud *pud = ed->pud; /* Save indirections... */
 
@@ -349,8 +349,9 @@ editor_reload(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN(ed);
 
    INF("Editor reload");
-   unsigned int i, j;
+   unsigned int i, j, sw, sh;
    const Pud *pud = ed->pud;
+   struct _Pud_Unit *u;
 
    if (EINA_UNLIKELY(!pud))
      {
@@ -362,6 +363,14 @@ editor_reload(Editor *ed)
    for (j = 0; j < pud->map_h; j++)
      for (i = 0; i < pud->map_w; i++)
        bitmap_tile_set(ed, i, j, pud_tile_get(pud, i, j));
+
+   for (i = 0; i < pud->units_count; ++i)
+     {
+        u = &(pud->units[i]);
+        sprite_tile_size_get(u->type, &sw, &sh);
+        bitmap_sprite_draw(ed, u->type, u->owner,
+                           sprite_info_random_get(), u->x, u->y, sw, sh);
+     }
 
    /* TODO
     *

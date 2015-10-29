@@ -5,12 +5,12 @@ static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
 
 void *
-sprite_load(Eet_File   *src,
-            const char *key,
-            int        *x_ret,
-            int        *y_ret,
-            int        *w_ret,
-            int        *h_ret)
+sprite_load(Eet_File     *src,
+            const char   *key,
+            int          *x_ret,
+            int          *y_ret,
+            unsigned int *w_ret,
+            unsigned int *h_ret)
 {
    unsigned char *mem;
    int size, expected_size;
@@ -104,8 +104,8 @@ sprite_get(Pud_Unit       unit,
            Sprite_Info    info,
            int           *x,
            int           *y,
-           int           *w,
-           int           *h,
+           unsigned int  *w,
+           unsigned int  *h,
            Eina_Bool     *flip_me)
 {
    unsigned char *data;
@@ -272,5 +272,102 @@ sprite_shutdown(void)
    eet_close(_units_ef);
    _units_ef = NULL;
    eina_hash_free(_sprites);
+}
+
+void
+sprite_tile_size_get(Pud_Unit      unit,
+                     unsigned int *sprite_w,
+                     unsigned int *sprite_h)
+{
+   unsigned int w;
+   unsigned int h;
+
+   switch (unit)
+     {
+      case PUD_UNIT_NONE:
+         w = 0;
+         h = 0;
+         break;
+
+      case PUD_UNIT_PIG_FARM:
+      case PUD_UNIT_FARM:
+      case PUD_UNIT_ORC_SCOUT_TOWER:
+      case PUD_UNIT_HUMAN_SCOUT_TOWER:
+      case PUD_UNIT_HUMAN_GUARD_TOWER:
+      case PUD_UNIT_HUMAN_CANNON_TOWER:
+      case PUD_UNIT_ORC_GUARD_TOWER:
+      case PUD_UNIT_ORC_CANNON_TOWER:
+      case PUD_UNIT_GOBLIN_ZEPPLIN:
+      case PUD_UNIT_GNOMISH_FLYING_MACHINE:
+      case PUD_UNIT_ORC_TANKER:
+      case PUD_UNIT_HUMAN_TANKER:
+      case PUD_UNIT_GRYPHON_RIDER:
+      case PUD_UNIT_ELVEN_DESTROYER:
+      case PUD_UNIT_TROLL_DESTROYER:
+      case PUD_UNIT_GNOMISH_SUBMARINE:
+      case PUD_UNIT_GIANT_TURTLE:
+      case PUD_UNIT_ORC_TRANSPORT:
+      case PUD_UNIT_HUMAN_TRANSPORT:
+      case PUD_UNIT_CIRCLE_OF_POWER:
+      case PUD_UNIT_RUNESTONE:
+      case PUD_UNIT_BALLISTA:
+      case PUD_UNIT_CATAPULT:
+         w = 2;
+         h = 2;
+         break;
+
+      case PUD_UNIT_DEATHWING:
+      case PUD_UNIT_HUMAN_BARRACKS:
+      case PUD_UNIT_ORC_BARRACKS:
+      case PUD_UNIT_CHURCH:
+      case PUD_UNIT_ALTAR_OF_STORMS:
+      case PUD_UNIT_STABLES:
+      case PUD_UNIT_OGRE_MOUND:
+      case PUD_UNIT_GNOMISH_INVENTOR:
+      case PUD_UNIT_GOBLIN_ALCHEMIST:
+      case PUD_UNIT_GRYPHON_AVIARY:
+      case PUD_UNIT_DRAGON_ROOST:
+      case PUD_UNIT_HUMAN_SHIPYARD:
+      case PUD_UNIT_ORC_SHIPYARD:
+      case PUD_UNIT_ELVEN_LUMBER_MILL:
+      case PUD_UNIT_TROLL_LUMBER_MILL:
+      case PUD_UNIT_HUMAN_FOUNDRY:
+      case PUD_UNIT_ORC_FOUNDRY:
+      case PUD_UNIT_MAGE_TOWER:
+      case PUD_UNIT_TEMPLE_OF_THE_DAMNED:
+      case PUD_UNIT_HUMAN_BLACKSMITH:
+      case PUD_UNIT_ORC_BLACKSMITH:
+      case PUD_UNIT_HUMAN_REFINERY:
+      case PUD_UNIT_ORC_REFINERY:
+      case PUD_UNIT_HUMAN_OIL_WELL:
+      case PUD_UNIT_ORC_OIL_WELL:
+      case PUD_UNIT_GOLD_MINE:
+      case PUD_UNIT_OIL_PATCH:
+      case PUD_UNIT_DRAGON:
+      case PUD_UNIT_JUGGERNAUGHT:
+      case PUD_UNIT_BATTLESHIP:
+         w = 3;
+         h = 3;
+         break;
+
+      case PUD_UNIT_GREAT_HALL:
+      case PUD_UNIT_TOWN_HALL:
+      case PUD_UNIT_STRONGHOLD:
+      case PUD_UNIT_KEEP:
+      case PUD_UNIT_CASTLE:
+      case PUD_UNIT_FORTRESS:
+      case PUD_UNIT_DARK_PORTAL:
+         w = 4;
+         h = 4;
+         break;
+
+      default:
+         w = 1;
+         h = 1;
+         break;
+     }
+
+   if (sprite_w) *sprite_w = w;
+   if (sprite_h) *sprite_h = h;
 }
 
