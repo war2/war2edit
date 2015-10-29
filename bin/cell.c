@@ -4,6 +4,8 @@ Cell **
 cell_matrix_new(const unsigned int w,
                 const unsigned int h)
 {
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((w == 0) || (h == 0), NULL);
+
    Cell **ptr;
    unsigned int i, j;
 
