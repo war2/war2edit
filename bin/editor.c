@@ -383,6 +383,7 @@ void
 editor_finalize(Editor * restrict ed)
 {
    texture_tileset_open(ed->pud->era);
+   sprite_buildings_open(ed->pud->era);
    bitmap_add(ed);
 }
 
