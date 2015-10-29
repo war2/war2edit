@@ -9,8 +9,8 @@ void
 bitmap_refresh_zone(Editor *restrict ed,
                     int              x,
                     int              y,
-                    int              w,
-                    int              h);
+                    unsigned int     w,
+                    unsigned int     h);
 
 void bitmap_reset(Editor *ed);
 

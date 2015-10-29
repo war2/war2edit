@@ -89,20 +89,11 @@ _draw(Editor *ed,
 static void
 _bitmap_init(Editor *restrict ed)
 {
-   int i, j, tile;
-   const uint16_t init_tiles[] = {
-      0x0050, 0x0051, 0x0052
-   };
-   const int tiles_count = EINA_C_ARRAY_LENGTH(init_tiles);
+   unsigned int i, j;
 
    for (j = 0; j < ed->pud->map_h; j++)
-     {
-        for (i = 0; i < ed->pud->map_w; i++)
-          {
-             tile = init_tiles[rand() % tiles_count];
-             bitmap_tile_set(ed, i, j, tile);
-          }
-     }
+     for (i = 0; i < ed->pud->map_w; i++)
+       bitmap_tile_set(ed, i, j, pud_tile_get(ed->pud, i, j));
 }
 
 static void
@@ -276,10 +267,10 @@ void
 bitmap_refresh_zone(Editor *restrict ed,
                     int              x,
                     int              y,
-                    int              w,
-                    int              h)
+                    unsigned int     w,
+                    unsigned int     h)
 {
-   int i, j;
+   unsigned int i, j;
    Cell c;
 
    /* Bounds checking - needed */
@@ -419,8 +410,7 @@ bitmap_add(Editor *ed)
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
-   if (!ed->pud)
-     _bitmap_init(ed);
+   _bitmap_init(ed);
 
    elm_object_content_set(ed->scroller, ed->bitmap);
    evas_object_show(ed->bitmap);

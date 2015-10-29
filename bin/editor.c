@@ -234,7 +234,7 @@ editor_save(Editor * restrict ed,
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
    Eina_Bool chk;
-   int x, y, k = 0;
+   unsigned int x, y, k = 0;
    struct _unit *u;
    Cell c;
    Pud *pud = ed->pud; /* Save indirections... */
@@ -343,7 +343,7 @@ editor_reload(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN(ed);
 
    INF("Editor reload");
-   int i, j, k;
+   unsigned int i, j, k;
    const Pud *pud = ed->pud;
 
    if (EINA_UNLIKELY(!pud))
@@ -382,7 +382,6 @@ editor_texture_tile_access(const Editor * restrict ed,
 void
 editor_finalize(Editor * restrict ed)
 {
-//   pud_dimensions_to_size(ed->size, &(ed->map_w), &(ed->map_h));
    texture_tileset_open(ed->pud->era);
    sprite_units_open();
    bitmap_add(ed);
