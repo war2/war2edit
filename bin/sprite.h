@@ -1,3 +1,9 @@
+/*
+ * sprite.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _SPRITE_H_
 #define _SPRITE_H_
 
