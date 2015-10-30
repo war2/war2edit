@@ -109,7 +109,7 @@ _click_handle(Editor *ed,
              if (ed->start_locations[ed->sel_player].x != -1)
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
-                  bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
+                  // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
                   if (ed->pud->units_count > 0) ed->pud->units_count++;
                }
 
@@ -122,7 +122,9 @@ _click_handle(Editor *ed,
 
         // FIXME cast --- change stuff in elm_bitmap
         elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&w), (int*)(&h));
-        bitmap_sprite_draw(ed, ed->sel_unit, ed->sel_player, orient, x, y, w, h);
+        bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
+                         orient, x, y, w, h,
+                         editor_alter_defaults_get(ed, ed->sel_unit));
         ed->pud->units_count++;
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
@@ -257,62 +259,63 @@ _mouse_down_cb(void        *data,
  *                                 Public API                                 *
  *============================================================================*/
 
+//void
+//bitmap_refresh_zone(Editor *restrict ed,
+//                    int              x,
+//                    int              y,
+//                    unsigned int     w,
+//                    unsigned int     h)
+//{
+//   unsigned int i, j, sw, sh;
+//   Cell c;
+//
+//   /* Bounds checking - needed */
+//   if (x < 0) x = 0;
+//   if (y < 0) y = 0;
+//   if (x + w >= ed->pud->map_w) w = ed->pud->map_w - x - 1;
+//   if (y + h >= ed->pud->map_h) h = ed->pud->map_h - y - 1;
+//
+//   for (j = y; j < y + h; j++)
+//     {
+//        for (i = x; i < x + w; i++)
+//          {
+//             c = ed->cells[j][i];
+//             bitmap_tile_set(ed, i, j, c.tile);
+//             if (c.anchor_below)
+//               {
+//                  sprite_tile_size_get(c.unit_below, &sw, &sh);
+//                  bitmap_unit_set(ed, c.unit_below, c.player_below,
+//                                  c.orient_below, i, j, sw, sh);
+//               }
+//          }
+//     }
+//
+//   /* FIXME This is pretty bad!! To avoid mixing sprites I do 2 separate passes.
+//    * FIXME There is certainly much much better, I'll do it some day. */
+//   for (j = y; j < y + h; j++)
+//     {
+//        for (i = x; i < x + w; i++)
+//          {
+//             if (c.anchor_above)
+//               {
+//                  sprite_tile_size_get(c.unit_above, &sw, &sh);
+//                  bitmap_unit_set(ed, c.unit_above, c.player_above,
+//                                  c.orient_above, i, j, sw, sh);
+//               }
+//          }
+//     }
+//}
+
 void
-bitmap_refresh_zone(Editor *restrict ed,
-                    int              x,
-                    int              y,
-                    unsigned int     w,
-                    unsigned int     h)
-{
-   unsigned int i, j, sw, sh;
-   Cell c;
-
-   /* Bounds checking - needed */
-   if (x < 0) x = 0;
-   if (y < 0) y = 0;
-   if (x + w >= ed->pud->map_w) w = ed->pud->map_w - x - 1;
-   if (y + h >= ed->pud->map_h) h = ed->pud->map_h - y - 1;
-
-   for (j = y; j < y + h; j++)
-     {
-        for (i = x; i < x + w; i++)
-          {
-             c = ed->cells[j][i];
-             bitmap_tile_set(ed, i, j, c.tile);
-             if (c.anchor_below)
-               {
-                  sprite_tile_size_get(c.unit_below, &sw, &sh);
-                  bitmap_sprite_draw(ed, c.unit_below, c.player_below,
-                                     c.orient_below, i, j, sw, sh);
-               }
-          }
-     }
-
-   /* FIXME This is pretty bad!! To avoid mixing sprites I do 2 separate passes.
-    * FIXME There is certainly much much better, I'll do it some day. */
-   for (j = y; j < y + h; j++)
-     {
-        for (i = x; i < x + w; i++)
-          {
-             if (c.anchor_above)
-               {
-                  sprite_tile_size_get(c.unit_above, &sw, &sh);
-                  bitmap_sprite_draw(ed, c.unit_above, c.player_above,
-                                     c.orient_above, i, j, sw, sh);
-               }
-          }
-     }
-}
-
-void
-bitmap_sprite_draw(Editor *restrict ed,
-                   Pud_Unit         unit,
-                   Pud_Player       color,
-                   unsigned int     orient,
-                   int              x,
-                   int              y,
-                   unsigned int     w,
-                   unsigned int     h)
+bitmap_unit_set(Editor *restrict ed,
+                Pud_Unit         unit,
+                Pud_Player       color,
+                unsigned int     orient,
+                int              x,
+                int              y,
+                unsigned int     w,
+                unsigned int     h,
+                uint16_t         alter)
 {
    unsigned char *sprite;
    int at_x, at_y;
@@ -329,6 +332,7 @@ bitmap_sprite_draw(Editor *restrict ed,
    at_x = (x * TEXTURE_WIDTH) + ((w * TEXTURE_WIDTH) - sw) / 2;
    at_y = (y * TEXTURE_HEIGHT) + ((h * TEXTURE_HEIGHT) - sh) / 2;
 
+
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
 
    /* Bitfields, cannot take addresses to shorten that */
@@ -342,6 +346,7 @@ bitmap_sprite_draw(Editor *restrict ed,
                   ed->cells[j][i].orient_above = orient;
                   ed->cells[j][i].player_above = color;
                   ed->cells[j][i].anchor_above = 0;
+                  ed->cells[j][i].alter = alter;
                }
           }
         ed->cells[y][x].anchor_above = 1;
@@ -356,6 +361,7 @@ bitmap_sprite_draw(Editor *restrict ed,
                   ed->cells[j][i].orient_below = orient;
                   ed->cells[j][i].player_below = color;
                   ed->cells[j][i].anchor_below = 0;
+                  ed->cells[j][i].alter = alter;
                }
           }
         ed->cells[y][x].anchor_below = 1;

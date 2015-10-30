@@ -93,6 +93,10 @@ void editor_reload(Editor *ed);
 unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
 void editor_name_set(Editor * restrict ed, const char *name);
 
+uint16_t
+editor_alter_defaults_get(const Editor * restrict ed,
+                          const Pud_Unit          unit);
+
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \
       CRI(msg_); \

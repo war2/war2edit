@@ -257,15 +257,16 @@ editor_save(Editor * restrict ed,
    Cell c;
    Pud *pud = ed->pud; /* Save indirections... */
 
-   eina_stringshare_replace((Eina_Stringshare **)(&pud->filename) ,file);
-
-   //   /* Will never change, so set it once and for all */
-   //   pud_dimensions_set(ed->pud, ed->size);
-   //   pud_version_set(ed->pud, (ed->has_extension) ? 0x13 : 0x11);
-   //   pud_tag_set(ed->pud, rand() % UINT32_MAX);
-   //   strncpy(description, "No description available", sizeof(description));
-   //   pud_description_set(ed->pud, description);
-   //   pud_era_set(ed->pud, ed->era);
+   if (strcmp(pud->filename, file) != 0)
+     {
+        free(pud->filename);
+        pud->filename = strdup(file);
+        if (!pud->filename)
+          {
+             CRI("Failed to strdup(\"%s\")", pud->filename);
+             goto panic;
+          }
+     }
 
    /* Set units count and allocate units */
    ed->pud->units = realloc(ed->pud->units, ed->pud->units_count * sizeof((*ed->pud->units)));
@@ -311,7 +312,7 @@ editor_save(Editor * restrict ed,
                   u->owner = c.player_above;
                   u->alter = c.alter;
                }
-             // FIXME c.tile is wrong
+             // FIXME c.tile is wrong // XXX Whu wrong?
              pud_tile_set(ed->pud, x, y, c.tile);
           }
      }
@@ -380,8 +381,9 @@ editor_reload(Editor *ed)
      {
         u = &(pud->units[i]);
         sprite_tile_size_get(u->type, &sw, &sh);
-        bitmap_sprite_draw(ed, u->type, u->owner,
-                           sprite_info_random_get(), u->x, u->y, sw, sh);
+        bitmap_unit_set(ed, u->type, u->owner,
+                        sprite_info_random_get(), u->x, u->y, sw, sh,
+                        u->alter);
      }
 
    /* TODO
@@ -419,4 +421,24 @@ editor_name_set(Editor * restrict  ed,
 
    elm_win_title_set(ed->win, name);
 }
+
+uint16_t
+editor_alter_defaults_get(const Editor * restrict ed,
+                          const Pud_Unit          unit)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, 0x00);
+
+   // TODO lookup defaults (editor)
+   if ((unit == PUD_UNIT_GOLD_MINE) || (unit == PUD_UNIT_OIL_PATCH))
+     {
+        return 2500;
+     }
+   else if (unit == PUD_UNIT_CRITTER)
+     {
+        return 0;
+     }
+   else
+     return 1;
+}
+
 
