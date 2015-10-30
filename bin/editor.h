@@ -91,6 +91,7 @@ Eina_Bool editor_save(Editor * restrict ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
 void editor_reload(Editor *ed);
 unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
+void editor_name_set(Editor * restrict ed, const char *name);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \

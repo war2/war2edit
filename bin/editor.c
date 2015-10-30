@@ -1,6 +1,7 @@
 #include "war2edit.h"
 
 static Eina_List *_editors = NULL;
+static unsigned int _eds = 0;
 
 
 /*============================================================================*
@@ -111,8 +112,9 @@ Editor *
 editor_new(const char *pud_file)
 {
    Editor *ed;
-   char title[128], wins[32];
+   char title[512];
    Evas_Object *o, *box;
+   Eina_Bool open_pud = EINA_FALSE;
    int i;
 
    ed = calloc(1, sizeof(Editor));
@@ -129,14 +131,8 @@ editor_new(const char *pud_file)
         else ed->sides[i] = PUD_SIDE_ORC;
      }
 
-
-   /* Create window's title */
-   snprintf(wins, sizeof(wins), " - %i", eina_list_count(_editors));
-   snprintf(title, sizeof(title), "Untitled%s",
-            (eina_list_count(_editors) == 0) ? "" : wins);
-
    /* Create window and set callbacks */
-   ed->win = elm_win_util_standard_add("win-editor", title);
+   ed->win = elm_win_util_standard_add("win-editor", "war2edit");
    EINA_SAFETY_ON_NULL_GOTO(ed->win, err_free);
    elm_win_focus_highlight_enabled_set(ed->win, EINA_FALSE);
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
@@ -197,11 +193,21 @@ editor_new(const char *pud_file)
 
    menu_unit_selection_reset(ed);
 
-   if (pud_file)
+   /* Are we opening a (supposed) PUD? */
+   if (ecore_file_exists(pud_file)) /* NULL case is handled */
      {
-        // FIXME Test if file exists. If yes, load, else create
+        if (ecore_file_is_dir(pud_file))
+          {
+             CRI("You wanted to open a directory! Please select a file");
+             goto err_win_del;
+          }
+        open_pud = EINA_TRUE;
+     }
+
+   if (open_pud)
+     {
         INF("Opening editor for file %s", pud_file);
-        ed->pud = pud_open(pud_file, PUD_OPEN_MODE_R); // XXX mode
+        ed->pud = pud_open(pud_file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
         if (EINA_UNLIKELY(!ed->pud))
           {
              CRI("Failed to open pud \"%s\"", pud_file);
@@ -209,18 +215,24 @@ editor_new(const char *pud_file)
           }
         editor_finalize(ed);
         editor_reload(ed);
+        snprintf(title, sizeof(title), "%s", pud_file);
      }
    else
      {
         /* Create PUD file */
-        ed->pud = pud_new();
+        ed->pud = pud_open_new(pud_file);
         if (EINA_UNLIKELY(!ed->pud))
           {
              CRI("Failed to create generic PUD file");
              goto err_win_del;
           }
+
+        snprintf(title, sizeof(title), "Untitled - %u", _eds++);
         mainconfig_show(ed);
      }
+
+   /* Set window's title */
+   editor_name_set(ed, title);
 
    return ed;
 
@@ -396,5 +408,15 @@ editor_finalize(Editor * restrict ed)
    texture_tileset_open(ed->pud->era);
    sprite_buildings_open(ed->pud->era);
    bitmap_add(ed);
+}
+
+void
+editor_name_set(Editor * restrict  ed,
+                const char        *name)
+{
+   EINA_SAFETY_ON_NULL_RETURN(ed);
+   EINA_SAFETY_ON_NULL_RETURN(name);
+
+   elm_win_title_set(ed->win, name);
 }
 
