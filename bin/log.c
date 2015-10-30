@@ -1,3 +1,9 @@
+/*
+ * log.c
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #include "war2edit.h"
 
 int _war2edit_log_dom = -1;

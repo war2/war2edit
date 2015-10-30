@@ -1,3 +1,9 @@
+/*
+ * sprite.c
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #include "war2edit.h"
 
 static Eet_File *_units_ef = NULL;

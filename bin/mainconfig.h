@@ -1,3 +1,9 @@
+/*
+ * mainconfig.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _MAINCONFIG_H_
 #define _MAINCONFIG_H_
 

@@ -1,3 +1,9 @@
+/*
+ * texture.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 

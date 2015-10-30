@@ -1,3 +1,9 @@
+/*
+ * log.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _LOG_H_
 #define _LOG_H_
 

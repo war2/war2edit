@@ -1,3 +1,9 @@
+/*
+ * bitmap.c
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #include "war2edit.h"
 
 #define UNIT_BELOW (1 << 0)

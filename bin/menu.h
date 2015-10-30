@@ -1,3 +1,9 @@
+/*
+ * menu.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _MENU_H_
 #define _MENU_H_
 

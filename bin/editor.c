@@ -1,3 +1,9 @@
+/*
+ * editor.c
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #include "war2edit.h"
 
 static Eina_List *_editors = NULL;

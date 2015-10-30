@@ -1,3 +1,9 @@
+/*
+ * bitmap.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _GRID_H_
 #define _GRID_H_
 

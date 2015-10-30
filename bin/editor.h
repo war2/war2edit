@@ -1,3 +1,9 @@
+/*
+ * editor.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 

@@ -1,3 +1,9 @@
+/*
+ * cell.h
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
 #ifndef _CELL_H_
 #define _CELL_H_
 
