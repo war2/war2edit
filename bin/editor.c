@@ -223,7 +223,7 @@ editor_new(const char *pud_file)
    else
      {
         /* Create PUD file */
-        ed->pud = pud_open_new(pud_file);
+        ed->pud = pud_open_new(pud_file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
         if (EINA_UNLIKELY(!ed->pud))
           {
              CRI("Failed to create generic PUD file");
