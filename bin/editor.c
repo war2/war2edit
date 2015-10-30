@@ -207,14 +207,11 @@ editor_new(const char *pud_file)
    if (open_pud)
      {
         INF("Opening editor for file %s", pud_file);
-        ed->pud = pud_open(pud_file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
-        if (EINA_UNLIKELY(!ed->pud))
+        if (!editor_load(ed, pud_file))
           {
-             CRI("Failed to open pud \"%s\"", pud_file);
+             CRI("Failed to load editor");
              goto err_win_del;
           }
-        editor_finalize(ed);
-        editor_reload(ed);
         snprintf(title, sizeof(title), "%s", pud_file);
      }
    else
@@ -336,42 +333,43 @@ panic:
    return EINA_FALSE;
 }
 
-// FIXME editor_load() <-> editor_reload() ?
 Eina_Bool
-editor_load(Editor * restrict ed,
-            const char *      file)
+editor_load(Editor * restrict  ed,
+            const char        *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
-   ed->pud = pud_open(file, PUD_OPEN_MODE_R);
-   if (EINA_UNLIKELY(!ed->pud))
-     {
-        ERR("Failed to load editor from file \"%s\"", file);
-        goto fail;
-     }
-
-   return EINA_TRUE;
-
-fail:
-   return EINA_FALSE;
-}
-
-void
-editor_reload(Editor *ed)
-{
-   EINA_SAFETY_ON_NULL_RETURN(ed);
-
-   INF("Editor reload");
+   INF("Editor load");
    unsigned int i, j, sw, sh;
-   const Pud *pud = ed->pud;
+   const Pud *pud;
    struct _Pud_Unit *u;
 
-   if (EINA_UNLIKELY(!pud))
+   if (file)
      {
-        ERR("Attempt to reload an editor, but no pud was attached");
-        return;
+        if (ed->pud) pud_close(ed->pud);
+         ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
+         if (EINA_UNLIKELY(!ed->pud))
+           {
+              ERR("Failed to load editor from file \"%s\"", file);
+              return EINA_FALSE;
+           }
      }
+   else
+     {
+        if (EINA_UNLIKELY(!ed->pud))
+          {
+             CRI("Loading pud without filename and no initialized PUD");
+             return EINA_FALSE;
+          }
+     }
+
+   pud = ed->pud;
+
+   texture_tileset_open(pud->era);
+   sprite_buildings_open(pud->era);
+
+   if (!ed->bitmap)
+     bitmap_add(ed);
 
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)
@@ -386,6 +384,8 @@ editor_reload(Editor *ed)
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
+
+   return EINA_TRUE;
 }
 
 unsigned char *
@@ -397,14 +397,6 @@ editor_texture_tile_access(const Editor * restrict ed,
 
    key = ed->cells[y][x].tile;
    return texture_get(key, ed->pud->era, NULL);
-}
-
-void
-editor_finalize(Editor * restrict ed)
-{
-   texture_tileset_open(ed->pud->era);
-   sprite_buildings_open(ed->pud->era);
-   bitmap_add(ed);
 }
 
 void

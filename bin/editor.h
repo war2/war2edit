@@ -85,11 +85,9 @@ void editor_shutdown(void);
 
 void editor_free(Editor *ed);
 Editor *editor_new(const char *pud_file);
-void editor_finalize(Editor * restrict ed);
 Eina_Bool editor_load(Editor * restrict ed, const char *file);
 Eina_Bool editor_save(Editor * restrict ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
-void editor_reload(Editor *ed);
 unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
 void editor_name_set(Editor * restrict ed, const char *name);
 
