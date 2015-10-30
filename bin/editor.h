@@ -53,8 +53,6 @@ struct _Editor
    Evas_Object  *fs; /* File selector */
    Evas_Object  *bitmap;
 
-   Evas_Point bitmap_origin;
-
    Cell        **cells;
 
    /* === Toolbar === */
