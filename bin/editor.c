@@ -269,8 +269,8 @@ editor_save(Editor * restrict ed,
      }
 
    /* Set units count and allocate units */
-   ed->pud->units = realloc(ed->pud->units, ed->pud->units_count * sizeof((*ed->pud->units)));
-   if (EINA_UNLIKELY(ed->pud->units == NULL))
+   pud->units = realloc(pud->units, pud->units_count * sizeof((*pud->units)));
+   if (EINA_UNLIKELY(pud->units == NULL))
      {
         CRI("Failed to allocate memory!!");
         goto panic;
@@ -280,23 +280,23 @@ editor_save(Editor * restrict ed,
    for (x = 0; x < 8; x++)
      {
         if (ed->start_locations[x].x >= 0)
-          ed->pud->starting_points++;
-        ed->pud->side.players[x] = ed->sides[x];
+          pud->starting_points++;
+        pud->side.players[x] = ed->sides[x];
      }
    /* FIXME This is by default. Needs to be implemented */
-   ed->pud->human_players = 1;
-   ed->pud->computer_players = 1;
+   pud->human_players = 1;
+   pud->computer_players = 1;
 
 
-   for (y = 0; y < ed->pud->map_h; y++)
+   for (y = 0; y < pud->map_h; y++)
      {
-        for (x = 0; x < ed->pud->map_w; x++)
+        for (x = 0; x < pud->map_w; x++)
           {
              c = ed->cells[y][x];
 
              if (c.unit_below != PUD_UNIT_NONE)
                {
-                  u = &(ed->pud->units[k++]);
+                  u = &(pud->units[k++]);
                   u->x = x;
                   u->y = y;
                   u->type = c.unit_below;
@@ -305,7 +305,7 @@ editor_save(Editor * restrict ed,
                }
              if (c.unit_above != PUD_UNIT_NONE)
                {
-                  u = &(ed->pud->units[k++]);
+                  u = &(pud->units[k++]);
                   u->x = x;
                   u->y = y;
                   u->type = c.unit_above;
@@ -313,17 +313,17 @@ editor_save(Editor * restrict ed,
                   u->alter = c.alter;
                }
              // FIXME c.tile is wrong // XXX Whu wrong?
-             pud_tile_set(ed->pud, x, y, c.tile);
+             pud_tile_set(pud, x, y, c.tile);
           }
      }
 
-   if (!pud_check(ed->pud))
+   if (!pud_check(pud))
      {
         CRI("Pud is not valid.");
         return EINA_FALSE;
      }
 
-   chk = pud_write(ed->pud);
+   chk = pud_write(pud);
    if (EINA_UNLIKELY(chk == EINA_FALSE))
      {
         CRI("Failed to save pud!!");
@@ -336,6 +336,7 @@ panic:
    return EINA_FALSE;
 }
 
+// FIXME editor_load() <-> editor_reload() ?
 Eina_Bool
 editor_load(Editor * restrict ed,
             const char *      file)
@@ -385,12 +386,6 @@ editor_reload(Editor *ed)
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
-
-   /* TODO
-    *
-    * foreach (pud->tiles_map)
-    * foreach (pud->units)
-    */
 }
 
 unsigned char *
