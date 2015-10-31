@@ -191,6 +191,10 @@ _hovered_cb(void        *data,
    int x, y;
    unsigned int cw, ch;
 
+   /* Disabled by elm_bitmap: don't even bother to set the cursor status */
+   if (!elm_bitmap_cursor_enabled_get(ed->bitmap))
+     return;
+
    x = ev->cell_x;
    y = ev->cell_y;
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
