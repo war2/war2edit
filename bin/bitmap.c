@@ -346,9 +346,8 @@ bitmap_unit_set(Editor *restrict ed,
    sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
    EINA_SAFETY_ON_NULL_RETURN(sprite);
 
-   at_x = (x * TEXTURE_WIDTH) + ((w * TEXTURE_WIDTH) - sw) / 2;
-   at_y = (y * TEXTURE_HEIGHT) + ((h * TEXTURE_HEIGHT) - sh) / 2;
-
+   at_x = (x * TEXTURE_WIDTH) + (int)((w * TEXTURE_WIDTH) - sw) / 2;
+   at_y = (y * TEXTURE_HEIGHT) + (int)((h * TEXTURE_HEIGHT) - sh) / 2;
 
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
 
