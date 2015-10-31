@@ -73,7 +73,7 @@ _bitmap_draw_func(void                 *data,
      }
 }
 
-static void
+static inline void
 _draw(Editor *ed,
       unsigned char *restrict img,
       int                     at_x,
@@ -116,7 +116,7 @@ _click_handle(Editor *ed,
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
                   // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
-                  if (ed->pud->units_count > 0) ed->pud->units_count++;
+                  //if (ed->pud->units_count > 0) ed->pud->units_count++;
                }
 
              ed->start_locations[ed->sel_player].x = x;
@@ -128,10 +128,10 @@ _click_handle(Editor *ed,
 
         // FIXME cast --- change stuff in elm_bitmap
         elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&w), (int*)(&h));
+        editor_unit_ref(ed);
         bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
                          orient, x, y, w, h,
                          editor_alter_defaults_get(ed, ed->sel_unit));
-        ed->pud->units_count++;
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
    else if (ed->action != EDITOR_ACTION_NONE)
@@ -140,27 +140,34 @@ _click_handle(Editor *ed,
 }
 
 static Eina_Bool
-_unit_below_cursor_is(Cell          **cells,
-                      int             x,
-                      int             y,
-                      int             cw,
-                      int             ch,
-                      unsigned char   types)
+_unit_below_cursor_is(const Editor *restrict ed,
+                      int                    x,
+                      int                    y,
+                      unsigned int           cw,
+                      unsigned int           ch,
+                      unsigned char          types)
 {
-   int i, j;
+   unsigned int i, j;
+   const Cell *c;
+   const Pud *pud = ed->pud;
 
    for (j = y; j < y + ch; ++j)
      {
         for (i = x; i < x + cw; ++i)
           {
+             /* Prevent for accessing invalid memory */
+             if ((i >= pud->map_w) || (j >= (pud->map_h)))
+               return EINA_FALSE;
+
+             c = &(ed->cells[j][i]);
              if (types & UNIT_BELOW)
                {
-                  if (cells[j][i].unit_below != PUD_UNIT_NONE)
+                  if (c->unit_below != PUD_UNIT_NONE)
                     return EINA_TRUE;
                }
              if (types & UNIT_ABOVE)
                {
-                  if (cells[j][i].unit_above != PUD_UNIT_NONE)
+                  if (c->unit_above != PUD_UNIT_NONE)
                     return EINA_TRUE;
                }
           }
@@ -181,11 +188,12 @@ _hovered_cb(void        *data,
    Editor *ed = data;
    Elm_Bitmap_Event_Hovered *ev = info;
    Cell c;
-   int x, y, cw, ch;
+   int x, y;
+   unsigned int cw, ch;
 
    x = ev->cell_x;
    y = ev->cell_y;
-   elm_bitmap_cursor_size_get(ed->bitmap, &cw, &ch);
+   elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
    c = ed->cells[y][x];
 
@@ -200,7 +208,7 @@ _hovered_cb(void        *data,
         else
           {
              /* Don't collide with another unit */
-             if (_unit_below_cursor_is(ed->cells, x, y, cw, ch, UNIT_ABOVE))
+             if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_ABOVE))
                elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
              else
                elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
@@ -212,7 +220,7 @@ _hovered_cb(void        *data,
         if (pud_unit_flying_is(ed->sel_unit))
           {
              /* Don't collide with another unit */
-             if (_unit_below_cursor_is(ed->cells, x, y, cw, ch, UNIT_ABOVE))
+             if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_ABOVE))
                elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
              else
                elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
@@ -224,7 +232,7 @@ _hovered_cb(void        *data,
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
                        /* Don't collide with another unit */
-                       if (_unit_below_cursor_is(ed->cells, x, y, cw, ch, UNIT_BELOW))
+                       if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
                          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                        else
                          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
@@ -238,7 +246,7 @@ _hovered_cb(void        *data,
                     elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                   else
                     {
-                       if (_unit_below_cursor_is(ed->cells, x, y, cw, ch, UNIT_BELOW))
+                       if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
                          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                        else
                          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
