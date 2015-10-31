@@ -69,6 +69,11 @@ struct _Editor
       Evas_Object *action[8];
    } tb;
 
+   struct {
+      Evas_Object *win;
+      Evas_Object *map;
+   } minimap;
+
    /* === Mainconfig === */
    // FIXME Dynamic? Overhead when starting the config, but
    // less memory used throughout the whole program....

@@ -33,6 +33,7 @@ typedef struct _Texture_Dictionary Texture_Dictionary;
 #include "sprite.h"
 #include "bitmap.h"
 #include "editor.h"
+#include "minimap.h"
 
 #endif /* ! _WAR2EDIT_H_ */
 

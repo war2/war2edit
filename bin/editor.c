@@ -62,6 +62,7 @@ editor_free(Editor *ed)
    cell_matrix_free(ed->cells);
    pud_close(ed->pud);
    evas_object_del(ed->win);
+   evas_object_del(ed->minimap.win);
    free(ed);
 }
 
@@ -411,6 +412,8 @@ editor_load(Editor * restrict  ed,
 
    if (!ed->bitmap)
      bitmap_add(ed);
+
+   minimap_add(ed);
 
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)
