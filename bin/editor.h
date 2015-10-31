@@ -55,13 +55,19 @@ struct _Editor
 
    Cell        **cells;
 
-   /* === Toolbar === */
+   /* === Toolbar === */ // FIXME duplicates... does caching this worth it?
    Editor_Action action;
    Editor_Spread spread;
    Editor_Radius radius;
    Editor_Tint   tint;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
+   struct {
+      Evas_Object *tint[2];
+      Evas_Object *spread[3];
+      Evas_Object *radius[3];
+      Evas_Object *action[8];
+   } tb;
 
    /* === Mainconfig === */
    // FIXME Dynamic? Overhead when starting the config, but
