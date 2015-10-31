@@ -336,6 +336,9 @@ bitmap_unit_set(Editor *restrict ed,
    unsigned int sw, sh;
    unsigned int i, j;
    Eina_Bool flip;
+   Eina_Bool flying;
+   const unsigned int map_w = ed->pud->map_w;
+   const unsigned int map_h = ed->pud->map_h;
 
    /* Don't draw */
    if (unit == PUD_UNIT_NONE) return;
@@ -349,12 +352,15 @@ bitmap_unit_set(Editor *restrict ed,
 
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
 
-   /* Bitfields, cannot take addresses to shorten that */
-   if (pud_unit_flying_is(unit))
+   flying = pud_unit_flying_is(unit);
+   for (j = y; j < y + h; ++j)
      {
-        for (j = y; j < y + h; ++j)
+        for (i = x; i < x + w; ++i)
           {
-             for (i = x; i < x + w; ++i)
+             if ((i >= map_w) || (j >= map_h))
+               break;
+
+             if (flying)
                {
                   ed->cells[j][i].unit_above = unit;
                   ed->cells[j][i].orient_above = orient;
@@ -362,14 +368,7 @@ bitmap_unit_set(Editor *restrict ed,
                   ed->cells[j][i].anchor_above = 0;
                   ed->cells[j][i].alter = alter;
                }
-          }
-        ed->cells[y][x].anchor_above = 1;
-     }
-   else
-     {
-        for (j = y; j < y + h; ++j)
-          {
-             for (i = x; i < x + w; ++i)
+             else
                {
                   ed->cells[j][i].unit_below = unit;
                   ed->cells[j][i].orient_below = orient;
@@ -378,8 +377,11 @@ bitmap_unit_set(Editor *restrict ed,
                   ed->cells[j][i].alter = alter;
                }
           }
-        ed->cells[y][x].anchor_below = 1;
      }
+   if (flying)
+     ed->cells[y][x].anchor_above = 1;
+   else
+     ed->cells[y][x].anchor_below = 1;
 }
 
 Eina_Bool
