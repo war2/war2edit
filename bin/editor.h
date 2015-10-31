@@ -75,12 +75,10 @@ struct _Editor
 
    Evas_Object *radio_units_reset;
 
-
    /* === PUD specific === */
-   // FIXME tooooooooo many duplicates!!!!!!
-   Pud             *pud;
-   uint8_t          sides[8]; /* Orc, Human */
-   Evas_Point start_locations[8];
+   Pud        *pud;
+   uint8_t     sides[8]; /* Orc, Human */
+   Evas_Point  start_locations[8];
 
 };
 
@@ -94,10 +92,12 @@ Eina_Bool editor_save(Editor * restrict ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
 unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
 void editor_name_set(Editor * restrict ed, const char *name);
-
+Eina_Bool editor_unit_ref(Editor * restrict ed);
+Eina_Bool editor_unit_unref(Editor * restrict ed);
 uint16_t
 editor_alter_defaults_get(const Editor * restrict ed,
                           const Pud_Unit          unit);
+Eina_Bool editor_sync(Editor * restrict ed);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \

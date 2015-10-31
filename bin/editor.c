@@ -255,29 +255,8 @@ editor_save(Editor * restrict ed,
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
    Eina_Bool chk;
-   unsigned int x, y, k = 0;
-   struct _Pud_Unit *u;
-   Cell c;
+   unsigned int x;
    Pud *pud = ed->pud; /* Save indirections... */
-
-   if (strcmp(pud->filename, file) != 0)
-     {
-        free(pud->filename);
-        pud->filename = strdup(file);
-        if (!pud->filename)
-          {
-             CRI("Failed to strdup(\"%s\")", pud->filename);
-             goto panic;
-          }
-     }
-
-   /* Set units count and allocate units */
-   pud->units = realloc(pud->units, pud->units_count * sizeof((*pud->units)));
-   if (EINA_UNLIKELY(pud->units == NULL))
-     {
-        CRI("Failed to allocate memory!!");
-        goto panic;
-     }
 
    // XXX owner ?
    for (x = 0; x < 8; x++)
@@ -290,43 +269,34 @@ editor_save(Editor * restrict ed,
    pud->human_players = 1;
    pud->computer_players = 1;
 
-
-   for (y = 0; y < pud->map_h; y++)
+   /* Sync the hot changes to the Pud structure */
+   if (EINA_UNLIKELY(!editor_sync(ed)))
      {
-        for (x = 0; x < pud->map_w; x++)
-          {
-             c = ed->cells[y][x];
-
-             if (c.unit_below != PUD_UNIT_NONE)
-               {
-                  u = &(pud->units[k++]);
-                  u->x = x;
-                  u->y = y;
-                  u->type = c.unit_below;
-                  u->owner = c.player_below;
-                  u->alter = c.alter;
-               }
-             if (c.unit_above != PUD_UNIT_NONE)
-               {
-                  u = &(pud->units[k++]);
-                  u->x = x;
-                  u->y = y;
-                  u->type = c.unit_above;
-                  u->owner = c.player_above;
-                  u->alter = c.alter;
-               }
-             // FIXME c.tile is wrong // XXX Whu wrong?
-             pud_tile_set(pud, x, y, c.tile);
-          }
+        CRI("Failed to sync edtor");
+        return EINA_FALSE;
      }
 
+   /* Verify it is ok */
    if (!pud_check(pud))
      {
         CRI("Pud is not valid.");
         return EINA_FALSE;
      }
 
-   chk = pud_write(pud);
+   /* Attribute a filename to the pud itself if none where attributed
+    * before */
+   if (!pud->filename)
+     {
+        pud->filename = strdup(file);
+        if (!pud->filename)
+          {
+             CRI("Failed to strdup(\"%s\")", pud->filename);
+             goto panic;
+          }
+     }
+
+   /* Write the PUD to disk */
+   chk = pud_write(pud, file);
    if (EINA_UNLIKELY(chk == EINA_FALSE))
      {
         CRI("Failed to save pud!!");
@@ -337,6 +307,71 @@ editor_save(Editor * restrict ed,
 
 panic:
    return EINA_FALSE;
+}
+
+Eina_Bool
+editor_sync(Editor * restrict ed)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed->pud, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
+
+   /*
+    * Syncs from the ed->cell to the ed->pud
+    * This function can be called by an Ecore_Timer for instance,
+    * to make regular auto-saves of the Pud
+    */
+
+   unsigned int x, y, k, i;
+   Pud *pud = ed->pud;
+   Cell **cells = ed->cells;
+   Cell c;
+   struct _Pud_Unit *u;
+   void *tmp;
+
+   /* We never known th exact amount of units because they are modified
+    * on the fly. Here, we stop edition to sync */
+   tmp = realloc(pud->units, pud->units_count * sizeof(struct _Pud_Unit));
+   if (EINA_UNLIKELY(!tmp))
+     {
+        CRI("Failed to realloc(%u) units", pud->units_count);
+        return EINA_FALSE;
+     }
+   else
+     pud->units = tmp;
+   
+   for (k = 0, i = 0, y = 0; y < pud->map_h; ++y)
+     {
+        for (x = 0; x < pud->map_w; ++x)
+          {
+             c = cells[y][x];
+
+             if (c.unit_below != PUD_UNIT_NONE)
+               {
+                  u = &(pud->units[i++]);
+                  u->x = x;
+                  u->y = y;
+                  u->type = c.unit_below;
+                  u->owner = c.player_below;
+                  u->alter = c.alter;
+               }
+             if (c.unit_above != PUD_UNIT_NONE)
+               {
+                  u = &(pud->units[i++]);
+                  u->x = x;
+                  u->y = y;
+                  u->type = c.unit_above;
+                  u->owner = c.player_above;
+                  u->alter = c.alter;
+               }
+
+             /* I'm not using pud_tile_set() because I know what I'm doing,
+              * and this function if much less performant... */
+             pud->tiles_map[k++] = c.tile;
+          }
+     }
+
+   return EINA_TRUE;
 }
 
 Eina_Bool
@@ -391,6 +426,28 @@ editor_load(Editor * restrict  ed,
                         u->alter);
      }
 
+   return EINA_TRUE;
+}
+
+Eina_Bool
+editor_unit_ref(Editor * restrict ed)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   if (ed->pud->units_count >= UINT16_MAX)
+     return EINA_FALSE;
+
+   ed->pud->units_count++;
+   return EINA_TRUE;
+}
+
+Eina_Bool
+editor_unit_unref(Editor * restrict ed)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   if (ed->pud->units_count <= 0)
+     return EINA_FALSE;
+
+   ed->pud->units_count--;
    return EINA_TRUE;
 }
 
