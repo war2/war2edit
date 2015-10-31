@@ -316,8 +316,6 @@ sprite_tile_size_get(Pud_Unit      unit,
       case PUD_UNIT_HUMAN_TRANSPORT:
       case PUD_UNIT_CIRCLE_OF_POWER:
       case PUD_UNIT_RUNESTONE:
-      case PUD_UNIT_BALLISTA:
-      case PUD_UNIT_CATAPULT:
          w = 2;
          h = 2;
          break;
