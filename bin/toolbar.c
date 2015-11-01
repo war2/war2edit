@@ -49,6 +49,13 @@ _click_cb(void        *data,
 
    *(sd->bind) = sd->val;
 
+   if ((sd->type == ACTION) && (sd->val == EDITOR_ACTION_SELECTION))
+     {
+        elm_bitmap_cursor_visibility_set(sd->ed->bitmap, EINA_FALSE);
+     }
+   else
+     elm_bitmap_cursor_visibility_set(sd->ed->bitmap, EINA_TRUE);
+
    // TODO Reset stuff
    /* Safely unset the unit selection */
    menu_unit_selection_reset(sd->ed);
@@ -110,7 +117,10 @@ _btn_add(Editor       *ed,
    data = _btn_data_new(bind, value, ed, type);
    EINA_SAFETY_ON_NULL_RETURN_VAL(data, NULL);
 
-   elm_object_text_set(o, "X"); // FIXME for now... because my icons are too big
+   if (type == ACTION && value == EDITOR_ACTION_SELECTION)
+     elm_object_text_set(o, "O"); // FIXME for now... because my icons are too big
+   else
+     elm_object_text_set(o, "x"); // FIXME for now... because my icons are too big
    //elm_object_part_content_set(o, "icon", icon);
    evas_object_smart_callback_add(o, "clicked", _click_cb, data);
    evas_object_event_callback_add(o, EVAS_CALLBACK_DEL, _btn_free_cb, data);
