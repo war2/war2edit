@@ -82,8 +82,7 @@ minimap_add(Editor *ed)
    evas_object_image_size_set(o, ed->minimap.w, ed->minimap.h);
    evas_object_image_data_set(o, ed->minimap.data[0]);
 
-   evas_object_image_data_update_add(ed->minimap.map, 0, 0,
-                                     ed->minimap.w, ed->minimap.h);
+   minimap_render(ed, 0, 0, ed->minimap.w, ed->minimap.h);
 
    return EINA_TRUE;
 
