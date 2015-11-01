@@ -15,6 +15,7 @@ minimap_add(Editor *ed)
    unsigned int w = ed->pud->map_w;
    const unsigned int h = ed->pud->map_h;
    unsigned int i;
+   int winx, winy, winw;
 
    win = ed->minimap.win = elm_win_add(ed->win, "Minimap", ELM_WIN_UTILITY);
    evas_object_show(win);
@@ -53,6 +54,9 @@ minimap_add(Editor *ed)
    evas_object_resize(win, ed->minimap.w, ed->minimap.h);
    evas_object_size_hint_max_set(win, ed->minimap.w, ed->minimap.h);
    evas_object_size_hint_min_set(win, ed->minimap.w, ed->minimap.h);
+
+   evas_object_geometry_get(ed->win, &winx, &winy, &winw, NULL);
+   evas_object_move(win, winx + winw - ed->minimap.w, winy);
 
    /* Colorspace width */
    w = ed->minimap.w * 4;
