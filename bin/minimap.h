@@ -17,5 +17,11 @@ minimap_render(const Editor *restrict ed,
                unsigned int           w,
                unsigned int           h);
 
+void
+minimap_render_unit(const Editor *restrict ed,
+                    unsigned int           x,
+                    unsigned int           y,
+                    Pud_Unit               u);
+
 #endif /* ! _MINIMAP_H_ */
 

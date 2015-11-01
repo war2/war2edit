@@ -184,3 +184,13 @@ minimap_render(const Editor *restrict ed,
                                      h * ed->minimap.h);
 }
 
+void
+minimap_render_unit(const Editor *restrict ed,
+                    unsigned int           x,
+                    unsigned int           y,
+                    Pud_Unit               u)
+{
+   minimap_render(ed, x, y, ed->pud->unit_data[u].size_w,
+                  ed->pud->unit_data[u].size_h);
+}
+

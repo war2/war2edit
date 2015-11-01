@@ -132,6 +132,7 @@ _click_handle(Editor *ed,
         bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
                          orient, x, y, w, h,
                          editor_alter_defaults_get(ed, ed->sel_unit));
+        minimap_render_unit(ed, x, y, ed->sel_unit);
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
    else if (ed->action != EDITOR_ACTION_NONE)
