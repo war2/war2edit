@@ -149,7 +149,7 @@ minimap_update(Editor *restrict ed,
    /* Format ARGB8888: each pixel is 4 bytes long */
    px = x * ed->minimap.ratio * 4;
    py = y * ed->minimap.ratio;
-   rx = px + ed->minimap.ratio + (w * 4 * ed->minimap.ratio);
+   rx = px + (ed->minimap.ratio * 4) + (w * 4 * ed->minimap.ratio);
    ry = py + ed->minimap.ratio + (h * ed->minimap.ratio);
 
    for (j = py; j < ry; ++j)
