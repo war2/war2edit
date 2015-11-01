@@ -157,22 +157,24 @@ sprite_get(Pud_Unit       unit,
                    break;
                }
 
-             if ((unit == PUD_UNIT_GNOMISH_SUBMARINE) ||
-                 (unit == PUD_UNIT_GIANT_TURTLE))
+             switch (unit)
                {
-                  snprintf(key, sizeof(key), "%s/%s/%i",
-                           pud_unit2str(unit), pud_era2str(era), orient);
-               }
-             else if ((unit == PUD_UNIT_HUMAN_START) ||
-                      (unit == PUD_UNIT_ORC_START))
-               {
-                  snprintf(key, sizeof(key), "%s/0",
-                           pud_unit2str(unit));
-               }
-             else
-               {
-                  snprintf(key, sizeof(key), "%s/%i",
-                           pud_unit2str(unit), orient);
+                case PUD_UNIT_GNOMISH_SUBMARINE:
+                case PUD_UNIT_GIANT_TURTLE:
+                case PUD_UNIT_CRITTER:
+                   snprintf(key, sizeof(key), "%s/%s/%i",
+                            pud_unit2str(unit), pud_era2str(era), orient);
+                   break;
+
+                case PUD_UNIT_HUMAN_START:
+                case PUD_UNIT_ORC_START:
+                   snprintf(key, sizeof(key), "%s/0", pud_unit2str(unit));
+                   break;
+
+                default:
+                   snprintf(key, sizeof(key), "%s/%i",
+                            pud_unit2str(unit), orient);
+                   break;
                }
           }
         else
