@@ -72,6 +72,7 @@ struct _Editor
    struct {
       Evas_Object    *win;
       Evas_Object    *map;
+      Evas_Object    *rect;
       unsigned char **data;
       unsigned int    ratio;
       unsigned int    w;
@@ -113,6 +114,7 @@ uint16_t
 editor_alter_defaults_get(const Editor * restrict ed,
                           const Pud_Unit          unit);
 Eina_Bool editor_sync(Editor * restrict ed);
+void editor_view_update(Editor *restrict ed);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \

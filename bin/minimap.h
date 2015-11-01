@@ -23,5 +23,12 @@ minimap_render_unit(const Editor *restrict ed,
                     unsigned int           y,
                     Pud_Unit               u);
 
+void
+minimap_view_move(Editor *restrict ed,
+                  int              x,
+                  int              y);
+
+void minimap_view_resize(Editor *restrict ed, unsigned int w, unsigned int h);
+
 #endif /* ! _MINIMAP_H_ */
 

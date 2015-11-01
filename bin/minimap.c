@@ -6,6 +6,33 @@
 
 #include "war2edit.h"
 
+static void
+_mouse_down_cb(void        *data,
+               Evas        *e    EINA_UNUSED,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info)
+{
+   Editor *ed = data;
+   Evas_Event_Mouse_Down *down = info;
+
+   minimap_view_move(ed, down->output.x, down->output.y);
+}
+
+static void
+_mouse_move_cb(void        *data,
+               Evas        *e    EINA_UNUSED,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info)
+{
+   Editor *ed = data;
+   Evas_Event_Mouse_Move *move = info;
+
+   if (move->buttons & 1)
+      minimap_view_move(ed, move->cur.output.x, move->cur.output.y);
+}
+
+
+
 Eina_Bool
 minimap_add(Editor *ed)
 {
@@ -58,6 +85,13 @@ minimap_add(Editor *ed)
    evas_object_geometry_get(ed->win, &winx, &winy, &winw, NULL);
    evas_object_move(win, winx + winw - ed->minimap.w, winy);
 
+   /* Current view mask */
+   ed->minimap.rect = evas_object_rectangle_add(evas_object_evas_get(ed->minimap.win));
+   evas_object_color_set(ed->minimap.rect, 100, 100, 100, 100);
+   evas_object_resize(ed->minimap.rect, 1, 1);
+   evas_object_move(ed->minimap.rect, 0, 0);
+   evas_object_show(ed->minimap.rect);
+
    /* Colorspace width */
    w = ed->minimap.w * 4;
 
@@ -83,6 +117,11 @@ minimap_add(Editor *ed)
    evas_object_image_data_set(o, ed->minimap.data[0]);
 
    minimap_render(ed, 0, 0, ed->minimap.w, ed->minimap.h);
+
+   evas_object_event_callback_add(ed->minimap.map, EVAS_CALLBACK_MOUSE_DOWN,
+                                  _mouse_down_cb, ed);
+   evas_object_event_callback_add(ed->minimap.map, EVAS_CALLBACK_MOUSE_MOVE,
+                                  _mouse_move_cb, ed);
 
    return EINA_TRUE;
 
@@ -195,5 +234,33 @@ minimap_render_unit(const Editor *restrict ed,
 {
    minimap_render(ed, x, y, ed->pud->unit_data[u].size_w,
                   ed->pud->unit_data[u].size_h);
+}
+
+void
+minimap_view_move(Editor *restrict ed,
+                  int              x,
+                  int              y)
+{
+   int rw, rh;
+
+   evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
+
+   if (x < 0) x = 0;
+   if (y < 0) y = 0;
+   if (x + rw > (int)ed->minimap.w) x = ed->minimap.w - rw;
+   if (y + rh > (int)ed->minimap.h) y = ed->minimap.h - rh;
+
+   evas_object_move(ed->minimap.rect, x, y);
+}
+
+void
+minimap_view_resize(Editor *restrict ed,
+                    unsigned int     w,
+                    unsigned int     h)
+{
+   w *= ed->minimap.ratio;
+   h *= ed->minimap.ratio;
+
+   evas_object_resize(ed->minimap.rect, w, h);
 }
 

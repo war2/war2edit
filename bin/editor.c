@@ -33,6 +33,23 @@ _error_close_cb(void        *data,
    editor_free(ed);
 }
 
+static void
+_win_resize_cb(void        *data,
+               Evas        *e    EINA_UNUSED,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info EINA_UNUSED)
+{
+   editor_view_update(data);
+}
+
+static void
+_scroll_cb(void        *data,
+           Evas_Object *obj  EINA_UNUSED,
+           void        *info EINA_UNUSED)
+{
+   editor_view_update(data);
+}
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -143,6 +160,8 @@ editor_new(const char *pud_file)
    EINA_SAFETY_ON_NULL_GOTO(ed->win, err_free);
    elm_win_focus_highlight_enabled_set(ed->win, EINA_FALSE);
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
+   evas_object_event_callback_add(ed->win, EVAS_CALLBACK_RESIZE,
+                                  _win_resize_cb, ed);
    evas_object_resize(ed->win, 640, 480);
 
    /* File selector */
@@ -181,6 +200,7 @@ editor_new(const char *pud_file)
    EINA_SAFETY_ON_NULL_GOTO(ed->scroller, err_win_del);
    evas_object_size_hint_weight_set(ed->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
 
@@ -429,6 +449,7 @@ editor_load(Editor * restrict  ed,
                         u->alter);
      }
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
+   editor_view_update(ed);
 
    return EINA_TRUE;
 }
@@ -493,6 +514,31 @@ editor_alter_defaults_get(const Editor * restrict ed,
      }
    else
      return 1;
+}
+
+void
+editor_view_update(Editor *restrict ed)
+{
+   int rx, ry, rw, rh;
+   int cx, cy, cw, ch;
+   int cell_w, cell_h;
+
+   eo_do(
+      ed->scroller,
+      elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
+   );
+
+   eo_do(
+      ed->bitmap,
+      elm_obj_bitmap_abs_coords_to_cells(rx, ry, &cx, &cy),
+      elm_obj_bitmap_cell_size_get(&cell_w, &cell_h)
+   );
+
+   cw = rw / cell_w;
+   ch = rh / cell_h;
+
+   minimap_view_move(ed, cx, cy);
+   minimap_view_resize(ed, cw, ch);
 }
 
 
