@@ -119,7 +119,8 @@ minimap_update(Editor *restrict ed,
    Pud_Color col;
    unsigned char *ptr;
    unsigned int i, j;
-   unsigned ry, rx;
+   unsigned int ry, rx;
+   unsigned int w, h;
 
    if (c.unit_above != PUD_UNIT_NONE)
      {
@@ -133,15 +134,23 @@ minimap_update(Editor *restrict ed,
      }
 
    if (u == PUD_UNIT_NONE)
-     col = pud_tile_to_color(ed->pud->era, c.tile);
+     {
+        col = pud_tile_to_color(ed->pud->era, c.tile);
+        w = 0;
+        h = 0;
+     }
    else
-     col = pud_color_for_unit(u, player);
+     {
+        col = pud_color_for_unit(u, player);
+        w = ed->pud->unit_data[u].size_w - 1;
+        h = ed->pud->unit_data[u].size_h - 1;
+     }
 
    /* Format ARGB8888: each pixel is 4 bytes long */
    px = x * ed->minimap.ratio * 4;
    py = y * ed->minimap.ratio;
-   ry = py + ed->minimap.ratio;
-   rx = px + ed->minimap.ratio;
+   rx = px + ed->minimap.ratio + (w * 4 * ed->minimap.ratio);
+   ry = py + ed->minimap.ratio + (h * ed->minimap.ratio);
 
    for (j = py; j < ry; ++j)
      {
