@@ -102,7 +102,7 @@ minimap_add(Editor *ed)
         CRI("Failed to alloc memory");
         goto fail;
      }
-   INF("Pud tile: %i. Ratio is %u", ed->pud->tiles, ed->minimap.ratio);
+
    ed->minimap.data[0] = malloc(ed->minimap.w * ed->minimap.h * 4);
    if (EINA_UNLIKELY(!ed->minimap.data[0]))
      {
