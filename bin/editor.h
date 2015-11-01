@@ -70,8 +70,12 @@ struct _Editor
    } tb;
 
    struct {
-      Evas_Object *win;
-      Evas_Object *map;
+      Evas_Object    *win;
+      Evas_Object    *map;
+      unsigned char **data;
+      unsigned int    ratio;
+      unsigned int    w;
+      unsigned int    h;
    } minimap;
 
    /* === Mainconfig === */

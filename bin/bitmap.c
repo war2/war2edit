@@ -385,6 +385,8 @@ bitmap_unit_set(Editor *restrict ed,
      ed->cells[y][x].anchor_above = 1;
    else
      ed->cells[y][x].anchor_below = 1;
+
+   minimap_update(ed, x, y);
 }
 
 Eina_Bool
@@ -406,6 +408,8 @@ bitmap_tile_set(Editor * restrict ed,
    _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
          TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
    ed->cells[y][x].tile = key;
+
+   minimap_update(ed, x, y);
    return EINA_TRUE;
 }
 

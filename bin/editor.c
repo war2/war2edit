@@ -62,7 +62,7 @@ editor_free(Editor *ed)
    cell_matrix_free(ed->cells);
    pud_close(ed->pud);
    evas_object_del(ed->win);
-   evas_object_del(ed->minimap.win);
+   minimap_del(ed);
    free(ed);
 }
 
@@ -428,6 +428,7 @@ editor_load(Editor * restrict  ed,
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
+   minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
 
    return EINA_TRUE;
 }
