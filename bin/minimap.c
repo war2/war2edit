@@ -15,7 +15,7 @@ _mouse_down_cb(void        *data,
    Editor *ed = data;
    Evas_Event_Mouse_Down *down = info;
 
-   minimap_view_move(ed, down->output.x, down->output.y);
+   minimap_view_move(ed, down->output.x, down->output.y, EINA_TRUE);
 }
 
 static void
@@ -28,7 +28,7 @@ _mouse_move_cb(void        *data,
    Evas_Event_Mouse_Move *move = info;
 
    if (move->buttons & 1)
-      minimap_view_move(ed, move->cur.output.x, move->cur.output.y);
+     minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
 }
 
 
@@ -239,11 +239,18 @@ minimap_render_unit(const Editor *restrict ed,
 void
 minimap_view_move(Editor *restrict ed,
                   int              x,
-                  int              y)
+                  int              y,
+                  Eina_Bool        clicked)
 {
-   int rw, rh;
+   int bx, by, rw, rh, srw, srh, cx, cy;
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
+
+   if (clicked)
+     {
+        x -= rw / 2;
+        y -= rh / 2;
+     }
 
    if (x < 0) x = 0;
    if (y < 0) y = 0;
@@ -251,6 +258,19 @@ minimap_view_move(Editor *restrict ed,
    if (y + rh > (int)ed->minimap.h) y = ed->minimap.h - rh;
 
    evas_object_move(ed->minimap.rect, x, y);
+
+   if (clicked)
+     {
+        eo_do(
+           ed->scroller,
+           elm_interface_scrollable_content_region_get(NULL, NULL, &srw, &srh)
+        );
+
+        elm_bitmap_cell_size_get(ed->bitmap, &cx, &cy);
+        bx = x * cx / ed->minimap.ratio;
+        by = y * cy / ed->minimap.ratio;
+        elm_scroller_region_bring_in(ed->scroller, bx, by, srw, srh);
+     }
 }
 
 void

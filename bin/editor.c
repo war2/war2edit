@@ -537,8 +537,7 @@ editor_view_update(Editor *restrict ed)
    cw = rw / cell_w;
    ch = rh / cell_h;
 
-   minimap_view_move(ed, cx, cy);
+   minimap_view_move(ed, cx, cy, EINA_FALSE);
    minimap_view_resize(ed, cw, ch);
 }
-
 

@@ -26,7 +26,8 @@ minimap_render_unit(const Editor *restrict ed,
 void
 minimap_view_move(Editor *restrict ed,
                   int              x,
-                  int              y);
+                  int              y,
+                  Eina_Bool        clicked);
 
 void minimap_view_resize(Editor *restrict ed, unsigned int w, unsigned int h);
 
