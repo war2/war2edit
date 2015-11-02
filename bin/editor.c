@@ -47,6 +47,9 @@ _scroll_cb(void        *data,
            Evas_Object *obj  EINA_UNUSED,
            void        *info EINA_UNUSED)
 {
+   // FIXME BAAAAAAD!!!! when minimap changes the view,
+   // it makes the scroller scroll, then this callback is called,
+   // and it loops until bounce ends....
    editor_view_update(data);
 }
 
