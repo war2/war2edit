@@ -99,9 +99,11 @@ _click_handle(Editor *ed,
 {
    Sprite_Info orient;
    unsigned int w, h;
+   Editor_Sel action;
 
    if (!elm_bitmap_cursor_enabled_get(ed->bitmap)) return;
 
+   action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
      {
         if (pud_unit_start_location_is(ed->sel_unit))
@@ -135,8 +137,9 @@ _click_handle(Editor *ed,
         minimap_render_unit(ed, x, y, ed->sel_unit);
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
-   else if (ed->action != EDITOR_ACTION_NONE)
+   else if (action != EDITOR_SEL_ACTION_NONE)
      {
+        INF("editor action");
      }
 }
 

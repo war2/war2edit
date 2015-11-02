@@ -8,24 +8,12 @@
 
 typedef struct
 {
-   unsigned int *bind;
    Editor       *ed;
    unsigned int  val;
-   unsigned int  type;
 } Btn_Data;
 
-static Btn_Data *_btn_data_new(unsigned int *bind, unsigned int val,
-                               Editor *ed, unsigned int type);
+static Btn_Data *_btn_data_new(unsigned int val, Editor *ed);
 static void _btn_data_free(Btn_Data *data);
-
-typedef enum
-{
-   TINT,
-   SPREAD,
-   RADIUS,
-   ACTION
-} Btn_Type;
-
 
 /*============================================================================*
  *                                  Callbacks                                 *
@@ -47,12 +35,10 @@ _click_cb(void        *data,
 {
    Btn_Data *sd = data;
 
-   *(sd->bind) = sd->val;
+   editor_tb_sel_set(sd->ed, sd->val);
 
-   if ((sd->type == ACTION) && (sd->val == EDITOR_ACTION_SELECTION))
-     {
-        elm_bitmap_cursor_visibility_set(sd->ed->bitmap, EINA_FALSE);
-     }
+   if (editor_sel_action_get(sd->ed) == EDITOR_SEL_ACTION_SELECTION)
+     elm_bitmap_cursor_visibility_set(sd->ed->bitmap, EINA_FALSE);
    else
      elm_bitmap_cursor_visibility_set(sd->ed->bitmap, EINA_TRUE);
 
@@ -67,20 +53,16 @@ _click_cb(void        *data,
  *============================================================================*/
 
 static Btn_Data *
-_btn_data_new(unsigned int *bind,
-              unsigned int  val,
-              Editor       *ed,
-              unsigned int  type)
+_btn_data_new(unsigned int  val,
+              Editor       *ed)
 {
    Btn_Data *data;
 
    data = malloc(sizeof(*data));
    EINA_SAFETY_ON_NULL_RETURN_VAL(data, NULL);
 
-   data->bind = bind;
    data->ed = ed;
    data->val = val;
-   data->type = type;
 
    return data;
 }
@@ -95,9 +77,7 @@ static Evas_Object *
 _btn_add(Editor       *ed,
          Evas_Object  *box,
          const char   *img   EINA_UNUSED,
-         unsigned int *bind,
-         unsigned int  value,
-         unsigned int  type)
+         unsigned int  value)
 {
    Evas_Object *o/*, *icon*/;
    Btn_Data *data;
@@ -114,10 +94,10 @@ _btn_add(Editor       *ed,
    //elm_image_resizable_set(icon, EINA_FALSE, EINA_FALSE);
    //evas_object_show(icon);
 
-   data = _btn_data_new(bind, value, ed, type);
+   data = _btn_data_new(value, ed);
    EINA_SAFETY_ON_NULL_RETURN_VAL(data, NULL);
 
-   if (type == ACTION && value == EDITOR_ACTION_SELECTION)
+   if (value == EDITOR_SEL_ACTION_SELECTION)
      elm_object_text_set(o, "O"); // FIXME for now... because my icons are too big
    else
      elm_object_text_set(o, "x"); // FIXME for now... because my icons are too big
@@ -128,7 +108,7 @@ _btn_add(Editor       *ed,
    elm_box_pack_end(box, o);
    return o;
 }
-         
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -138,42 +118,26 @@ Eina_Bool
 toolbar_add(Editor      *ed,
             Evas_Object *box)
 {
-#define BTN_ADD(icon_, bind_, value_, type_) \
-   _btn_add(ed, box, DATA_DIR"/images/"icon_, bind_, value_, type_)
+#define BTN_ADD(icon_, value_) \
+   _btn_add(ed, box, DATA_DIR"/images/"icon_, value_)
 
-   ed->tb.tint[0] = BTN_ADD("light.png", &(ed->tint), EDITOR_TINT_LIGHT, TINT);
-   ed->tb.tint[1] = BTN_ADD("dark.png",  &(ed->tint), EDITOR_TINT_DARK,  TINT);
+   ed->tb.tint[0] = BTN_ADD("light.png", EDITOR_SEL_TINT_LIGHT);
+   ed->tb.tint[1] = BTN_ADD("dark.png",  EDITOR_SEL_TINT_DARK);
+   ed->tb.spread[0] = BTN_ADD("spread_normal.png", EDITOR_SEL_SPREAD_NORMAL);
+   ed->tb.spread[1] = BTN_ADD("spread_circle.png", EDITOR_SEL_SPREAD_CIRCLE);
+   ed->tb.spread[2] = BTN_ADD("spread_random.png", EDITOR_SEL_SPREAD_RANDOM);
+   ed->tb.radius[0] = BTN_ADD("radius_small.png", EDITOR_SEL_RADIUS_SMALL);
+   ed->tb.radius[1] = BTN_ADD("radius_medium.png", EDITOR_SEL_RADIUS_MEDIUM);
+   ed->tb.radius[2] = BTN_ADD("radius_big.png", EDITOR_SEL_RADIUS_BIG);
 
-   ed->tb.spread[0] = BTN_ADD("spread_normal.png", &(ed->spread),
-                              EDITOR_SPREAD_NORMAL, SPREAD);
-   ed->tb.spread[1] = BTN_ADD("spread_circle.png", &(ed->spread),
-                              EDITOR_SPREAD_CIRCLE, SPREAD);
-   ed->tb.spread[2] = BTN_ADD("spread_random.png", &(ed->spread),
-                              EDITOR_SPREAD_RANDOM, SPREAD);
-
-   ed->tb.radius[0] = BTN_ADD("radius_small.png", &(ed->radius),
-                              EDITOR_RADIUS_SMALL, RADIUS);
-   ed->tb.radius[1] = BTN_ADD("radius_medium.png", &(ed->radius),
-                              EDITOR_RADIUS_MEDIUM, RADIUS);
-   ed->tb.radius[2] = BTN_ADD("radius_big.png",&(ed->radius),
-                              EDITOR_RADIUS_BIG, RADIUS);
-
-   ed->tb.action[0] = BTN_ADD("magnifying_glass.png", &(ed->action),
-                              EDITOR_ACTION_SELECTION, ACTION);
-   ed->tb.action[1] = BTN_ADD("water.png", &(ed->action),
-                              EDITOR_ACTION_WATER, ACTION);
-   ed->tb.action[2] = BTN_ADD("mud.png", &(ed->action),
-                              EDITOR_ACTION_NON_CONSTRUCTIBLE, ACTION);
-   ed->tb.action[3] = BTN_ADD("grass.png", &(ed->action),
-                              EDITOR_ACTION_CONSTRUCTIBLE, ACTION);
-   ed->tb.action[4] = BTN_ADD("trees.png", &(ed->action),
-                              EDITOR_ACTION_TREES, ACTION);
-   ed->tb.action[5] = BTN_ADD("rocks.png", &(ed->action),
-                              EDITOR_ACTION_ROCKS, ACTION);
-   ed->tb.action[6] = BTN_ADD("human_wall.png", &(ed->action),
-                              EDITOR_ACTION_HUMAN_WALLS, ACTION);
-   ed->tb.action[7] = BTN_ADD("orc_wall.png", &(ed->action),
-                              EDITOR_ACTION_ORCS_WALLS, ACTION);
+   ed->tb.action[0] = BTN_ADD("magnifying_glass.png", EDITOR_SEL_ACTION_SELECTION);
+   ed->tb.action[1] = BTN_ADD("water.png", EDITOR_SEL_ACTION_WATER);
+   ed->tb.action[2] = BTN_ADD("mud.png", EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE);
+   ed->tb.action[3] = BTN_ADD("grass.png", EDITOR_SEL_ACTION_CONSTRUCTIBLE);
+   ed->tb.action[4] = BTN_ADD("trees.png", EDITOR_SEL_ACTION_TREES);
+   ed->tb.action[5] = BTN_ADD("rocks.png", EDITOR_SEL_ACTION_ROCKS);
+   ed->tb.action[6] = BTN_ADD("human_wall.png", EDITOR_SEL_ACTION_HUMAN_WALLS);
+   ed->tb.action[7] = BTN_ADD("orc_wall.png", EDITOR_SEL_ACTION_ORCS_WALLS);
 
 #undef BTN_ADD
 
