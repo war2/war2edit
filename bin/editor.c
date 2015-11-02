@@ -452,7 +452,6 @@ editor_load(Editor * restrict  ed,
                         u->alter);
      }
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
-   editor_view_update(ed);
 
    return EINA_TRUE;
 }
@@ -525,20 +524,23 @@ editor_view_update(Editor *restrict ed)
    int rx, ry, rw, rh;
    int cx, cy, cw, ch;
    int cell_w, cell_h;
+   float wf, hf;
 
    eo_do(
       ed->scroller,
       elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
    );
+   elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
+   if ((cell_w == 0) || (cell_h == 0))
+        return;
 
-   eo_do(
-      ed->bitmap,
-      elm_obj_bitmap_abs_coords_to_cells(rx, ry, &cx, &cy),
-      elm_obj_bitmap_cell_size_get(&cell_w, &cell_h)
-   );
+   wf = (float)cell_w;
+   hf = (float)cell_h;
 
-   cw = rw / cell_w;
-   ch = rh / cell_h;
+   cw = rintf((float)rw / wf);
+   ch = rintf((float)rh / hf);
+   cx = rintf((float)rx / wf);
+   cy = rintf((float)ry / hf);
 
    minimap_view_move(ed, cx, cy, EINA_FALSE);
    minimap_view_resize(ed, cw, ch);

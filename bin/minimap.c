@@ -246,6 +246,9 @@ minimap_view_move(Editor *restrict ed,
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
 
+   x *= ed->minimap.ratio;
+   y *= ed->minimap.ratio;
+
    if (clicked)
      {
         x -= rw / 2;
