@@ -57,15 +57,19 @@ minimap_add(Editor *ed)
    switch (ed->pud->dims)
      {
       case PUD_DIMENSIONS_32_32:
-         ed->minimap.ratio = 8;
+         ed->minimap.ratio = 12;
          break;
 
       case PUD_DIMENSIONS_64_64:
+         ed->minimap.ratio = 6;
+         break;
+
+      case PUD_DIMENSIONS_96_96:
          ed->minimap.ratio = 4;
          break;
 
       case PUD_DIMENSIONS_128_128:
-         ed->minimap.ratio = 2;
+         ed->minimap.ratio = 3;
          break;
 
       default:
