@@ -187,13 +187,13 @@ editor_new(const char *pud_file)
    box = elm_box_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(box, err_win_del);
    eo_do(
-         box,
-         evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, 0.0),
-         evas_obj_size_hint_align_set(0.0, EVAS_HINT_FILL);
-         elm_obj_box_horizontal_set(EINA_TRUE),
-         elm_obj_box_homogeneous_set(EINA_FALSE),
-         efl_gfx_visible_set(EINA_TRUE)
-      );
+      box,
+      evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, 0.0),
+      evas_obj_size_hint_align_set(0.0, EVAS_HINT_FILL);
+      elm_obj_box_horizontal_set(EINA_TRUE),
+      elm_obj_box_homogeneous_set(EINA_FALSE),
+      efl_gfx_visible_set(EINA_TRUE)
+   );
    elm_box_pack_end(o, box);
    toolbar_add(ed, box);
 
@@ -363,7 +363,7 @@ editor_sync(Editor * restrict ed)
      }
    else
      pud->units = tmp;
-   
+
    for (k = 0, i = 0, y = 0; y < pud->map_h; ++y)
      {
         for (x = 0; x < pud->map_w; ++x)
@@ -412,12 +412,12 @@ editor_load(Editor * restrict  ed,
    if (file)
      {
         if (ed->pud) pud_close(ed->pud);
-         ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
-         if (EINA_UNLIKELY(!ed->pud))
-           {
-              ERR("Failed to load editor from file \"%s\"", file);
-              return EINA_FALSE;
-           }
+        ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
+        if (EINA_UNLIKELY(!ed->pud))
+          {
+             ERR("Failed to load editor from file \"%s\"", file);
+             return EINA_FALSE;
+          }
      }
    else
      {
@@ -532,7 +532,7 @@ editor_view_update(Editor *restrict ed)
    );
    elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
    if ((cell_w == 0) || (cell_h == 0))
-        return;
+     return;
 
    wf = (float)cell_w;
    hf = (float)cell_h;
