@@ -276,6 +276,52 @@ _mouse_down_cb(void        *data,
    _click_handle(data, ev->cell_x, ev->cell_y);
 }
 
+static void
+_sel_start_cb(void        *data,
+              Evas_Object *obj  EINA_UNUSED,
+              void        *info)
+{
+   Editor *ed = data;
+   Evas_Event_Mouse_Down *ev = info;
+
+   if (!sel_active_is(ed))
+     sel_start(ed, ev->canvas.x, ev->canvas.y);
+}
+
+static void
+_sel_end_cb(void        *data,
+            Evas_Object *obj  EINA_UNUSED,
+            void        *info EINA_UNUSED)
+{
+   Editor *ed = data;
+
+   if (sel_active_is(ed))
+     sel_end(ed);
+}
+
+static void
+_sel_update_cb(void        *data,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info)
+{
+   Editor *ed = data;
+   Evas_Event_Mouse_Move *ev = info;
+   int rx, ry, rw, rh;
+
+   if (sel_active_is(ed))
+     {
+        eo_do(
+           ed->scroller,
+           elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
+        );
+        DBG("X,Y = %i,%i", ev->cur.canvas.x, ev->cur.canvas.y);
+        DBG("Region: %i %i %i %i", rx, ry, rw, rh);
+        sel_update(ed, ev->cur.canvas.x - ed->sel.x,
+                   ev->cur.canvas.y - ed->sel.y);
+     }
+}
+
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -437,6 +483,10 @@ bitmap_add(Editor *ed)
    );
    evas_object_smart_callback_add(obj, "bitmap,mouse,down", _mouse_down_cb, ed);
    evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
+   evas_object_smart_callback_add(obj, "mouse,down", _sel_start_cb, ed);
+   evas_object_smart_callback_add(obj, "mouse,move", _sel_update_cb, ed);
+   evas_object_smart_callback_add(obj, "mouse,up", _sel_end_cb, ed);
+
 
    ed->bitmap = obj;
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
@@ -444,6 +494,8 @@ bitmap_add(Editor *ed)
 
    elm_object_content_set(ed->scroller, ed->bitmap);
    evas_object_show(ed->bitmap);
+
+   sel_add(ed);
 
    return EINA_TRUE;
 }

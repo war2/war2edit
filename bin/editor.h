@@ -79,6 +79,13 @@ struct _Editor
       unsigned int    h;
    } minimap;
 
+   struct {
+      Evas_Object *obj;
+      int          x;
+      int          y;
+      Eina_Bool    active;
+   } sel;
+
    /* === Mainconfig === */
    // FIXME Dynamic? Overhead when starting the config, but
    // less memory used throughout the whole program....

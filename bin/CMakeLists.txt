@@ -15,6 +15,7 @@ set(
    toolbar.c
    cell.c
    minimap.c
+   sel.c
 )
 add_executable(war2edit ${WAR2EDIT_SRC})
 

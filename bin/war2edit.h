@@ -34,6 +34,7 @@ typedef struct _Texture_Dictionary Texture_Dictionary;
 #include "bitmap.h"
 #include "editor.h"
 #include "minimap.h"
+#include "sel.h"
 
 #endif /* ! _WAR2EDIT_H_ */
 
