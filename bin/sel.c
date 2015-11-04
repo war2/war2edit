@@ -16,7 +16,7 @@ sel_add(Editor *restrict ed)
 
    e = evas_object_evas_get(ed->win);
    o = evas_object_rectangle_add(e);
-   evas_object_color_set(o, 0, 0, 255, 100);
+   evas_object_color_set(o, 0, 0, 100, 100);
    ed->sel.active = EINA_FALSE;
 
    ed->sel.obj = o;
