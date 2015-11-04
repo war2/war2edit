@@ -19,16 +19,17 @@ _mouse_down_cb(void        *data,
 }
 
 static void
-_mouse_move_cb(void        *data,
+_mouse_move_cb(void        *data EINA_UNUSED,
                Evas        *e    EINA_UNUSED,
                Evas_Object *obj  EINA_UNUSED,
-               void        *info)
+               void        *info EINA_UNUSED)
 {
-   Editor *ed = data;
-   Evas_Event_Mouse_Move *move = info;
+   // FIXME broken feature due to scrolling callback
+ //  Editor *ed = data;
+ //  Evas_Event_Mouse_Move *move = info;
 
-   if (move->buttons & 1)
-     minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
+ //  if (move->buttons & 1)
+ //    minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
 }
 
 
