@@ -28,6 +28,7 @@ _mc_create_cb(void        *data,
 
    editor_load(ed, NULL);
    mainconfig_hide(ed);
+   mainconfig_del(ed);
 }
 
 static void
@@ -101,6 +102,13 @@ mainconfig_add(Editor *ed)
 {
    Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp;
 
+   ed->mainconfig = malloc(sizeof(struct _mainconfig));
+   if (EINA_UNLIKELY(!ed->mainconfig))
+     {
+        CRI("Failed to allocate memory for mainconfig");
+        return EINA_FALSE;
+     }
+
    /* Create main box (mainconfig) */
    box = elm_box_add(ed->win);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -150,7 +158,7 @@ mainconfig_add(Editor *ed)
    /* Image to hold the minimap overview */
    img = elm_image_add(b2);
    elm_box_pack_start(b2, img);
-   //   elm_image_file_set(img,
+   //   elm_image_file_set(img, // TODO
 
    /* Box to put commands */
    b3 = elm_box_add(b2);
@@ -207,7 +215,7 @@ mainconfig_add(Editor *ed)
    elm_radio_group_add(o, grp);
    evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
    elm_radio_value_set(grp, 1);
-   ed->mainconfig.menu_size = grp;
+   ed->mainconfig->menu_size = grp;
 
    /* Frame for map era */
    f = elm_frame_add(b3);
@@ -257,22 +265,34 @@ mainconfig_add(Editor *ed)
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
    elm_radio_group_add(o, grp);
    elm_radio_value_set(grp, 1);
-   ed->mainconfig.menu_era = grp;
+   ed->mainconfig->menu_era = grp;
 
-   ed->mainconfig.container = box;
-   ed->mainconfig.img = img;
+   ed->mainconfig->container = box;
+   ed->mainconfig->img = img;
 
    return EINA_TRUE;
 }
 
 void
+mainconfig_del(Editor *ed)
+{
+   if (!ed->mainconfig) return;
+
+   evas_object_del(ed->mainconfig->container);
+   free(ed->mainconfig);
+   ed->mainconfig = NULL;
+}
+
+void
 mainconfig_show(Editor *ed)
 {
+   EINA_SAFETY_ON_NULL_RETURN(ed->mainconfig);
+
    /* Disable main menu */
    menu_enabled_set(ed, EINA_FALSE);
 
    /* Show inwin */
-   elm_win_inwin_content_set(ed->inwin, ed->mainconfig.container);
+   elm_win_inwin_content_set(ed->inwin, ed->mainconfig->container);
    elm_win_inwin_activate(ed->inwin);
    evas_object_show(ed->inwin);
 }
@@ -280,6 +300,8 @@ mainconfig_show(Editor *ed)
 void
 mainconfig_hide(Editor *ed)
 {
+   EINA_SAFETY_ON_NULL_RETURN(ed->mainconfig);
+
    evas_object_hide(ed->inwin);
    menu_enabled_set(ed, EINA_TRUE);
 }

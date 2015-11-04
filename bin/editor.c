@@ -83,6 +83,7 @@ editor_free(Editor *ed)
    pud_close(ed->pud);
    evas_object_del(ed->win);
    minimap_del(ed);
+   mainconfig_del(ed);
    free(ed);
 }
 
@@ -207,9 +208,6 @@ editor_new(const char *pud_file)
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
 
-   /* Mainconfig: get user input for various mainstream parameters */
-   mainconfig_add(ed);
-
    /* Add inwin */
    ed->inwin = elm_win_inwin_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(ed->inwin, err_win_del);
@@ -255,6 +253,9 @@ editor_new(const char *pud_file)
           }
 
         snprintf(title, sizeof(title), "Untitled - %u", _eds++);
+
+        /* Mainconfig: get user input for various mainstream parameters */
+        mainconfig_add(ed);
         mainconfig_show(ed);
      }
 

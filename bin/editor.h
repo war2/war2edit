@@ -87,14 +87,15 @@ struct _Editor
    } sel;
 
    /* === Mainconfig === */
-   // FIXME Dynamic? Overhead when starting the config, but
-   // less memory used throughout the whole program....
+   /* Mainconfig is dynamic because its life time is very short.
+    * There is no need to keep these pointers all the time...
+    * It is therefore allocated/freed dynamically */
    struct _mainconfig {
       Evas_Object *container;
       Evas_Object *img;
       Evas_Object *menu_size;
       Evas_Object *menu_era;
-   } mainconfig;
+   } *mainconfig;
 
    Evas_Object *radio_units_reset;
 
