@@ -44,7 +44,6 @@ sel_update(Editor *restrict ed,
    int x = ed->sel.x;
    int y = ed->sel.y;
 
-   INF("W,H = %i %i", w, h);
    if (w < 0)
      {
         x += w; /* w is negative */

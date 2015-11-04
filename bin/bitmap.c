@@ -314,8 +314,6 @@ _sel_update_cb(void        *data,
            ed->scroller,
            elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
         );
-        DBG("X,Y = %i,%i", ev->cur.canvas.x, ev->cur.canvas.y);
-        DBG("Region: %i %i %i %i", rx, ry, rw, rh);
         sel_update(ed, ev->cur.canvas.x - ed->sel.x,
                    ev->cur.canvas.y - ed->sel.y);
      }
