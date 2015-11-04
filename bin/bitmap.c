@@ -103,7 +103,6 @@ _click_handle(Editor *ed,
 
    if (!elm_bitmap_cursor_enabled_get(ed->bitmap)) return;
 
-   action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
      {
         if (pud_unit_start_location_is(ed->sel_unit))
@@ -137,9 +136,20 @@ _click_handle(Editor *ed,
         minimap_render_unit(ed, x, y, ed->sel_unit);
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
-   else if (action != EDITOR_SEL_ACTION_NONE)
+   else
      {
-        INF("editor action");
+        action = editor_sel_action_get(ed);
+        switch (action)
+          {
+           case EDITOR_SEL_ACTION_SELECTION:
+              /* Handled by mouse,down mouse,move mouve,up callbacks */
+              break;
+
+           case EDITOR_SEL_ACTION_NONE:
+           default:
+              CRI("Unhandled action <0x%x>", action);
+              break;
+          }
      }
 }
 
