@@ -58,7 +58,7 @@ _seg_changed_cb(void        *data,
    Elm_Object_Item *eoi;
 
    eoi = elm_segment_control_item_selected_get(obj);
-   sel = *((Editor_Sel *)elm_object_item_data_get(eoi));
+   sel = *((uint16_t *)elm_object_item_data_get(eoi));
 
    editor_tb_sel_set(ed, sel);
    if (editor_sel_action_get(ed) == EDITOR_SEL_ACTION_SELECTION)
