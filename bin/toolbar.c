@@ -182,6 +182,18 @@ toolbar_add(Editor      *ed,
         elm_segment_control_item_selected_set(eoi, EINA_TRUE);
      }
 
+   /* Keep track of the action segment */
+   ed->actions = s[3];
+
    return EINA_TRUE;
+}
+
+void
+toolbar_actions_segment_unselect(const Editor *ed)
+{
+   Elm_Object_Item *eoi;
+
+   eoi = elm_segment_control_item_selected_get(ed->actions);
+   elm_segment_control_item_selected_set(eoi, EINA_FALSE);
 }
 
