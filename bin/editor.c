@@ -191,6 +191,7 @@ editor_new(const char *pud_file)
       box,
       evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, 0.0),
       evas_obj_size_hint_align_set(0.0, EVAS_HINT_FILL);
+      elm_obj_box_align_set(0.0, EVAS_HINT_FILL);
       elm_obj_box_horizontal_set(EINA_TRUE),
       elm_obj_box_homogeneous_set(EINA_FALSE),
       efl_gfx_visible_set(EINA_TRUE)
