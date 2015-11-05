@@ -25,7 +25,6 @@ struct _Cell
 
 Cell **cell_matrix_new(const unsigned int w, const unsigned int h);
 void cell_matrix_free(Cell **cells);
-void cell_matrix_zero(Cell **cells, size_t count);
 
 #endif /* ! _CELL_H_ */
 

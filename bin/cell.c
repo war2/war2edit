@@ -51,11 +51,3 @@ cell_matrix_free(Cell **cells)
      }
 }
 
-void
-cell_matrix_zero(Cell   **cells,
-                 size_t   count)
-{
-   if (cells)
-     memset(cells[0], 0, count);
-}
-

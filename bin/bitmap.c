@@ -117,7 +117,6 @@ _click_handle(Editor *ed,
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
                   // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
-                  //if (ed->pud->units_count > 0) ed->pud->units_count++;
                }
 
              ed->start_locations[ed->sel_player].x = x;
@@ -506,12 +505,5 @@ bitmap_add(Editor *ed)
    sel_add(ed);
 
    return EINA_TRUE;
-}
-
-void
-bitmap_reset(Editor *ed)
-{
-   cell_matrix_zero(ed->cells, ed->pud->tiles);
-   elm_bitmap_clear(ed->bitmap, 0, 255, 0);
 }
 

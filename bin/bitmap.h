@@ -18,7 +18,5 @@ void bitmap_unit_set(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsig
 //                    unsigned int     w,
 //                    unsigned int     h);
 
-void bitmap_reset(Editor *ed);
-
 #endif /* ! _GRID_H_ */
 
