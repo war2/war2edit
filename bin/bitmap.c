@@ -486,7 +486,7 @@ bitmap_add(Editor *ed)
       evas_obj_size_hint_align_set(0.0, 0.0),
       evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, EVAS_HINT_EXPAND),
       elm_obj_bitmap_resizable_set(EINA_FALSE),
-      elm_obj_bitmap_cursor_visibility_set(EINA_TRUE),
+      elm_obj_bitmap_cursor_visibility_set(EINA_FALSE),
       elm_obj_bitmap_draw_func_set(_bitmap_draw_func)
    );
    evas_object_smart_callback_add(obj, "bitmap,mouse,down", _mouse_down_cb, ed);
