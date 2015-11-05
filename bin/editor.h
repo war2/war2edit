@@ -62,12 +62,6 @@ struct _Editor
    Editor_Sel    tb_sel;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
-   struct {
-      Evas_Object *tint[2];
-      Evas_Object *spread[3];
-      Evas_Object *radius[3];
-      Evas_Object *action[8];
-   } tb;
 
    struct {
       Evas_Object    *win;
