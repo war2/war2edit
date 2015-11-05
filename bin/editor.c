@@ -462,7 +462,7 @@ Eina_Bool
 editor_unit_ref(Editor * restrict ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
-   if (ed->pud->units_count >= UINT16_MAX)
+   if (EINA_UNLIKELY(ed->pud->units_count >= UINT16_MAX))
      return EINA_FALSE;
 
    ed->pud->units_count++;
