@@ -552,12 +552,6 @@ void
 editor_tb_sel_set(Editor *restrict ed,
                   Editor_Sel       sel)
 {
-   /* Reset */
-   ed->tb_sel = EDITOR_SEL_NONE;
-
-   /* No elses, because we might want to set several items
-    * at a time */
-
    if (sel & EDITOR_SEL_ACTION_MASK)
      editor_sel_action_set(ed, sel);
    if (sel & EDITOR_SEL_SPREAD_MASK)
