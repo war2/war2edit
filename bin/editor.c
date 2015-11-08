@@ -438,7 +438,6 @@ editor_load(Editor * restrict  ed,
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
-   INF("Editor load");
    unsigned int i, j, sw, sh;
    const Pud *pud;
    struct _Pud_Unit *u;
