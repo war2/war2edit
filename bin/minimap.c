@@ -247,7 +247,7 @@ minimap_view_move(Editor *restrict ed,
                   int              y,
                   Eina_Bool        clicked)
 {
-   int bx, by, rw, rh, srw, srh, cx, cy;
+   int bx, by, rw = 0, rh = 0, srw, srh, cx, cy;
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
 
