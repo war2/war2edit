@@ -404,6 +404,12 @@ editor_sync(Editor * restrict ed)
                }
              if (c.start_location != CELL_NOT_START_LOCATION)
                {
+                  if (EINA_UNLIKELY(i >= pud->units_count))
+                    {
+                       CRI("Attempt to overflow units");
+                       return EINA_FALSE;
+                    }
+
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
@@ -423,7 +429,6 @@ editor_sync(Editor * restrict ed)
 
    if (EINA_UNLIKELY(i != pud->units_count))
      {
-        // FIXME write dummy units????
         CRI("File may have been corrupted. %i units have been written."
             " Expected %i", i, pud->units_count);
         return EINA_FALSE;
