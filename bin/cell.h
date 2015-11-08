@@ -21,7 +21,11 @@ struct _Cell
    unsigned int spread_above : 2; /* 4 values */
    unsigned int anchor_below : 1;
    unsigned int anchor_above : 1;
+   unsigned int start_location : 4;
+   unsigned int start_location_human : 1;
 };
+
+#define CELL_NOT_START_LOCATION 0x0f
 
 Cell **cell_matrix_new(const unsigned int w, const unsigned int h);
 void cell_matrix_free(Cell **cells);

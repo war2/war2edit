@@ -372,8 +372,14 @@ editor_sync(Editor * restrict ed)
           {
              c = cells[y][x];
 
-             if (c.unit_below != PUD_UNIT_NONE)
+             if (c.anchor_below)
                {
+                  if (EINA_UNLIKELY(i >= pud->units_count))
+                    {
+                       CRI("Attempt to overflow units");
+                       return EINA_FALSE;
+                    }
+
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
@@ -381,8 +387,14 @@ editor_sync(Editor * restrict ed)
                   u->owner = c.player_below;
                   u->alter = c.alter;
                }
-             if (c.unit_above != PUD_UNIT_NONE)
+             if (c.anchor_above)
                {
+                  if (EINA_UNLIKELY(i >= pud->units_count))
+                    {
+                       CRI("Attempt to overflow units");
+                       return EINA_FALSE;
+                    }
+
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
@@ -390,11 +402,31 @@ editor_sync(Editor * restrict ed)
                   u->owner = c.player_above;
                   u->alter = c.alter;
                }
+             if (c.start_location != CELL_NOT_START_LOCATION)
+               {
+                  u = &(pud->units[i++]);
+                  u->x = x;
+                  u->y = y;
+                  if (c.start_location_human == 1)
+                    u->type = PUD_UNIT_HUMAN_START;
+                  else
+                    u->type = PUD_UNIT_ORC_START;
+                  u->owner = c.start_location;
+                  u->alter = 0;
+               }
 
              /* I'm not using pud_tile_set() because I know what I'm doing,
               * and this function if much less performant... */
              pud->tiles_map[k++] = c.tile;
           }
+     }
+
+   if (EINA_UNLIKELY(i != pud->units_count))
+     {
+        // FIXME write dummy units????
+        CRI("File may have been corrupted. %i units have been written."
+            " Expected %i", i, pud->units_count);
+        return EINA_FALSE;
      }
 
    return EINA_TRUE;
@@ -525,7 +557,7 @@ editor_view_update(Editor *restrict ed)
 {
    int rx, ry, rw, rh;
    int cx, cy, cw, ch;
-   int cell_w, cell_h;
+   int cell_w = 0, cell_h = 0;
    float wf, hf;
 
    eo_do(

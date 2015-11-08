@@ -31,6 +31,7 @@ cell_matrix_new(const unsigned int w,
        {
           ptr[i][j].unit_above = PUD_UNIT_NONE;
           ptr[i][j].unit_below = PUD_UNIT_NONE;
+          ptr[i][j].start_location = CELL_NOT_START_LOCATION;
        }
    /* Other fields are set to 0 */
 

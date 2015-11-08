@@ -412,36 +412,45 @@ bitmap_unit_set(Editor *restrict ed,
 
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
 
-   flying = pud_unit_flying_is(unit);
-   for (j = y; j < y + h; ++j)
+   if (pud_unit_start_location_is(unit))
      {
-        for (i = x; i < x + w; ++i)
+        ed->cells[y][x].start_location = color;
+        ed->cells[y][x].start_location_human = (unit == PUD_UNIT_HUMAN_START);
+     }
+   else
+     {
+        flying = pud_unit_flying_is(unit);
+        for (j = y; j < y + h; ++j)
           {
-             if ((i >= map_w) || (j >= map_h))
-               break;
+             for (i = x; i < x + w; ++i)
+               {
+                  if ((i >= map_w) || (j >= map_h))
+                    break;
 
-             if (flying)
-               {
-                  ed->cells[j][i].unit_above = unit;
-                  ed->cells[j][i].orient_above = orient;
-                  ed->cells[j][i].player_above = color;
-                  ed->cells[j][i].anchor_above = 0;
-                  ed->cells[j][i].alter = alter;
-               }
-             else
-               {
-                  ed->cells[j][i].unit_below = unit;
-                  ed->cells[j][i].orient_below = orient;
-                  ed->cells[j][i].player_below = color;
-                  ed->cells[j][i].anchor_below = 0;
-                  ed->cells[j][i].alter = alter;
+                  if (flying)
+                    {
+                       ed->cells[j][i].unit_above = unit;
+                       ed->cells[j][i].orient_above = orient;
+                       ed->cells[j][i].player_above = color;
+                       ed->cells[j][i].anchor_above = 0;
+                       ed->cells[j][i].alter = alter;
+                    }
+                  else
+                    {
+                       ed->cells[j][i].unit_below = unit;
+                       ed->cells[j][i].orient_below = orient;
+                       ed->cells[j][i].player_below = color;
+                       ed->cells[j][i].anchor_below = 0;
+                       ed->cells[j][i].alter = alter;
+                    }
                }
           }
+
+        if (flying)
+          ed->cells[y][x].anchor_above = 1;
+        else
+          ed->cells[y][x].anchor_below = 1;
      }
-   if (flying)
-     ed->cells[y][x].anchor_above = 1;
-   else
-     ed->cells[y][x].anchor_below = 1;
 
    minimap_update(ed, x, y);
 }
