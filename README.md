@@ -17,10 +17,14 @@ Build
 TODO
 ====
 
+- [ ] Redo completly the graphical part. Elm_Bitmap is waayyy to heavy and inefficient.
+      Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
+      and so efficient, but the smart_move kills it...
+- [ ] Minimap window is annoying and suboptimal (let's Evas do the scaling)
 - [ ] Place textures
 - [ ] Different brush types
 - [ ] Different brush sizes
-- [ ] Load a map
+- [X] Load a map
 - [ ] Auto-run war2 to test the map
 - [ ] Implement properties editors
 - [ ] Help/About panel
