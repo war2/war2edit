@@ -79,6 +79,10 @@ struct _Editor
       int          x;
       int          y;
       Eina_Bool    active;
+      struct {
+         unsigned int x;
+         unsigned int y;
+      } rel1, rel2;
    } sel;
 
    /* === Mainconfig === */

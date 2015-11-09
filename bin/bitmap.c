@@ -396,10 +396,12 @@ bitmap_unit_set(Editor *restrict ed,
    int at_x, at_y;
    unsigned int sw, sh;
    unsigned int i, j;
+   unsigned int spread_x, spread_y;
    Eina_Bool flip;
    Eina_Bool flying;
    const unsigned int map_w = ed->pud->map_w;
    const unsigned int map_h = ed->pud->map_h;
+   Cell *c;
 
    /* Don't draw */
    if (unit == PUD_UNIT_NONE) return;
@@ -414,35 +416,44 @@ bitmap_unit_set(Editor *restrict ed,
 
    if (pud_unit_start_location_is(unit))
      {
-        ed->cells[y][x].start_location = color;
-        ed->cells[y][x].start_location_human = (unit == PUD_UNIT_HUMAN_START);
+        c = &(ed->cells[y][x]);
+        c->start_location = color;
+        c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
+        c->spread_x_below = 0;
+        c->spread_y_below = 0;
+        c->spread_x_above = 0;
+        c->spread_y_above = 0;
      }
    else
      {
         flying = pud_unit_flying_is(unit);
-        for (j = y; j < y + h; ++j)
+        for (spread_y = 0, j = y; j < y + h; ++j, ++spread_y)
           {
-             for (i = x; i < x + w; ++i)
+             for (spread_x = 0, i = x; i < x + w; ++i, ++spread_x)
                {
                   if ((i >= map_w) || (j >= map_h))
                     break;
 
+                  c = &(ed->cells[y][x]);
                   if (flying)
                     {
-                       ed->cells[j][i].unit_above = unit;
-                       ed->cells[j][i].orient_above = orient;
-                       ed->cells[j][i].player_above = color;
-                       ed->cells[j][i].anchor_above = 0;
-                       ed->cells[j][i].alter = alter;
+                       c->unit_above = unit;
+                       c->orient_above = orient;
+                       c->player_above = color;
+                       c->anchor_above = 0;
+                       c->spread_x_above = spread_x;
+                       c->spread_y_above = spread_y;
                     }
                   else
                     {
-                       ed->cells[j][i].unit_below = unit;
-                       ed->cells[j][i].orient_below = orient;
-                       ed->cells[j][i].player_below = color;
-                       ed->cells[j][i].anchor_below = 0;
-                       ed->cells[j][i].alter = alter;
+                       c->unit_below = unit;
+                       c->orient_below = orient;
+                       c->player_below = color;
+                       c->anchor_below = 0;
+                       c->spread_x_below = spread_x;
+                       c->spread_y_below = spread_y;
                     }
+                  c->alter = alter;
                }
           }
 
