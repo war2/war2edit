@@ -569,7 +569,8 @@ editor_view_update(Editor *restrict ed)
       elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
    );
    elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
-   if ((cell_w == 0) || (cell_h == 0))
+   /* Happens mostly at init time, when UI is unstable */
+   if (EINA_UNLIKELY((cell_w == 0) || (cell_h == 0)))
      return;
 
    wf = (float)cell_w;
