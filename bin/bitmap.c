@@ -36,6 +36,7 @@ _bitmap_draw_func(void                 *data,
    img_w = info->source_w * 4;
    at_x = info->at_x * 4;
 
+   /* XXX Use OpenMP there??? */
    /* Always used when there is full alpha */
    for (img_y = 0, bmp_y = info->at_y;
         (img_y < info->source_h) && (bmp_y < info->bitmap_h);
@@ -380,8 +381,41 @@ bitmap_unit_draw(Editor *restrict ed,
    at_x = (x * TEXTURE_WIDTH) + (int)((w * TEXTURE_WIDTH) - sw) / 2;
    at_y = (y * TEXTURE_HEIGHT) + (int)((h * TEXTURE_HEIGHT) - sh) / 2;
 
-
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
+}
+
+/* FIXME Zones */
+void
+bitmap_selections_draw(Editor *restrict ed)
+{
+   const unsigned int map_w = ed->pud->map_w;
+   const unsigned int map_h = ed->pud->map_h;
+   unsigned int i, j;
+   Cell *c;
+
+   for (j = 0; j < map_h; ++j)
+     for (i = 0; i < map_w; ++i)
+       {
+          // TODO Pre-selections
+
+          c = &(ed->cells[j][i]);
+          if ((c->anchor_below) && (c->selected_below))
+            {
+               _draw(ed, sprite_selection_get(c->spread_x_below),
+                     i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
+                     c->spread_x_below * TEXTURE_WIDTH,
+                     c->spread_y_below * TEXTURE_HEIGHT,
+                     EINA_FALSE, -1);
+            }
+          if ((c->anchor_above) && (c->selected_above))
+            {
+               _draw(ed, sprite_selection_get(c->spread_x_above),
+                     i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
+                     c->spread_x_above * TEXTURE_WIDTH,
+                     c->spread_y_above * TEXTURE_HEIGHT,
+                     EINA_FALSE, -1);
+            }
+       }
 }
 
 void
@@ -553,5 +587,8 @@ bitmap_redraw(Editor *restrict ed)
    for (j = map_h - 1; (int) j >= 0; --j)
      for (i = map_w - 1; (int) i >= 0; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
+
+   /* (Pre)Selections last */
+   bitmap_selections_draw(ed);
 }
 

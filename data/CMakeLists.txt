@@ -10,6 +10,8 @@ copy_file(sprites/buildings/swamp.eet)
 
 copy_file(sprites/units/units.eet)
 
+copy_file(sprites/misc/sel.eet)
+
 copy_file(images/efl.png)
 copy_file(images/dark.png)
 copy_file(images/light.png)

@@ -6,9 +6,34 @@
 
 #include "war2edit.h"
 
+#define SELECTION_1x1 "sel/1x1"
+#define SELECTION_2x2 "sel/2x2"
+#define SELECTION_3x3 "sel/3x3"
+#define SELECTION_4x4 "sel/4x4"
+
 static Eet_File *_units_ef = NULL;
 static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
+
+static Eina_Bool
+_sprite_load_add(Eet_File   *ef,
+                 const char *key)
+{
+   unsigned char *data;
+
+   data = sprite_load(ef, key, NULL, NULL, NULL, NULL);
+   if (EINA_UNLIKELY(!data))
+     {
+        CRI("Failed to load data for key \"%s\"", key);
+        return EINA_FALSE;
+     }
+   if (EINA_UNLIKELY(!eina_hash_add(_sprites, key, data)))
+     {
+        CRI("Failed to write data in hash for key \"%s\"", key);
+        return EINA_FALSE;
+     }
+   return EINA_TRUE;
+}
 
 void *
 sprite_load(Eet_File     *src,
@@ -195,7 +220,7 @@ sprite_get(Pud_Unit       unit,
              return NULL;
           }
         chk = eina_hash_add(_sprites, key, data);
-        if (chk == EINA_FALSE)
+        if (EINA_UNLIKELY(chk == EINA_FALSE))
           {
              ERR("Failed to add sprite <%p> to hash", data);
              free(data);
@@ -234,6 +259,9 @@ _free_cb(void *data)
 Eina_Bool
 sprite_init(void)
 {
+   Eet_File *ef;
+   const char *f = DATA_DIR"/sprites/misc/sel.eet";
+
    if (EINA_UNLIKELY(!sprite_units_open()))
      {
         CRI("Failed to open units file");
@@ -253,8 +281,21 @@ sprite_init(void)
         goto units_fail;
      }
 
+   ef = eet_open(f, EET_FILE_MODE_READ);
+   if (EINA_UNLIKELY(!ef))
+     {
+        CRI("Failed to open file \"%s\"", f);
+        goto sel_fail;
+     }
+
+   _sprite_load_add(ef, SELECTION_1x1);
+   //sprite_load(ef, SELECTION_2x2, NULL, NULL, NULL, NULL);
+   //sprite_load(ef, SELECTION_3x3, NULL, NULL, NULL, NULL);
+   //sprite_load(ef, SELECTION_4x4, NULL, NULL, NULL, NULL);
+
    return EINA_TRUE;
 
+sel_fail:
 units_fail:
    eina_hash_free(_sprites);
 sprites_fail:
@@ -375,5 +416,35 @@ sprite_tile_size_get(Pud_Unit      unit,
 
    if (sprite_w) *sprite_w = w;
    if (sprite_h) *sprite_h = h;
+}
+
+unsigned char *
+sprite_selection_get(unsigned int edge)
+{
+   const char *key = NULL;
+   switch (edge)
+     {
+      case 1:
+         key = SELECTION_1x1;
+         break;
+
+      case 2:
+         key = SELECTION_2x2;
+         break;
+
+      case 3:
+         key = SELECTION_3x3;
+         break;
+
+      case 4:
+         key = SELECTION_4x4;
+         break;
+
+      default:
+         CRI("Invalid edje parameter '%u'", edge);
+         return NULL;
+     }
+
+   return eina_hash_find(_sprites, key);
 }
 

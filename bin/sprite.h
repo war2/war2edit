@@ -30,6 +30,7 @@ Sprite_Info sprite_info_random_get(void);
 Eina_Bool sprite_init(void);
 void sprite_shutdown(void);
 void sprite_tile_size_get(Pud_Unit unit, unsigned int *w, unsigned int *h);
+unsigned char *sprite_selection_get(unsigned int edge);
 
 #endif /* ! _SPRITE_H_ */
 

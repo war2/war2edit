@@ -139,6 +139,7 @@ sel_end(Editor *restrict ed)
 {
    unsigned int i, j;
    Cell *c;
+   Eina_Bool redraw = EINA_FALSE;
 
    for (j = ed->sel.rel1.y; j < ed->sel.rel2.y; ++j)
      {
@@ -150,17 +151,23 @@ sel_end(Editor *restrict ed)
                   c->pre_selected_below = 0;
                   c->selected_below = 1;
                   DBG("Was selected below: (%i,%i)", i, j);
-                  // TODO Visual hint
+                  redraw = EINA_TRUE;
                }
              if (c->pre_selected_above || c->selected_above)
                {
                   c->pre_selected_above = 0;
                   c->selected_above = 1;
                   DBG("Was selected above: (%i,%i)", i, j);
-                  // TODO Visual hint
+                  redraw = EINA_TRUE;
                }
           }
      }
+
+   // FIXME Optimize this later. We could just use selections_redraw
+   // since selections are always on top, but I call the big fat function
+   // for now to collect all calls for later...
+   if (redraw)
+     bitmap_redraw(ed);
 
    evas_object_hide(ed->sel.obj);
    evas_object_resize(ed->sel.obj, 1, 1);
