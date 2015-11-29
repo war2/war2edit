@@ -25,8 +25,6 @@ struct _Cell
    unsigned int anchor_above : 1;
    unsigned int start_location : 4;
    unsigned int start_location_human : 1;
-   unsigned int pre_selected_below : 1;
-   unsigned int pre_selected_above : 1;
    unsigned int selected_below : 1;
    unsigned int selected_above : 1;
 };

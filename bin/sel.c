@@ -29,6 +29,17 @@ sel_start(Editor *restrict ed,
           const int        x,
           const int        y)
 {
+   unsigned int i, j;
+   Cell *c;
+
+   // TODO Handle shift key. If shift key, then skip this loop
+   for (j = 0; j < ed->pud->map_h; ++j)
+     for (i = 0; i < ed->pud->map_w; ++i)
+       {
+          c = &(ed->cells[j][i]);
+          c->selected_above = 0;
+          c->selected_below = 0;
+       }
    ed->sel.active = EINA_TRUE;
    ed->sel.x = x;
    ed->sel.y = y;
@@ -46,10 +57,7 @@ sel_update(Editor *restrict ed,
    int x = ed->sel.x;
    int y = ed->sel.y;
    int sx, sy, cell_w, cell_h, rx, ry, relx, rely;
-   unsigned int i, j;
    int cx1, cy1, cx2, cy2;
-   Cell **cells = ed->cells;
-   Cell *anchor, *c;
 
    if (w < 0)
      {
@@ -105,30 +113,7 @@ sel_update(Editor *restrict ed,
    ed->sel.rel2.x = (unsigned int)cx2;
    ed->sel.rel2.y = (unsigned int)cy2;
 
-   for (j = (unsigned int) cy1; j < (unsigned int) cy2; ++j)
-     {
-        for (i = (unsigned int) cx1; i < (unsigned int) cx2; ++i)
-          {
-             c = &(cells[j][i]);
-
-             anchor = &(cells[j - c->spread_y_below][i - c->spread_x_below]);
-             if ((anchor->anchor_below) &&
-                 (!(anchor->selected_below) && !(anchor->pre_selected_below)))
-               {
-                  anchor->pre_selected_below = 1;
-                  // TODO Visual hint
-               }
-             anchor = &(cells[j - c->spread_y_above][i - c->spread_x_above]);
-             if ((anchor->anchor_above) &&
-                 (!(anchor->selected_above) && !(anchor->pre_selected_above)))
-               {
-                  anchor->pre_selected_above = 1;
-                  // TODO Visual hint
-               }
-          }
-     }
-
-   DBG("Sel (cells): %i %i ; %i %i", cx1, cy1, cx2, cy2);
+   //DBG("Sel (cells): %i %i ; %i %i", cx1, cy1, cx2, cy2);
 
    evas_object_move(ed->sel.obj, x, y);
    evas_object_resize(ed->sel.obj, w, h);
@@ -139,35 +124,35 @@ sel_end(Editor *restrict ed)
 {
    unsigned int i, j;
    Cell *c;
-   Eina_Bool redraw = EINA_FALSE;
+   Cell *anchor;
+   Cell **cells = ed->cells;
 
-   for (j = ed->sel.rel1.y; j < ed->sel.rel2.y; ++j)
+   for (j = ed->sel.rel1.y; j <= ed->sel.rel2.y; ++j)
      {
-        for (i = ed->sel.rel1.x; i < ed->sel.rel2.x; ++i)
+        for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
           {
-             c = &(ed->cells[j][i]);
-             if (c->pre_selected_below || c->selected_below)
-               {
-                  c->pre_selected_below = 0;
-                  c->selected_below = 1;
-                  DBG("Was selected below: (%i,%i)", i, j);
-                  redraw = EINA_TRUE;
-               }
-             if (c->pre_selected_above || c->selected_above)
-               {
-                  c->pre_selected_above = 0;
-                  c->selected_above = 1;
-                  DBG("Was selected above: (%i,%i)", i, j);
-                  redraw = EINA_TRUE;
-               }
+             c = &(cells[j][i]);
+
+             INF("|%i,%i]. Spread: %i,%i", i, j, c->spread_x_below, c->spread_y_below);
+
+             if (c->anchor_below)
+               anchor = c;
+             else
+               anchor = &(cells[j - c->spread_y_below][i - c->spread_x_below]);
+             anchor->selected_below = 1;
+
+             if (c->anchor_above)
+               anchor = c;
+             else
+               anchor = &(cells[j - c->spread_y_above][i - c->spread_x_above]);
+             anchor->selected_above = 1;
           }
      }
 
    // FIXME Optimize this later. We could just use selections_redraw
    // since selections are always on top, but I call the big fat function
    // for now to collect all calls for later...
-   if (redraw)
-     bitmap_redraw(ed);
+   bitmap_redraw(ed);
 
    evas_object_hide(ed->sel.obj);
    evas_object_resize(ed->sel.obj, 1, 1);
