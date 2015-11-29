@@ -52,8 +52,6 @@ sel_update(Editor *restrict ed,
            int              w,
            int              h)
 {
-   const unsigned int map_w = ed->pud->map_w;
-   const unsigned int map_h = ed->pud->map_h;
    int x = ed->sel.x;
    int y = ed->sel.y;
    int sx, sy, cell_w, cell_h, rx, ry, relx, rely;
@@ -88,24 +86,6 @@ sel_update(Editor *restrict ed,
    /* rel2 */
    cx2 = (relx + w) / cell_w;
    cy2 = (rely + h) / cell_h;
-
-   /* Bounds checking safety */
-   if (EINA_UNLIKELY(cx1 >= (int)map_w))
-     cx1 = (int)map_w - 1;
-   else if (EINA_UNLIKELY(cx1 < 0))
-     cx1 = 0;
-   if (EINA_UNLIKELY(cx2 >= (int)map_w))
-     cx2 = (int)map_w - 1;
-   else if (EINA_UNLIKELY(cx2 < 0))
-     cx2 = 0;
-   if (EINA_UNLIKELY(cy1 >= (int)map_h))
-     cy1 = (int)map_h - 1;
-   else if (EINA_UNLIKELY(cy1 < 0))
-     cy1 = 0;
-   if (EINA_UNLIKELY(cy2 >= (int)map_h))
-     cy2 = (int)map_h - 1;
-   else if (EINA_UNLIKELY(cy2 < 0))
-     cy2 = 0;
 
    /* Cache selection */
    ed->sel.rel1.x = (unsigned int)cx1;
