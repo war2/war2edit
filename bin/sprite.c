@@ -441,7 +441,7 @@ sprite_selection_get(unsigned int edge)
          break;
 
       default:
-         CRI("Invalid edje parameter '%u'", edge);
+         CRI("Invalid edge parameter '%u'", edge);
          return NULL;
      }
 
