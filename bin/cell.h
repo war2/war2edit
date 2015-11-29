@@ -17,10 +17,10 @@ struct _Cell
    unsigned int orient_above : 3; /* 8 values */
    unsigned int player_below : 3; /* 8 values */
    unsigned int player_above : 3; /* 8 values */
-   unsigned int spread_x_below : 2; /* 0-3 */
-   unsigned int spread_y_below : 2; /* 0-3 */
-   unsigned int spread_x_above : 2; /* 0-3 */
-   unsigned int spread_y_above : 2; /* 0-3 */
+   unsigned int spread_x_below : 3; /* 0-4 */
+   unsigned int spread_y_below : 3; /* 0-4 */
+   unsigned int spread_x_above : 3; /* 0-4 */
+   unsigned int spread_y_above : 3; /* 0-4 */
    unsigned int anchor_below : 1;
    unsigned int anchor_above : 1;
    unsigned int start_location : 4;

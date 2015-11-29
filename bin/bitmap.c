@@ -345,7 +345,7 @@ bitmap_unit_draw(Editor *restrict ed,
                  unsigned int     y,
                  Eina_Bool        unit_below)
 {
-   Cell *c = &(ed->cells[y][x]);
+   const Cell *c = &(ed->cells[y][x]);
    unsigned char *sprite;
    Eina_Bool flip;
    int at_x, at_y;
@@ -378,8 +378,8 @@ bitmap_unit_draw(Editor *restrict ed,
    sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
    EINA_SAFETY_ON_NULL_RETURN(sprite);
 
-   at_x = (x * TEXTURE_WIDTH) + (int)((w * TEXTURE_WIDTH) - sw) / 2;
-   at_y = (y * TEXTURE_HEIGHT) + (int)((h * TEXTURE_HEIGHT) - sh) / 2;
+   at_x = (x * TEXTURE_WIDTH) + ((w * TEXTURE_WIDTH) - sw) / 2;
+   at_y = (y * TEXTURE_HEIGHT) + ((h * TEXTURE_HEIGHT) - sh) / 2;
 
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
 }
@@ -471,17 +471,18 @@ bitmap_unit_set(Editor *restrict ed,
           }
      }
 
+   c = &(ed->cells[y][x]);
    if (flying)
      {
-        ed->cells[y][x].anchor_above = 1;
-        ed->cells[y][x].spread_x_above = w;
-        ed->cells[y][x].spread_y_above = h;
+        c->anchor_above = 1;
+        c->spread_x_above = w;
+        c->spread_y_above = h;
      }
    else
      {
-        ed->cells[y][x].anchor_below = 1;
-        ed->cells[y][x].spread_x_below = w;
-        ed->cells[y][x].spread_y_below = h;
+        c->anchor_below = 1;
+        c->spread_x_below = w;
+        c->spread_y_below = h;
 
         /* Pud locations never fly! */
         if (pud_unit_start_location_is(unit))
@@ -490,7 +491,6 @@ bitmap_unit_set(Editor *restrict ed,
              c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
           }
      }
-
 
    minimap_update(ed, x, y);
 }

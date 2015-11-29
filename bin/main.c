@@ -63,6 +63,7 @@ elm_main(int    argc,
         ret = EXIT_FAILURE;
         goto end;
      }
+   DBG("Size of a single Cell is %zu", sizeof(Cell));
 
    /* Init texture module */
    if (EINA_UNLIKELY(!texture_init()))
