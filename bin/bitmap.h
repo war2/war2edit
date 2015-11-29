@@ -4,19 +4,26 @@
  * Copyright (c) 2015 Jean Guyomarc'h
  */
 
-#ifndef _GRID_H_
-#define _GRID_H_
+#ifndef _BITMAP_H_
+#define _BITMAP_H_
+
+#define BITMAP_UNIT_BELOW ((Eina_Bool) EINA_TRUE)
+#define BITMAP_UNIT_ABOVE ((Eina_Bool) EINA_FALSE)
 
 Eina_Bool bitmap_add(Editor *ed);
 Eina_Bool bitmap_tile_set(Editor * restrict ed, int x, int y, unsigned int key);
 void bitmap_unit_set(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, int x, int y, unsigned int w, unsigned int h, uint16_t alter);
 
-//void
-//bitmap_refresh_zone(Editor *restrict ed,
-//                    int              x,
-//                    int              y,
-//                    unsigned int     w,
-//                    unsigned int     h);
+void bitmap_redraw(Editor *restrict ed);
 
-#endif /* ! _GRID_H_ */
+void bitmap_unit_draw(Editor *restrict ed,
+                      unsigned int x,
+                      unsigned int y,
+                      Eina_Bool unit_below);
+
+void bitmap_tile_draw(Editor *restrict ed,
+                      unsigned int x,
+                      unsigned int y);
+
+#endif /* ! _BITMAP_H_ */
 

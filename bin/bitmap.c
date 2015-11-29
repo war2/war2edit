@@ -116,6 +116,7 @@ _click_handle(Editor *ed,
              if (ed->start_locations[ed->sel_player].x != -1)
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
+                  minimap_update(ed, lx, ly);
                   // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
                }
 
@@ -134,6 +135,7 @@ _click_handle(Editor *ed,
                          editor_alter_defaults_get(ed, ed->sel_unit));
         minimap_render_unit(ed, x, y, ed->sel_unit);
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+        bitmap_redraw(ed); // FIXME ZONE!
      }
    else
      {
@@ -334,52 +336,51 @@ _sel_update_cb(void        *data,
  *                                 Public API                                 *
  *============================================================================*/
 
-//void
-//bitmap_refresh_zone(Editor *restrict ed,
-//                    int              x,
-//                    int              y,
-//                    unsigned int     w,
-//                    unsigned int     h)
-//{
-//   unsigned int i, j, sw, sh;
-//   Cell c;
-//
-//   /* Bounds checking - needed */
-//   if (x < 0) x = 0;
-//   if (y < 0) y = 0;
-//   if (x + w >= ed->pud->map_w) w = ed->pud->map_w - x - 1;
-//   if (y + h >= ed->pud->map_h) h = ed->pud->map_h - y - 1;
-//
-//   for (j = y; j < y + h; j++)
-//     {
-//        for (i = x; i < x + w; i++)
-//          {
-//             c = ed->cells[j][i];
-//             bitmap_tile_set(ed, i, j, c.tile);
-//             if (c.anchor_below)
-//               {
-//                  sprite_tile_size_get(c.unit_below, &sw, &sh);
-//                  bitmap_unit_set(ed, c.unit_below, c.player_below,
-//                                  c.orient_below, i, j, sw, sh);
-//               }
-//          }
-//     }
-//
-//   /* FIXME This is pretty bad!! To avoid mixing sprites I do 2 separate passes.
-//    * FIXME There is certainly much much better, I'll do it some day. */
-//   for (j = y; j < y + h; j++)
-//     {
-//        for (i = x; i < x + w; i++)
-//          {
-//             if (c.anchor_above)
-//               {
-//                  sprite_tile_size_get(c.unit_above, &sw, &sh);
-//                  bitmap_unit_set(ed, c.unit_above, c.player_above,
-//                                  c.orient_above, i, j, sw, sh);
-//               }
-//          }
-//     }
-//}
+void
+bitmap_unit_draw(Editor *restrict ed,
+                 unsigned int     x,
+                 unsigned int     y,
+                 Eina_Bool        unit_below)
+{
+   Cell *c = &(ed->cells[y][x]);
+   unsigned char *sprite;
+   Eina_Bool flip;
+   int at_x, at_y;
+   unsigned int w, h, sw, sh;
+   Pud_Unit unit = PUD_UNIT_NONE;
+   Pud_Player col;
+   unsigned int orient;
+
+   if ((unit_below == EINA_TRUE) && (c->anchor_below == 1))
+     {
+        unit = c->unit_below;
+        col = c->player_below;
+        orient = c->orient_below;
+        w = c->spread_x_below;
+        h = c->spread_y_below;
+     }
+   else if (c->anchor_above == 1) // unit_below == FALSE is implied by else
+     {
+        unit = c->unit_above;
+        col = c->player_above;
+        orient = c->orient_above;
+        w = c->spread_x_above;
+        h = c->spread_y_above;
+     }
+
+   /* Don't draw if unit anchor was not found */
+   if (unit == PUD_UNIT_NONE)
+     return;
+
+   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
+   EINA_SAFETY_ON_NULL_RETURN(sprite);
+
+   at_x = (x * TEXTURE_WIDTH) + (int)((w * TEXTURE_WIDTH) - sw) / 2;
+   at_y = (y * TEXTURE_HEIGHT) + (int)((h * TEXTURE_HEIGHT) - sh) / 2;
+
+
+   _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
+}
 
 void
 bitmap_unit_set(Editor *restrict ed,
@@ -392,78 +393,90 @@ bitmap_unit_set(Editor *restrict ed,
                 unsigned int     h,
                 uint16_t         alter)
 {
-   unsigned char *sprite;
-   int at_x, at_y;
-   unsigned int sw, sh;
    unsigned int i, j;
    unsigned int spread_x, spread_y;
-   Eina_Bool flip;
    Eina_Bool flying;
    const unsigned int map_w = ed->pud->map_w;
    const unsigned int map_h = ed->pud->map_h;
    Cell *c;
 
    /* Don't draw */
-   if (unit == PUD_UNIT_NONE) return;
+   if (unit == PUD_UNIT_NONE)
+     return;
 
-   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
-   EINA_SAFETY_ON_NULL_RETURN(sprite);
-
-   at_x = (x * TEXTURE_WIDTH) + (int)((w * TEXTURE_WIDTH) - sw) / 2;
-   at_y = (y * TEXTURE_HEIGHT) + (int)((h * TEXTURE_HEIGHT) - sh) / 2;
-
-   _draw(ed, sprite, at_x, at_y, sw, sh, flip, color);
-
-   if (pud_unit_start_location_is(unit))
+   flying = pud_unit_flying_is(unit);
+   for (spread_y = 0, j = y; j < y + h; ++j, ++spread_y)
      {
-        c = &(ed->cells[y][x]);
-        c->start_location = color;
-        c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
-        c->spread_x_below = 0;
-        c->spread_y_below = 0;
-        c->spread_x_above = 0;
-        c->spread_y_above = 0;
+        for (spread_x = 0, i = x; i < x + w; ++i, ++spread_x)
+          {
+             if ((i >= map_w) || (j >= map_h))
+               break;
+
+             c = &(ed->cells[y][x]);
+             if (flying)
+               {
+                  c->unit_above = unit;
+                  c->orient_above = orient;
+                  c->player_above = color;
+                  c->anchor_above = 0;
+                  c->spread_x_above = spread_x;
+                  c->spread_y_above = spread_y;
+               }
+             else
+               {
+                  c->unit_below = unit;
+                  c->orient_below = orient;
+                  c->player_below = color;
+                  c->anchor_below = 0;
+                  c->spread_x_below = spread_x;
+                  c->spread_y_below = spread_y;
+               }
+             c->alter = alter;
+          }
+     }
+
+   if (flying)
+     {
+        ed->cells[y][x].anchor_above = 1;
+        ed->cells[y][x].spread_x_above = w;
+        ed->cells[y][x].spread_y_above = h;
      }
    else
      {
-        flying = pud_unit_flying_is(unit);
-        for (spread_y = 0, j = y; j < y + h; ++j, ++spread_y)
+        ed->cells[y][x].anchor_below = 1;
+        ed->cells[y][x].spread_x_below = w;
+        ed->cells[y][x].spread_y_below = h;
+
+        /* Pud locations never fly! */
+        if (pud_unit_start_location_is(unit))
           {
-             for (spread_x = 0, i = x; i < x + w; ++i, ++spread_x)
-               {
-                  if ((i >= map_w) || (j >= map_h))
-                    break;
-
-                  c = &(ed->cells[y][x]);
-                  if (flying)
-                    {
-                       c->unit_above = unit;
-                       c->orient_above = orient;
-                       c->player_above = color;
-                       c->anchor_above = 0;
-                       c->spread_x_above = spread_x;
-                       c->spread_y_above = spread_y;
-                    }
-                  else
-                    {
-                       c->unit_below = unit;
-                       c->orient_below = orient;
-                       c->player_below = color;
-                       c->anchor_below = 0;
-                       c->spread_x_below = spread_x;
-                       c->spread_y_below = spread_y;
-                    }
-                  c->alter = alter;
-               }
+             c->start_location = color;
+             c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
           }
-
-        if (flying)
-          ed->cells[y][x].anchor_above = 1;
-        else
-          ed->cells[y][x].anchor_below = 1;
      }
 
+
    minimap_update(ed, x, y);
+}
+
+void
+bitmap_tile_draw(Editor *restrict ed,
+                 unsigned int     x,
+                 unsigned int     y)
+{
+   unsigned char *tex;
+   Eina_Bool missing;
+
+   tex = texture_get(ed->cells[y][x].tile, ed->pud->era, &missing);
+   /* If the texture could not be loaded because of an internal error,
+    * return TRUE because we can do nothing about it.
+    * If the texture was non-existant, let's try again: the tileset
+    * is not helping us */
+   // FIXME I don't understand what is going on this the "missing" thing...
+   if (!tex) return;
+
+   _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
+         TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
 }
 
 Eina_Bool
@@ -472,18 +485,6 @@ bitmap_tile_set(Editor * restrict ed,
                 int               y,
                 unsigned int      key)
 {
-   unsigned char *tex;
-   Eina_Bool missing;
-
-   tex = texture_get(key, ed->pud->era, &missing);
-   /* If the texture could not be loaded because of an internal error,
-    * return TRUE because we can do nothing about it.
-    * If the texture was non-existant, let's try again: the tileset
-    * is not helping us */
-   if (!tex) return !missing;
-
-   _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
-         TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
    ed->cells[y][x].tile = key;
 
    minimap_update(ed, x, y);
@@ -525,5 +526,30 @@ bitmap_add(Editor *ed)
    sel_add(ed);
 
    return EINA_TRUE;
+}
+
+void
+bitmap_redraw(Editor *restrict ed)
+{
+   const unsigned int map_w = ed->pud->map_w;
+   const unsigned int map_h = ed->pud->map_h;
+   unsigned int i, j;
+
+   /* FIXME  Sooo innefficient. Introduce zones */
+
+   /* Tiles first */
+   for (j = 0; j < map_h; ++j)
+     for (i = 0; i < map_w; ++i)
+       bitmap_tile_draw(ed, i, j);
+
+   /* Units below */
+   for (j = map_h - 1; (int) j >= 0; --j)
+     for (i = map_w - 1; (int) i >= 0; --i)
+       bitmap_unit_draw(ed, i, j, BITMAP_UNIT_BELOW);
+
+   /* Units above */
+   for (j = map_h - 1; (int) j >= 0; --j)
+     for (i = map_w - 1; (int) i >= 0; --i)
+       bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
 }
 
