@@ -289,9 +289,9 @@ sprite_init(void)
      }
 
    _sprite_load_add(ef, SELECTION_1x1);
-   //sprite_load(ef, SELECTION_2x2, NULL, NULL, NULL, NULL);
-   //sprite_load(ef, SELECTION_3x3, NULL, NULL, NULL, NULL);
-   //sprite_load(ef, SELECTION_4x4, NULL, NULL, NULL, NULL);
+   _sprite_load_add(ef, SELECTION_2x2);
+   _sprite_load_add(ef, SELECTION_3x3);
+   _sprite_load_add(ef, SELECTION_4x4);
 
    return EINA_TRUE;
 
