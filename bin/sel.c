@@ -43,7 +43,7 @@ sel_start(Editor *restrict ed,
    ed->sel.active = EINA_TRUE;
    ed->sel.x = x;
    ed->sel.y = y;
-   evas_object_move(ed->sel.obj, ed->sel.x, ed->sel.y);
+   sel_update(ed, 0, 0);
    evas_object_show(ed->sel.obj);
 }
 
@@ -132,8 +132,6 @@ sel_end(Editor *restrict ed)
         for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
           {
              c = &(cells[j][i]);
-
-             INF("|%i,%i]. Spread: %i,%i", i, j, c->spread_x_below, c->spread_y_below);
 
              if (c->anchor_below)
                anchor = c;
