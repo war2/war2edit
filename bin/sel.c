@@ -47,7 +47,7 @@ sel_update(Editor *restrict ed,
    int y = ed->sel.y;
    int sx, sy, cell_w, cell_h, rx, ry, relx, rely;
    unsigned int i, j;
-   unsigned cx1, cy1, cx2, cy2;
+   int cx1, cy1, cx2, cy2;
    Cell **cells = ed->cells;
    Cell *anchor, *c;
 
@@ -82,20 +82,32 @@ sel_update(Editor *restrict ed,
    cy2 = (rely + h) / cell_h;
 
    /* Bounds checking safety */
-   if (EINA_UNLIKELY(cx1 >= map_w)) cx1 = map_w - 1;
-   if (EINA_UNLIKELY(cx2 >= map_w)) cx2 = map_w - 1;
-   if (EINA_UNLIKELY(cy1 >= map_h)) cy1 = map_h - 1;
-   if (EINA_UNLIKELY(cy2 >= map_h)) cy2 = map_h - 1;
+   if (EINA_UNLIKELY(cx1 >= (int)map_w))
+     cx1 = (int)map_w - 1;
+   else if (EINA_UNLIKELY(cx1 < 0))
+     cx1 = 0;
+   if (EINA_UNLIKELY(cx2 >= (int)map_w))
+     cx2 = (int)map_w - 1;
+   else if (EINA_UNLIKELY(cx2 < 0))
+     cx2 = 0;
+   if (EINA_UNLIKELY(cy1 >= (int)map_h))
+     cy1 = (int)map_h - 1;
+   else if (EINA_UNLIKELY(cy1 < 0))
+     cy1 = 0;
+   if (EINA_UNLIKELY(cy2 >= (int)map_h))
+     cy2 = (int)map_h - 1;
+   else if (EINA_UNLIKELY(cy2 < 0))
+     cy2 = 0;
 
    /* Cache selection */
-   ed->sel.rel1.x = cx1;
-   ed->sel.rel1.y = cy1;
-   ed->sel.rel2.x = cx2;
-   ed->sel.rel2.y = cy2;
+   ed->sel.rel1.x = (unsigned int)cx1;
+   ed->sel.rel1.y = (unsigned int)cy1;
+   ed->sel.rel2.x = (unsigned int)cx2;
+   ed->sel.rel2.y = (unsigned int)cy2;
 
-   for (j = cy1; j < cy2; ++j)
+   for (j = (unsigned int) cy1; j < (unsigned int) cy2; ++j)
      {
-        for (i = cx1; i < cx2; ++i)
+        for (i = (unsigned int) cx1; i < (unsigned int) cx2; ++i)
           {
              c = &(cells[j][i]);
 
