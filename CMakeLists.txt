@@ -2,9 +2,42 @@ cmake_minimum_required(VERSION 2.8)
 project(war2edit C)
 
 add_definitions(-g)
-add_definitions(-Wall)
-add_definitions(-W)
-add_definitions(-Wshadow)
+add_definitions(
+    -Wall
+    -Wextra
+    -Winit-self
+    -Wfloat-equal
+    -Wunused
+    -Wunused-parameter
+    #-Wsign-conversion
+    -Wchar-subscripts
+    -Wdouble-promotion
+    -Wformat-security
+    -Wformat-nonliteral
+    -Wmissing-braces
+    -Wmissing-include-dirs
+    -Wparentheses
+    -Wsequence-point
+    -Wtrigraphs
+    -Wmaybe-uninitialized
+    -Wsuggest-final-types
+    -Wsuggest-final-methods
+    #-Wconversion
+    -Wlogical-op
+    -Wlogical-not-parentheses
+    -Wmemset-transposed-args
+    -Wsizeof-pointer-memaccess
+    -Wmissing-field-initializers
+    -Wmultichar
+    #-Wpacked
+    #-Wpacked-bitfield-compat
+    #-Wpadded
+    #-Wredundant-decls
+    -Winline
+    -Winvalid-pch
+    -Woverlength-strings
+    -Wcast-align
+)
 add_definitions(-std=gnu11)
 add_definitions(-D_BSD_SOURCE)
 add_definitions(-D_DEFAULT_SOURCE)
