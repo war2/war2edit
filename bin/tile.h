@@ -7,30 +7,28 @@
 #ifndef _TILE_H_
 #define _TILE_H_
 
-typedef enum
-{
+typedef unsigned int Tile;
 
-   TILE_ORC_WALL        = 0x00,
-   TILE_HUMAN_WALL      = 0x01,
-   TILE_TREES           = 0x02,
-   TILE_CONSTRUCTIBLE   = 0x03,
-   TILE_UNCONSTRUCTIBLE = 0x04,
-   TILE_ROCKS           = 0x05,
-   TILE_WATER           = 0x06,
+#define TILE_ORC_WALL         ((Tile) 0x00)
+#define TILE_HUMAN_WALL       ((Tile) 0x01)
+#define TILE_TREES            ((Tile) 0x02)
+#define TILE_CONSTRUCTIBLE    ((Tile) 0x03)
+#define TILE_UNCONSTRUCTIBLE  ((Tile) 0x04)
+#define TILE_ROCKS            ((Tile) 0x05)
+#define TILE_WATER            ((Tile) 0x06)
    /* ==== Up to 0b110 (3 bits) */
 
    /* 2 bits for the tile ID */
 
    /* Bit 5: is it a dark or a light tile */
-   TILE_DARK            = (1 << 5),
+#define TILE_DARK             ((Tile) (1 << 5))
 
    /* Bits 6 to 9: what part of the tile is FILLED (everything = solid) */
-   TILE_UP              = (1 << 6),
-   TILE_DOWN            = (1 << 7),
-   TILE_LEFT            = (1 << 8),
-   TILE_RIGHT           = (1 << 9)
+#define TILE_UP               ((Tile) (1 << 6))
+#define TILE_DOWN             ((Tile) (1 << 7))
+#define TILE_LEFT             ((Tile) (1 << 8))
+#define TILE_RIGHT            ((Tile) (1 << 9))
 
-} Tile;
 
 
 /*============================================================================*
@@ -55,7 +53,7 @@ static inline Eina_Bool
 tile_fill_is(Tile t,
              Tile fill)
 {
-   return (t & fill);
+   return !!(t & fill);
 }
 
 static inline Tile
@@ -106,7 +104,7 @@ static inline Tile
 tile_id_set(Tile          t,
             unsigned char id)
 {
-   return t | ((id & 0x3) << 3);
+   return t | (((Tile)id & 0x3) << 3);
 }
 
 #endif /* ! _TILE_H_ */
