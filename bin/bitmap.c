@@ -295,6 +295,8 @@ _sel_start_cb(void        *data,
    Editor *ed = data;
    Evas_Event_Mouse_Down *ev = info;
 
+   if (editor_sel_action_get(ed) != EDITOR_SEL_ACTION_SELECTION)
+     return;
    if (!sel_active_is(ed))
      sel_start(ed, ev->canvas.x, ev->canvas.y);
 }

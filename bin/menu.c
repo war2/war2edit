@@ -151,6 +151,7 @@ _radio_units_changed_cb(void        *data,
       elm_obj_bitmap_cursor_visibility_set(EINA_TRUE)
    );
    toolbar_actions_segment_unselect(ed);
+   editor_sel_action_set(ed, 0);
 }
 
 static void
