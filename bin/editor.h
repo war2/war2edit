@@ -7,40 +7,39 @@
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 
-typedef enum /* 16 bits are required for this enum */
-{
-   EDITOR_SEL_NONE                      = 0,
+typedef uint16_t Editor_Sel;
+
+#define EDITOR_SEL_NONE                      ((Editor_Sel) 0)
 
    /* xxxxxxxxxxxxxxSS */
-   EDITOR_SEL_SPREAD_NORMAL             = (0x00 << 0),
-   EDITOR_SEL_SPREAD_CIRCLE             = (0x01 << 0),
-   EDITOR_SEL_SPREAD_RANDOM             = (0x02 << 0),
-#define EDITOR_SEL_SPREAD_MASK (0x03 << 0)
+#define EDITOR_SEL_SPREAD_NORMAL             ((Editor_Sel) (0x00 << 0))
+#define EDITOR_SEL_SPREAD_CIRCLE             ((Editor_Sel) (0x01 << 0))
+#define EDITOR_SEL_SPREAD_RANDOM             ((Editor_Sel) (0x02 << 0))
+#define EDITOR_SEL_SPREAD_MASK               ((Editor_Sel) (0x03 << 0))
 
    /* xxxxxxxxxxxxRRxx */
-   EDITOR_SEL_RADIUS_SMALL              = (0x00 << 2),
-   EDITOR_SEL_RADIUS_MEDIUM             = (0x01 << 2),
-   EDITOR_SEL_RADIUS_BIG                = (0x02 << 2),
-#define EDITOR_SEL_RADIUS_MASK (0x03 << 2)
+#define EDITOR_SEL_RADIUS_SMALL              ((Editor_Sel) (0x00 << 2))
+#define EDITOR_SEL_RADIUS_MEDIUM             ((Editor_Sel) (0x01 << 2))
+#define EDITOR_SEL_RADIUS_BIG                ((Editor_Sel) (0x02 << 2))
+#define EDITOR_SEL_RADIUS_MASK               ((Editor_Sel) (0x03 << 2))
 
    /* xxxxxxxxxxxTxxxx */
-   EDITOR_SEL_TINT_LIGHT                = (0x00 << 4),
-   EDITOR_SEL_TINT_DARK                 = (0x01 << 4),
-#define EDITOR_SEL_TINT_MASK (0x01 << 4)
+#define EDITOR_SEL_TINT_LIGHT                ((Editor_Sel) (0x00 << 4))
+#define EDITOR_SEL_TINT_DARK                 ((Editor_Sel) (0x01 << 4))
+#define EDITOR_SEL_TINT_MASK                 ((Editor_Sel) (0x01 << 4))
 
    /* xxxxxxxAAAAxxxxx */
-   EDITOR_SEL_ACTION_NONE               = (0x01 << 5),
-   EDITOR_SEL_ACTION_SELECTION          = (0x02 << 5),
-   EDITOR_SEL_ACTION_WATER              = (0x03 << 5),
-   EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE  = (0x04 << 5),
-   EDITOR_SEL_ACTION_CONSTRUCTIBLE      = (0x05 << 5),
-   EDITOR_SEL_ACTION_TREES              = (0x06 << 5),
-   EDITOR_SEL_ACTION_ROCKS              = (0x07 << 5),
-   EDITOR_SEL_ACTION_HUMAN_WALLS        = (0x08 << 5),
-   EDITOR_SEL_ACTION_ORCS_WALLS         = (0x09 << 5)
-#define EDITOR_SEL_ACTION_MASK (0x0f << 5)
+#define EDITOR_SEL_ACTION_NONE               ((Editor_Sel) (0x01 << 5))
+#define EDITOR_SEL_ACTION_SELECTION          ((Editor_Sel) (0x02 << 5))
+#define EDITOR_SEL_ACTION_WATER              ((Editor_Sel) (0x03 << 5))
+#define EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE  ((Editor_Sel) (0x04 << 5))
+#define EDITOR_SEL_ACTION_CONSTRUCTIBLE      ((Editor_Sel) (0x05 << 5))
+#define EDITOR_SEL_ACTION_TREES              ((Editor_Sel) (0x06 << 5))
+#define EDITOR_SEL_ACTION_ROCKS              ((Editor_Sel) (0x07 << 5))
+#define EDITOR_SEL_ACTION_HUMAN_WALLS        ((Editor_Sel) (0x08 << 5))
+#define EDITOR_SEL_ACTION_ORCS_WALLS         ((Editor_Sel) (0x09 << 5))
+#define EDITOR_SEL_ACTION_MASK               ((Editor_Sel) (0x0f << 5))
 
-} Editor_Sel;
 
 
 
@@ -110,7 +109,7 @@ static inline void
 editor_sel_spread_set(Editor *restrict ed,
                       Editor_Sel       sel)
 {
-   ed->tb_sel &= ~EDITOR_SEL_SPREAD_MASK;
+   ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_SPREAD_MASK);
    ed->tb_sel |= sel;
 }
 
@@ -118,7 +117,7 @@ static inline void
 editor_sel_tint_set(Editor *restrict ed,
                     Editor_Sel       sel)
 {
-   ed->tb_sel &= ~EDITOR_SEL_TINT_MASK;
+   ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_TINT_MASK);
    ed->tb_sel |= sel;
 }
 
@@ -126,7 +125,7 @@ static inline void
 editor_sel_radius_set(Editor *restrict ed,
                       Editor_Sel       sel)
 {
-   ed->tb_sel &= ~EDITOR_SEL_RADIUS_MASK;
+   ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_RADIUS_MASK);
    ed->tb_sel |= sel;
 }
 
@@ -134,7 +133,7 @@ static inline void
 editor_sel_action_set(Editor *restrict ed,
                       Editor_Sel       sel)
 {
-   ed->tb_sel &= ~EDITOR_SEL_ACTION_MASK;
+   ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_ACTION_MASK);
    ed->tb_sel |= sel;
 }
 
