@@ -137,7 +137,8 @@ end:
 
 
 Editor *
-editor_new(const char *pud_file)
+editor_new(const char *pud_file,
+           Eina_Bool   xdebug)
 {
    Editor *ed;
    char title[512];
@@ -147,6 +148,8 @@ editor_new(const char *pud_file)
 
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
+
+   ed->xdebug = xdebug;
 
    for (i = 0; i < 8; i++)
      {

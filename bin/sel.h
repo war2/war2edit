@@ -1,5 +1,5 @@
 /*
- * sel.c
+ * sel.h
  *
  * Copyright (c) 2015 Jean Guyomarc'h
  */
@@ -12,7 +12,8 @@ Evas_Object *sel_add(Editor *restrict ed);
 void
 sel_start(Editor *restrict ed,
           const int        x,
-          const int        y);
+          const int        y,
+          Eina_Bool        inclusive);
 
 void
 sel_update(Editor *restrict ed,

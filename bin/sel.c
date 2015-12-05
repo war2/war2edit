@@ -27,20 +27,22 @@ sel_add(Editor *restrict ed)
 void
 sel_start(Editor *restrict ed,
           const int        x,
-          const int        y)
+          const int        y,
+          Eina_Bool        inclusive)
 {
    unsigned int i, j;
    Cell *c;
 
-   // TODO Handle shift key. If shift key, then skip this loop
-   for (j = 0; j < ed->pud->map_h; ++j)
-     for (i = 0; i < ed->pud->map_w; ++i)
-       {
-          c = &(ed->cells[j][i]);
-          c->selected_above = 0;
-          c->selected_below = 0;
-       }
+   if (!inclusive)
+     for (j = 0; j < ed->pud->map_h; ++j)
+       for (i = 0; i < ed->pud->map_w; ++i)
+         {
+            c = &(ed->cells[j][i]);
+            c->selected_above = 0;
+            c->selected_below = 0;
+         }
    ed->sel.active = EINA_TRUE;
+   ed->sel.inclusive = inclusive;
    ed->sel.x = x;
    ed->sel.y = y;
    sel_update(ed, 0, 0);

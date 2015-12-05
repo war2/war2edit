@@ -285,7 +285,15 @@ _mouse_down_cb(void        *data,
                void        *info)
 {
    Elm_Bitmap_Event_Mouse_Down *ev = info;
-   _click_handle(data, ev->cell_x, ev->cell_y);
+   Editor *ed = data;
+
+   if (ed->xdebug)
+     {
+        Cell *c = &(ed->cells[ev->cell_y][ev->cell_x]);
+        fprintf(stdout, "[%u,%u] =", ev->cell_x, ev->cell_y);
+        cell_dump(c, stdout);
+     }
+   _click_handle(ed, ev->cell_x, ev->cell_y);
 }
 
 static void
@@ -299,7 +307,8 @@ _sel_start_cb(void        *data,
    if (editor_sel_action_get(ed) != EDITOR_SEL_ACTION_SELECTION)
      return;
    if (!sel_active_is(ed))
-     sel_start(ed, ev->canvas.x, ev->canvas.y);
+     sel_start(ed, ev->canvas.x, ev->canvas.y,
+               evas_key_modifier_is_set(ev->modifiers, "Shift"));
 }
 
 static void
@@ -423,8 +432,8 @@ bitmap_unit_set(Editor *restrict ed,
                 Pud_Unit         unit,
                 Pud_Player       color,
                 unsigned int     orient,
-                int              x,
-                int              y,
+                unsigned int     x,
+                unsigned int     y,
                 unsigned int     w,
                 unsigned int     h,
                 uint16_t         alter)
@@ -448,7 +457,7 @@ bitmap_unit_set(Editor *restrict ed,
              if ((i >= map_w) || (j >= map_h))
                break;
 
-             c = &(ed->cells[y][x]);
+             c = &(ed->cells[j][i]);
              if (flying)
                {
                   c->unit_above = unit;
@@ -550,7 +559,6 @@ bitmap_add(Editor *ed)
    evas_object_smart_callback_add(obj, "mouse,down", _sel_start_cb, ed);
    evas_object_smart_callback_add(obj, "mouse,move", _sel_update_cb, ed);
    evas_object_smart_callback_add(obj, "mouse,up", _sel_end_cb, ed);
-
 
    ed->bitmap = obj;
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);

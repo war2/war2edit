@@ -78,6 +78,7 @@ struct _Editor
       int          x;
       int          y;
       Eina_Bool    active;
+      Eina_Bool    inclusive;
       struct {
          unsigned int x;
          unsigned int y;
@@ -102,6 +103,7 @@ struct _Editor
    uint8_t     sides[8]; /* Orc, Human */
    Evas_Point  start_locations[8];
 
+   Eina_Bool    xdebug;
 };
 
 
@@ -165,7 +167,7 @@ Eina_Bool editor_init(void);
 void editor_shutdown(void);
 
 void editor_free(Editor *ed);
-Editor *editor_new(const char *pud_file);
+Editor *editor_new(const char *pud_file, Eina_Bool xdebug);
 Eina_Bool editor_load(Editor * restrict ed, const char *file);
 Eina_Bool editor_save(Editor * restrict ed, const char *file);
 void editor_error(Editor *ed, const char *msg);

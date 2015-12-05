@@ -52,3 +52,50 @@ cell_matrix_free(Cell **cells)
      }
 }
 
+void
+cell_dump(Cell *cell,
+          FILE *stream)
+{
+   fprintf(
+      stream,
+      "{\n"
+      "    alter...............: %u\n"
+      "    tile................: 0x%04x\n"
+      "    unit_below..........: 0x%02x\n"
+      "    unit_above..........: 0x%02x\n"
+      "    orient_below........: 0x%02x\n"
+      "    orient_above........: 0x%02x\n"
+      "    player_below........: 0x%02x\n"
+      "    player_above........: 0x%02x\n"
+      "    spread_x_below......: %u\n"
+      "    spread_y_below......: %u\n"
+      "    spread_x_above......: %u\n"
+      "    spread_y_above......: %u\n"
+      "    anchor_below........: %u\n"
+      "    anchor_above........: %u\n"
+      "    start_location......: %u\n"
+      "    start_location_human: %u\n"
+      "    selected_below......: %u\n"
+      "    selected_above......: %u\n"
+      "}\n",
+      cell->alter,
+      cell->tile,
+      cell->unit_below,
+      cell->unit_above,
+      cell->orient_below,
+      cell->orient_above,
+      cell->player_below,
+      cell->player_above,
+      cell->spread_x_below,
+      cell->spread_y_below,
+      cell->spread_x_above,
+      cell->spread_y_above,
+      cell->anchor_below,
+      cell->anchor_above,
+      cell->start_location,
+      cell->start_location_human,
+      cell->selected_below,
+      cell->selected_above
+   );
+}
+

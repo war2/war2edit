@@ -17,6 +17,7 @@ static const Ecore_Getopt _options =
    "A modest clone of Warcraft II Wolrd Map Editor",
    EINA_TRUE,
    {
+      ECORE_GETOPT_STORE_TRUE('x', "xdebug", "Enable graphical debug"),
       ECORE_GETOPT_HELP ('h', "help"),
       ECORE_GETOPT_VERSION('V', "version"),
       ECORE_GETOPT_SENTINEL
@@ -33,7 +34,9 @@ elm_main(int    argc,
    Editor *ed;
    unsigned int ed_count = 0;
    Eina_Bool quit_opt = EINA_FALSE;
+   Eina_Bool xdebug = EINA_FALSE;
    Ecore_Getopt_Value values[] = {
+      ECORE_GETOPT_VALUE_BOOL(xdebug),
       ECORE_GETOPT_VALUE_BOOL(quit_opt),
       ECORE_GETOPT_VALUE_BOOL(quit_opt)
    };
@@ -93,7 +96,7 @@ elm_main(int    argc,
    for (i = args; i < argc; ++i)
      {
         /* If an editor fails to open, don't close now */
-        ed = editor_new(argv[i]);
+        ed = editor_new(argv[i], xdebug);
         if (!ed)
           ERR("Failed to create editor with file \"%s\"", argv[i]);
         else
@@ -102,7 +105,7 @@ elm_main(int    argc,
 
    if (ed_count == 0)
      {
-        ed = editor_new(NULL);
+        ed = editor_new(NULL, xdebug);
         if (EINA_UNLIKELY(!ed))
           {
              CRI("Failed to create editor");
