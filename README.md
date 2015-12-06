@@ -14,8 +14,8 @@ Build
 - Launch: `war2edit`.
 
 
-TODO
-====
+TODO - Showstoppers
+===================
 
 - [ ] Redo completly the graphical part. Elm_Bitmap is waayyy to heavy and inefficient.
       Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
@@ -30,8 +30,8 @@ TODO
 - [ ] Help/About panel
 - [ ] Toggle race in menu
 - [ ] Toggle extension mode
-- [ ] Selection mode to select units
-- [ ] Delete a unit
+- [X] Selection mode to select units
+- [X] Delete a unit
 - [ ] Undo/Redo
 
 
