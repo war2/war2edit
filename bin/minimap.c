@@ -189,8 +189,8 @@ minimap_update(Editor *restrict ed,
    else
      {
         col = pud_color_for_unit(u, player);
-        w = ed->pud->unit_data[u].size_w - 1;
-        h = ed->pud->unit_data[u].size_h - 1;
+        sprite_tile_size_get(u, &w, &h);
+        --w, --h;
      }
 
    /* Format ARGB8888: each pixel is 4 bytes long */
