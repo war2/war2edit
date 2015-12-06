@@ -22,7 +22,10 @@ sel_update(Editor *restrict ed,
 
 void sel_end(Editor *restrict ed);
 
+void sel_del(Editor *restrict ed);
+
 Eina_Bool sel_active_is(const Editor *restrict ed);
+Eina_Bool sel_empty_is(const Editor *restrict ed);
 
 #endif /* ! __SEL_H__ */
 

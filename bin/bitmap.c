@@ -428,6 +428,43 @@ bitmap_selections_draw(Editor *restrict ed)
 }
 
 void
+bitmap_unit_del_at(Editor *restrict ed,
+                   unsigned int     x,
+                   unsigned int     y,
+                   Eina_Bool        below)
+{
+   const Cell anchor = ed->cells[y][x];
+   Cell *c;
+   unsigned int sx = (below) ? anchor.spread_x_below : anchor.spread_x_above;
+   unsigned int sy = (below) ? anchor.spread_y_below : anchor.spread_y_above;
+   unsigned int i, j;
+
+   for (j = y; j < y + sy; ++j)
+     for (i = x; i < x + sx; ++i)
+       {
+          c = &(ed->cells[j][i]);
+          if (below)
+            {
+               c->unit_below = PUD_UNIT_NONE;
+               c->spread_x_below = 0;
+               c->spread_y_below = 0;
+               c->anchor_below = 0;
+               c->selected_below = 0;
+               c->start_location = 0;
+            }
+          else
+            {
+               c->unit_above = PUD_UNIT_NONE;
+               c->spread_x_above = 0;
+               c->spread_y_above = 0;
+               c->anchor_above = 0;
+               c->selected_above = 0;
+            }
+       }
+   minimap_update(ed, x, y);
+}
+
+void
 bitmap_unit_set(Editor *restrict ed,
                 Pud_Unit         unit,
                 Pud_Player       color,

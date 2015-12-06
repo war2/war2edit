@@ -34,13 +34,16 @@ sel_start(Editor *restrict ed,
    Cell *c;
 
    if (!inclusive)
-     for (j = 0; j < ed->pud->map_h; ++j)
-       for (i = 0; i < ed->pud->map_w; ++i)
-         {
-            c = &(ed->cells[j][i]);
-            c->selected_above = 0;
-            c->selected_below = 0;
-         }
+     {
+        for (j = 0; j < ed->pud->map_h; ++j)
+          for (i = 0; i < ed->pud->map_w; ++i)
+            {
+               c = &(ed->cells[j][i]);
+               c->selected_above = 0;
+               c->selected_below = 0;
+            }
+        ed->sel.selections = 0;
+     }
    ed->sel.active = EINA_TRUE;
    ed->sel.inclusive = inclusive;
    ed->sel.x = x;
@@ -105,29 +108,85 @@ void
 sel_end(Editor *restrict ed)
 {
    unsigned int i, j;
-   Cell *c;
    Cell *anchor;
    Cell **cells = ed->cells;
+   const Eina_Bool inclusive = ed->sel.inclusive;
+
+   /*
+    * This applies to anchors...
+    * cell->selected_xxx will have the following bits
+    *  - [0] SEL_SET if the selection is effective
+    *  - [1] SEL_MARK if the anchor was proccessed during the seletion
+    *    Indeed, for NxN units, N>1 the anchor will likely to be processed
+    *    several times. This system is used to handle the "inclusive"
+    *    selection that allows to de-select previously selected units.
+    */
+   enum {
+      SEL_MARK = (1 << 1),
+      SEL_SET  = (1 << 0)
+   };
 
    for (j = ed->sel.rel1.y; j <= ed->sel.rel2.y; ++j)
      {
         for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
           {
-             c = &(cells[j][i]);
+             /* Selections for units below */
+             anchor = cell_anchor_get(cells, i, j, EINA_TRUE);
+             if (anchor->unit_below != PUD_UNIT_NONE)
+               {
+                  if (inclusive)
+                    {
+                       if (!(anchor->selected_below & SEL_MARK))
+                         {
+                            anchor->selected_below = ~(anchor->selected_below);
+                            if (anchor->selected_below & SEL_SET)
+                              ++ed->sel.selections;
+                            else
+                              --ed->sel.selections;
+                         }
+                    }
+                  else
+                    {
+                       if (!(anchor->selected_below & SEL_MARK))
+                         ++ed->sel.selections;
+                       anchor->selected_below |= (SEL_MARK | SEL_SET);
+                    }
+               }
 
-             if (c->anchor_below)
-               anchor = c;
-             else
-               anchor = &(cells[j - c->spread_y_below][i - c->spread_x_below]);
-             anchor->selected_below = 1;
-
-             if (c->anchor_above)
-               anchor = c;
-             else
-               anchor = &(cells[j - c->spread_y_above][i - c->spread_x_above]);
-             anchor->selected_above = 1;
+             /* Selection for units above */
+             anchor = cell_anchor_get(cells, i, j, EINA_FALSE);
+             if (anchor->unit_above != PUD_UNIT_NONE)
+               {
+                  if (inclusive)
+                    {
+                       if (!(anchor->selected_above & SEL_MARK))
+                         {
+                            anchor->selected_above = ~(anchor->selected_above);
+                            if (anchor->selected_above & SEL_SET)
+                              ++ed->sel.selections;
+                            else
+                              --ed->sel.selections;
+                         }
+                    }
+                  else
+                    {
+                       if (!(anchor->selected_below & SEL_MARK))
+                         ++ed->sel.selections;
+                       anchor->selected_above |= (SEL_MARK | SEL_SET);
+                    }
+               }
           }
      }
+
+   /* Reset the marks */
+   for (j = ed->sel.rel1.y; j <= ed->sel.rel2.y; ++j)
+     for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
+       {
+          anchor = cell_anchor_get(cells, i, j, EINA_TRUE);
+          anchor->selected_below &= (~SEL_MARK);
+          anchor = cell_anchor_get(cells, i, j, EINA_FALSE);
+          anchor->selected_above &= (~SEL_MARK);
+       }
 
    // FIXME Optimize this later. We could just use selections_redraw
    // since selections are always on top, but I call the big fat function
@@ -143,5 +202,29 @@ Eina_Bool
 sel_active_is(const Editor *restrict ed)
 {
    return ed->sel.active;
+}
+
+Eina_Bool
+sel_empty_is(const Editor *restrict ed)
+{
+   return (ed->sel.selections == 0);
+}
+
+void
+sel_del(Editor *restrict ed)
+{
+   unsigned int i, j;
+   Cell *c;
+
+   for (j = 0; j < ed->pud->map_h; ++j)
+     for (i = 0; i < ed->pud->map_w; ++i)
+       {
+          c = &(ed->cells[j][i]);
+          if (c->anchor_below)
+            bitmap_unit_del_at(ed, i, j, EINA_TRUE);
+          if (c->anchor_above)
+            bitmap_unit_del_at(ed, i, j, EINA_FALSE);
+       }
+   bitmap_redraw(ed);
 }
 

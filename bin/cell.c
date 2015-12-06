@@ -99,3 +99,25 @@ cell_dump(Cell *cell,
    );
 }
 
+Cell *
+cell_anchor_get(Cell         **cells,
+                unsigned int   x,
+                unsigned int   y,
+                Eina_Bool      below)
+{
+   Cell *c = &(cells[y][x]);
+
+   if (below)
+     {
+        if (c->anchor_below)
+          return c;
+        return &(cells[y - c->spread_y_below][x - c->spread_x_below]);
+     }
+   else
+     {
+        if (c->anchor_above)
+          return c;
+        return &(cells[y - c->spread_y_above][x - c->spread_x_above]);
+     }
+}
+

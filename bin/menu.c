@@ -164,6 +164,33 @@ _radio_players_changed_cb(void *data,
    DBG("Player selection changed: <%s>", pud_color2str(ed->sel_player));
 }
 
+static void
+_delete_cb(void        *data,
+           Evas_Object *obj  EINA_UNUSED,
+           void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+   editor_handle_delete(ed);
+}
+
+static void
+_undo_cb(void        *data,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+   CRI("TODO");
+}
+
+static void
+_redo_cb(void        *data,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+   CRI("TODO");
+}
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -180,6 +207,7 @@ menu_add(Editor *ed)
 
    evas_object_data_set(ed->menu, "editor", ed);
 
+   /*==== FILE MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL,  "File", NULL, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "New...", _win_new_cb, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "Open...", _win_open_cb, ed);
@@ -188,6 +216,15 @@ menu_add(Editor *ed)
    elm_menu_item_separator_add(ed->menu, itm);
    elm_menu_item_add(ed->menu, itm, NULL, "Close", _win_del_cb, ed);
 
+   /*==== EDIT MENU ====*/
+   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Edit", NULL, NULL);
+   elm_menu_item_add(ed->menu, itm, NULL, "Undo", _undo_cb, ed);
+   elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed);
+   elm_menu_item_separator_add(ed->menu, itm);
+   elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
+
+
+   /*==== TOOLS MENU ====*/
    i = itm = elm_menu_item_add(ed->menu, NULL, NULL, "Tools", NULL, NULL);
 
 #define RADIO_ADD(unit_, label_) \

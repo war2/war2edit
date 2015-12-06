@@ -24,6 +24,11 @@ void bitmap_unit_draw(Editor *restrict ed,
 void bitmap_tile_draw(Editor *restrict ed,
                       unsigned int x,
                       unsigned int y);
+void
+bitmap_unit_del_at(Editor *restrict ed,
+                   unsigned int     x,
+                   unsigned int     y,
+                   Eina_Bool        below);
 
 #endif /* ! _BITMAP_H_ */
 

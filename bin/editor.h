@@ -79,6 +79,7 @@ struct _Editor
       int          y;
       Eina_Bool    active;
       Eina_Bool    inclusive;
+      unsigned int selections;
       struct {
          unsigned int x;
          unsigned int y;
@@ -184,6 +185,8 @@ void editor_view_update(Editor *restrict ed);
 void
 editor_tb_sel_set(Editor *restrict ed,
                   Editor_Sel       sel);
+
+void editor_handle_delete(Editor *restrict ed);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \

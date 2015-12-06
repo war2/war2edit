@@ -25,8 +25,8 @@ struct _Cell
    unsigned int anchor_above : 1;
    unsigned int start_location : 4;
    unsigned int start_location_human : 1;
-   unsigned int selected_below : 1;
-   unsigned int selected_above : 1;
+   unsigned int selected_below : 2;
+   unsigned int selected_above : 2;
 };
 
 #define CELL_NOT_START_LOCATION 0x0f
@@ -34,6 +34,10 @@ struct _Cell
 Cell **cell_matrix_new(const unsigned int w, const unsigned int h);
 void cell_matrix_free(Cell **cells);
 void cell_dump(Cell *cell, FILE *stream);
+Cell *cell_anchor_get(Cell         **cells,
+                      unsigned int   x,
+                      unsigned int   y,
+                      Eina_Bool      below);
 
 #endif /* ! _CELL_H_ */
 

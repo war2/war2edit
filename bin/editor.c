@@ -7,7 +7,9 @@
 #include "war2edit.h"
 
 static Eina_List *_editors = NULL;
+static Ecore_Event_Handler *_handler = NULL;
 static unsigned int _eds = 0;
+static Editor *_focused = NULL;
 
 
 /*============================================================================*
@@ -53,6 +55,26 @@ _scroll_cb(void        *data,
    editor_view_update(data);
 }
 
+static Eina_Bool
+_key_down_cb(void *data  EINA_UNUSED,
+             int   type  EINA_UNUSED,
+             void *event)
+{
+   Ecore_Event_Key *ev = event;
+   if (!strcmp(ev->keyname, "BackSpace"))
+     editor_handle_delete(_focused);
+
+   return ECORE_CALLBACK_PASS_ON;
+}
+
+static void
+_focus_in_cb(void        *data,
+             Evas_Object *obj   EINA_UNUSED,
+             void        *event EINA_UNUSED)
+{
+   _focused = data;
+}
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -61,6 +83,12 @@ _scroll_cb(void        *data,
 Eina_Bool
 editor_init(void)
 {
+   _handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, _key_down_cb, NULL);
+   if (EINA_UNLIKELY(!_handler))
+     {
+        CRI("Failed to attach key down handler");
+        return EINA_FALSE;
+     }
    return EINA_TRUE;
 }
 
@@ -71,6 +99,7 @@ editor_shutdown(void)
 
    EINA_LIST_FREE(_editors, ed)
       editor_free(ed);
+   ecore_event_handler_del(_handler);
 }
 
 void
@@ -170,6 +199,9 @@ editor_new(const char *pud_file,
    evas_object_event_callback_add(ed->win, EVAS_CALLBACK_RESIZE,
                                   _win_resize_cb, ed);
    evas_object_resize(ed->win, 640, 480);
+   evas_event_callback_add(evas_object_evas_get(ed->win),
+                           EVAS_CALLBACK_CANVAS_FOCUS_IN,
+                           _focus_in_cb, ed);
 
    /* File selector */
    file_selector_add(ed);
@@ -601,5 +633,12 @@ editor_tb_sel_set(Editor *restrict ed,
      editor_sel_radius_set(ed, sel);
    if (sel & EDITOR_SEL_TINT_MASK)
      editor_sel_tint_set(ed, sel);
+}
+
+void
+editor_handle_delete(Editor *restrict ed)
+{
+   if (!sel_empty_is(ed))
+     sel_del(ed);
 }
 
