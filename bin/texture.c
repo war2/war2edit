@@ -159,6 +159,13 @@ texture_water_is(unsigned int tile)
 }
 
 Eina_Bool
+texture_constructible_is(unsigned int tile)
+{
+   uint16_t t = tile & 0x00f0;
+   return ((t == 0x0050) || (t == 0x0060));
+}
+
+Eina_Bool
 texture_wall_is(unsigned int tile)
 {
    return (((tile & 0x00f0) == 0xa0) || ((tile & 0x00f0) == 0xc0) ||
@@ -182,7 +189,8 @@ texture_walkable_is(unsigned int tile)
 {
    return (!texture_wall_is(tile) &&
            !texture_tree_is(tile) &&
-           !texture_rock_is(tile));
+           !texture_rock_is(tile) &&
+           !texture_water_is(tile));
 }
 
 

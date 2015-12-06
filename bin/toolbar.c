@@ -64,7 +64,10 @@ _seg_changed_cb(void        *data,
    if (editor_sel_action_get(ed) == EDITOR_SEL_ACTION_SELECTION)
      elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_FALSE);
    else
-     elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_TRUE);
+     {
+        elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_TRUE);
+        elm_bitmap_cursor_size_set(ed->bitmap, 1, 1);
+     }
 
    // TODO Reset stuff
    /* Safely unset the unit selection */

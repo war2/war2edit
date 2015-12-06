@@ -38,6 +38,12 @@ Cell *cell_anchor_get(Cell         **cells,
                       unsigned int   x,
                       unsigned int   y,
                       Eina_Bool      below);
+Cell *cell_anchor_pos_get(Cell         **cells,
+                          unsigned int   x,
+                          unsigned int   y,
+                          unsigned int  *ax,
+                          unsigned int  *ay,
+                          Eina_Bool      below);
 
 #endif /* ! _CELL_H_ */
 

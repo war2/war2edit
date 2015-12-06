@@ -93,6 +93,55 @@ _draw(Editor *ed,
    elm_bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 }
 
+static uint16_t
+_tile_solid_mask_get(Editor_Sel action,
+                     Editor_Sel tint)
+{
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((tint != EDITOR_SEL_TINT_LIGHT) &&
+                                  (tint != EDITOR_SEL_TINT_DARK), 0x0000);
+   uint16_t mask;
+
+   switch (action)
+     {
+      case EDITOR_SEL_ACTION_WATER:
+         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0010;
+         else                                mask = 0x0020;
+         break;
+
+      case EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE:
+         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0030;
+         else                                mask = 0x0040;
+         break;
+
+      case EDITOR_SEL_ACTION_CONSTRUCTIBLE:
+         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0050;
+         else                                mask = 0x0060;
+         break;
+
+      case EDITOR_SEL_ACTION_TREES:
+         mask = 0x0070;
+         break;
+
+      case EDITOR_SEL_ACTION_ROCKS:
+         mask = 0x0080;
+         break;
+
+      case EDITOR_SEL_ACTION_HUMAN_WALLS:
+         mask = 0x0090;
+         break;
+
+      case EDITOR_SEL_ACTION_ORCS_WALLS:
+         mask = 0x00a0;
+         break;
+
+      default:
+         CRI("Unhandled action %x", action);
+         return 0x0000;
+     }
+
+   return mask;
+}
+
 static void
 _click_handle(Editor *ed,
               int     x,
@@ -140,11 +189,27 @@ _click_handle(Editor *ed,
      }
    else
      {
+        uint16_t tile = 0x0000;
+
         action = editor_sel_action_get(ed);
         switch (action)
           {
            case EDITOR_SEL_ACTION_SELECTION:
               /* Handled by mouse,down mouse,move mouve,up callbacks */
+              break;
+
+              /* Tiles drawing */
+           case EDITOR_SEL_ACTION_WATER:
+           case EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE:
+           case EDITOR_SEL_ACTION_CONSTRUCTIBLE:
+           case EDITOR_SEL_ACTION_TREES:
+           case EDITOR_SEL_ACTION_ROCKS:
+           case EDITOR_SEL_ACTION_HUMAN_WALLS:
+           case EDITOR_SEL_ACTION_ORCS_WALLS:
+              tile |= _tile_solid_mask_get(action, editor_sel_tint_get(ed));
+              tile |= 0x0001;
+              bitmap_tile_set(ed, x, y, tile);
+              bitmap_redraw(ed); // FIXME Bad
               break;
 
            case EDITOR_SEL_ACTION_NONE:
@@ -213,6 +278,11 @@ _hovered_cb(void        *data,
 
    x = ev->cell_x;
    y = ev->cell_y;
+
+   /* If we are playing with tiles, algorithm below is pointless */
+   if (ed->sel_unit == PUD_UNIT_NONE)
+     goto end;
+
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
    c = ed->cells[y][x];
@@ -275,8 +345,9 @@ _hovered_cb(void        *data,
           }
      }
 
+end:
    if (ev->mouse.buttons & 1)
-     _click_handle(data, x, y);
+     _click_handle(ed, x, y);
 }
 
 static void
@@ -433,14 +504,14 @@ bitmap_unit_del_at(Editor *restrict ed,
                    unsigned int     y,
                    Eina_Bool        below)
 {
-   const Cell anchor = ed->cells[y][x];
-   Cell *c;
-   unsigned int sx = (below) ? anchor.spread_x_below : anchor.spread_x_above;
-   unsigned int sy = (below) ? anchor.spread_y_below : anchor.spread_y_above;
-   unsigned int i, j;
+   Cell *c, *anchor;
+   unsigned int rx, ry, sx, sy, i, j;
 
-   for (j = y; j < y + sy; ++j)
-     for (i = x; i < x + sx; ++i)
+   anchor = cell_anchor_pos_get(ed->cells, x, y, &rx, &ry, below);
+   sx = (below) ? anchor->spread_x_below : anchor->spread_x_above;
+   sy = (below) ? anchor->spread_y_below : anchor->spread_y_above;
+   for (j = ry; j < ry + sy; ++j)
+     for (i = rx; i < rx + sx; ++i)
        {
           c = &(ed->cells[j][i]);
           if (below)
@@ -460,8 +531,8 @@ bitmap_unit_del_at(Editor *restrict ed,
                c->anchor_above = 0;
                c->selected_above = 0;
             }
+          minimap_update(ed, i, j);
        }
-   minimap_update(ed, x, y);
 }
 
 void
@@ -559,6 +630,7 @@ bitmap_tile_draw(Editor *restrict ed,
 
    _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
          TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
+   minimap_render(ed, x, y, 1, 1);
 }
 
 Eina_Bool
@@ -567,6 +639,28 @@ bitmap_tile_set(Editor * restrict ed,
                 int               y,
                 unsigned int      key)
 {
+   Cell *c = &(ed->cells[y][x]);
+
+   if (c->unit_below != PUD_UNIT_NONE)
+     {
+        /*
+         * Big fat-*ss condition!
+         * When NOT to delete a unit:
+         *  - unit is marine and tile is water
+         *  - unit is flying
+         *  - unit is land and
+         *    - if unit is a building and tile is constructible
+         *    - else (unit is not a building) if tile is walkable
+         */
+        if (!((texture_water_is(key) && pud_unit_marine_is(c->unit_below)) ||
+              (pud_unit_flying_is(c->unit_below)) ||
+              (pud_unit_land_is(c->unit_below) &&
+               ((!pud_unit_building_is(c->unit_below) &&
+                 texture_walkable_is(key)) ||
+                (pud_unit_building_is(c->unit_below) &&
+                 texture_constructible_is(key))))))
+          bitmap_unit_del_at(ed, x, y, EINA_TRUE);
+     }
    ed->cells[y][x].tile = key;
 
    minimap_update(ed, x, y);

@@ -24,6 +24,7 @@ Eina_Bool texture_wall_is(unsigned int tile);
 Eina_Bool texture_tree_is(unsigned int tile);
 Eina_Bool texture_rock_is(unsigned int tile);
 Eina_Bool texture_walkable_is(unsigned int tile);
+Eina_Bool texture_constructible_is(unsigned int tile);
 
 #endif /* ! _TEXTURE_H_ */
 

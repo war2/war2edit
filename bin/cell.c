@@ -105,19 +105,47 @@ cell_anchor_get(Cell         **cells,
                 unsigned int   y,
                 Eina_Bool      below)
 {
+   return cell_anchor_pos_get(cells, x, y, NULL, NULL, below);
+}
+
+Cell *
+cell_anchor_pos_get(Cell         **cells,
+                    unsigned int   x,
+                    unsigned int   y,
+                    unsigned int  *ax,
+                    unsigned int  *ay,
+                    Eina_Bool      below)
+{
    Cell *c = &(cells[y][x]);
+   unsigned int rx, ry;
 
    if (below)
      {
         if (c->anchor_below)
-          return c;
-        return &(cells[y - c->spread_y_below][x - c->spread_x_below]);
+          {
+             if (ax) *ax = x;
+             if (ay) *ay = y;
+             return c;
+          }
+        rx = x - c->spread_x_below;
+        ry = y - c->spread_y_below;
+        if (ax) *ax = rx;
+        if (ay) *ay = ry;
+        return &(cells[ry][rx]);
      }
    else
      {
         if (c->anchor_above)
-          return c;
-        return &(cells[y - c->spread_y_above][x - c->spread_x_above]);
+          {
+             if (ax) *ax = x;
+             if (ay) *ay = y;
+             return c;
+          }
+        rx = x - c->spread_x_above;
+        ry = y - c->spread_y_above;
+        if (ax) *ax = rx;
+        if (ay) *ay = ry;
+        return &(cells[ry][rx]);
      }
 }
 
