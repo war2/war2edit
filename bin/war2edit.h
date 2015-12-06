@@ -19,8 +19,6 @@
 
 typedef struct _Cell Cell;
 typedef struct _Editor Editor;
-typedef struct _Texture_Dictionary_Entry Texture_Dictionary_Entry;
-typedef struct _Texture_Dictionary Texture_Dictionary;
 
 #include "log.h"
 #include "tile.h"
