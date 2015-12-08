@@ -3,6 +3,7 @@ project(war2edit C)
 
 include(CheckCCompilerFlag)
 include(cmake/check_compiler_warnings.cmake)
+include(CPack)
 
 add_definitions(-g) # Bad
 check_compiler_warnings(
