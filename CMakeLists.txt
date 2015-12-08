@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(war2edit C)
 
-add_definitions(-g)
-add_definitions(
+include(CheckCCompilerFlag)
+include(cmake/check_compiler_warnings.cmake)
+
+add_definitions(-g) # Bad
+check_compiler_warnings(
     -Wall
     -Wextra
     -Winit-self
@@ -20,12 +23,12 @@ add_definitions(
     -Wsequence-point
     -Wtrigraphs
     -Wmaybe-uninitialized
-    #-Wsuggest-final-types
-    #-Wsuggest-final-methods
+    -Wsuggest-final-types
+    -Wsuggest-final-methods
     #-Wconversion
     -Wlogical-op
-    #-Wlogical-not-parentheses
-    #-Wmemset-transposed-args
+    -Wlogical-not-parentheses
+    -Wmemset-transposed-args
     -Wsizeof-pointer-memaccess
     -Wmissing-field-initializers
     -Wmultichar
@@ -38,6 +41,7 @@ add_definitions(
     -Woverlength-strings
     -Wcast-align
 )
+add_definitions(${COMPILER_WARNINGS})
 add_definitions(-std=gnu11)
 add_definitions(-D_BSD_SOURCE)
 add_definitions(-D_DEFAULT_SOURCE)
