@@ -17,6 +17,22 @@ set(
    minimap.c
    sel.c
    tile.c
+
+   editor.h
+   log.h
+   bitmap.h
+   texture.h
+   sprite.h
+   file.h
+   mainconfig.h
+   menu.h
+   toolbar.h
+   cell.h
+   minimap.h
+   sel.h
+   tile.h
+
+   war2edit.h
 )
 add_executable(war2edit ${WAR2EDIT_SRC})
 
