@@ -93,54 +93,6 @@ _draw(Editor *ed,
    elm_bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 }
 
-static uint16_t
-_tile_solid_mask_get(Editor_Sel action,
-                     Editor_Sel tint)
-{
-   EINA_SAFETY_ON_TRUE_RETURN_VAL((tint != EDITOR_SEL_TINT_LIGHT) &&
-                                  (tint != EDITOR_SEL_TINT_DARK), 0x0000);
-   uint16_t mask;
-
-   switch (action)
-     {
-      case EDITOR_SEL_ACTION_WATER:
-         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0010;
-         else                                mask = 0x0020;
-         break;
-
-      case EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE:
-         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0030;
-         else                                mask = 0x0040;
-         break;
-
-      case EDITOR_SEL_ACTION_CONSTRUCTIBLE:
-         if (tint  == EDITOR_SEL_TINT_LIGHT) mask = 0x0050;
-         else                                mask = 0x0060;
-         break;
-
-      case EDITOR_SEL_ACTION_TREES:
-         mask = 0x0070;
-         break;
-
-      case EDITOR_SEL_ACTION_ROCKS:
-         mask = 0x0080;
-         break;
-
-      case EDITOR_SEL_ACTION_HUMAN_WALLS:
-         mask = 0x0090;
-         break;
-
-      case EDITOR_SEL_ACTION_ORCS_WALLS:
-         mask = 0x00a0;
-         break;
-
-      default:
-         CRI("Unhandled action %x", action);
-         return 0x0000;
-     }
-
-   return mask;
-}
 
 static void
 _click_handle(Editor *ed,
@@ -206,7 +158,7 @@ _click_handle(Editor *ed,
            case EDITOR_SEL_ACTION_ROCKS:
            case EDITOR_SEL_ACTION_HUMAN_WALLS:
            case EDITOR_SEL_ACTION_ORCS_WALLS:
-              tile |= _tile_solid_mask_get(action, editor_sel_tint_get(ed));
+              tile |= tile_solid_mask_get(action, editor_sel_tint_get(ed));
               tile |= 0x0001;
               bitmap_tile_set(ed, x, y, tile);
               bitmap_redraw(ed); // FIXME Bad
@@ -287,9 +239,9 @@ _hovered_cb(void        *data,
 
    c = ed->cells[y][x];
 
-   if (texture_rock_is(c.tile) ||
-       texture_wall_is(c.tile) ||
-       texture_tree_is(c.tile))
+   if (tile_rock_is(c.tile) ||
+       tile_wall_is(c.tile) ||
+       tile_tree_is(c.tile))
      {
         /* Handle only flying units: they are the only one
          * that can be placed there */
@@ -317,7 +269,7 @@ _hovered_cb(void        *data,
           }
         else /* marine,ground units */
           {
-             if (texture_water_is(c.tile)) /* water */
+             if (tile_water_is(c.tile)) /* water */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
@@ -652,13 +604,13 @@ bitmap_tile_set(Editor * restrict ed,
          *    - if unit is a building and tile is constructible
          *    - else (unit is not a building) if tile is walkable
          */
-        if (!((texture_water_is(key) && pud_unit_marine_is(c->unit_below)) ||
+        if (!((tile_water_is(key) && pud_unit_marine_is(c->unit_below)) ||
               (pud_unit_flying_is(c->unit_below)) ||
               (pud_unit_land_is(c->unit_below) &&
                ((!pud_unit_building_is(c->unit_below) &&
-                 texture_walkable_is(key)) ||
+                 tile_walkable_is(key)) ||
                 (pud_unit_building_is(c->unit_below) &&
-                 texture_constructible_is(key))))))
+                 tile_constructible_is(key))))))
           bitmap_unit_del_at(ed, x, y, EINA_TRUE);
      }
    ed->cells[y][x].tile = key;

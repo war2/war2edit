@@ -151,46 +151,4 @@ texture_get(unsigned int  key,
      }
 }
 
-Eina_Bool
-texture_water_is(unsigned int tile)
-{
-   uint16_t t = tile & 0x00f0;
-   return ((t == 0x10) || (t == 0x20));
-}
-
-Eina_Bool
-texture_constructible_is(unsigned int tile)
-{
-   uint16_t t = tile & 0x00f0;
-   return ((t == 0x0050) || (t == 0x0060));
-}
-
-Eina_Bool
-texture_wall_is(unsigned int tile)
-{
-   return (((tile & 0x00f0) == 0xa0) || ((tile & 0x00f0) == 0xc0) ||
-           ((tile & 0x0f00) == 0x900) || ((tile & 0x0f00) == 0x800));
-}
-
-Eina_Bool
-texture_tree_is(unsigned int tile)
-{
-   return (((tile & 0x00f0) == 0x70) || ((tile & 0x0f00) == 0x700));
-}
-
-Eina_Bool
-texture_rock_is(unsigned int tile)
-{
-   return (((tile & 0x00f0) == 0x80) || ((tile & 0x0f00) == 0x400));
-}
-
-Eina_Bool
-texture_walkable_is(unsigned int tile)
-{
-   return (!texture_wall_is(tile) &&
-           !texture_tree_is(tile) &&
-           !texture_rock_is(tile) &&
-           !texture_water_is(tile));
-}
-
 

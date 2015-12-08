@@ -20,12 +20,12 @@ add_definitions(
     -Wsequence-point
     -Wtrigraphs
     -Wmaybe-uninitialized
-    -Wsuggest-final-types
-    -Wsuggest-final-methods
+    #-Wsuggest-final-types
+    #-Wsuggest-final-methods
     #-Wconversion
     -Wlogical-op
-    -Wlogical-not-parentheses
-    -Wmemset-transposed-args
+    #-Wlogical-not-parentheses
+    #-Wmemset-transposed-args
     -Wsizeof-pointer-memaccess
     -Wmissing-field-initializers
     -Wmultichar
