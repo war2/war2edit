@@ -174,21 +174,19 @@ _delete_cb(void        *data,
 }
 
 static void
-_undo_cb(void        *data,
+_undo_cb(void        *data EINA_UNUSED,
          Evas_Object *obj  EINA_UNUSED,
          void        *evt  EINA_UNUSED)
 {
-   Editor *ed = data;
-   CRI("TODO");
+   // TODO
 }
 
 static void
-_redo_cb(void        *data,
+_redo_cb(void        *data EINA_UNUSED,
          Evas_Object *obj  EINA_UNUSED,
          void        *evt  EINA_UNUSED)
 {
-   Editor *ed = data;
-   CRI("TODO");
+   // TODO
 }
 
 
