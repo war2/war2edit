@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
-project(war2edit C)
+cmake_minimum_required(VERSION 3.0.2)
+project(war2edit
+   LANGUAGES C
+   VERSION 0.1.0)
 
 include(CheckCCompilerFlag)
 include(cmake/check_compiler_warnings.cmake)
