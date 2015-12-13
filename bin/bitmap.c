@@ -93,6 +93,50 @@ _draw(Editor *ed,
    elm_bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 }
 
+static uint8_t
+_solid_component_get(const Editor_Sel action,
+                     const Editor_Sel tint)
+{
+   uint8_t component = 0xff;
+
+   switch (action)
+     {
+      case EDITOR_SEL_ACTION_WATER:
+         if (tint == EDITOR_SEL_TINT_LIGHT)
+           component = TILE_WATER_LIGHT;
+         else
+           component = TILE_WATER_DARK;
+         break;
+
+      case EDITOR_SEL_ACTION_GRASS:
+         if (tint == EDITOR_SEL_TINT_LIGHT)
+           component = TILE_GRASS_LIGHT;
+         else
+           component = TILE_GRASS_DARK;
+         break;
+
+      case EDITOR_SEL_ACTION_GROUND:
+         if (tint == EDITOR_SEL_TINT_LIGHT)
+           component = TILE_GROUND_LIGHT;
+         else
+           component = TILE_GROUND_DARK;
+         break;
+
+      case EDITOR_SEL_ACTION_TREES:
+         component = TILE_TREES;
+         break;
+
+      case EDITOR_SEL_ACTION_ROCKS:
+         component = TILE_ROCKS;
+         break;
+
+      default:
+         CRI("Unhandled action %x", action);
+         break;
+     }
+
+   return component;
+}
 
 static void
 _click_handle(Editor *ed,
@@ -141,7 +185,7 @@ _click_handle(Editor *ed,
      }
    else
      {
-        uint16_t tile = 0x0000;
+        uint8_t component;
 
         action = editor_sel_action_get(ed);
         switch (action)
@@ -152,15 +196,18 @@ _click_handle(Editor *ed,
 
               /* Tiles drawing */
            case EDITOR_SEL_ACTION_WATER:
-           case EDITOR_SEL_ACTION_NON_CONSTRUCTIBLE:
-           case EDITOR_SEL_ACTION_CONSTRUCTIBLE:
+           case EDITOR_SEL_ACTION_GROUND:
+           case EDITOR_SEL_ACTION_GRASS:
            case EDITOR_SEL_ACTION_TREES:
            case EDITOR_SEL_ACTION_ROCKS:
            case EDITOR_SEL_ACTION_HUMAN_WALLS:
            case EDITOR_SEL_ACTION_ORCS_WALLS:
-              tile |= tile_solid_mask_get(action, editor_sel_tint_get(ed));
-              tile |= 0x0001;
-              bitmap_tile_set(ed, x, y, tile);
+              printf("=====================================\n");
+              component = _solid_component_get(action, editor_sel_tint_get(ed));
+              bitmap_tile_set(ed, x, y, component, component,
+                              component, component, 0x01,
+                              TILE_PROPAGATE_TL | TILE_PROPAGATE_TR |
+                              TILE_PROPAGATE_BL | TILE_PROPAGATE_BR);
               bitmap_redraw(ed); // FIXME Bad
               break;
 
@@ -208,7 +255,6 @@ _unit_below_cursor_is(const Editor *restrict ed,
    return EINA_FALSE;
 }
 
-
 /*============================================================================*
  *                                   Events                                   *
  *============================================================================*/
@@ -220,7 +266,7 @@ _hovered_cb(void        *data,
 {
    Editor *ed = data;
    Elm_Bitmap_Event_Hovered *ev = info;
-   Cell c;
+   const Cell *c;
    int x, y;
    unsigned int cw, ch;
 
@@ -237,11 +283,11 @@ _hovered_cb(void        *data,
 
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
-   c = ed->cells[y][x];
+   c = &(ed->cells[y][x]);
 
-   if (tile_rock_is(c.tile) ||
-       tile_wall_is(c.tile) ||
-       tile_tree_is(c.tile))
+   if (TILE_ROCKS_IS(c) ||
+       //TILE_WALL_IS(c) || // FIXME
+       TILE_TREES_IS(c))
      {
         /* Handle only flying units: they are the only one
          * that can be placed there */
@@ -269,7 +315,7 @@ _hovered_cb(void        *data,
           }
         else /* marine,ground units */
           {
-             if (tile_water_is(c.tile)) /* water */
+             if (TILE_WATER_IS(c)) /* water */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
@@ -589,9 +635,34 @@ Eina_Bool
 bitmap_tile_set(Editor * restrict ed,
                 int               x,
                 int               y,
-                unsigned int      key)
+                uint8_t           tl,
+                uint8_t           tr,
+                uint8_t           bl,
+                uint8_t           br,
+                uint8_t           seed,
+                Tile_Propagate    propagate)
 {
+   /* Safety checks */
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
+                                  (x >= (int)ed->pud->map_w) ||
+                                  (y >= (int)ed->pud->map_h),
+                                  EINA_FALSE);
+
+   unsigned int k;
    Cell *c = &(ed->cells[y][x]);
+
+   DBG("TileSet[%i,%i]: %x|%x %x|%x %x|%x %x|%x (%i) %x",
+       x, y,
+       c->tile_tl, tl,
+       c->tile_tr, tr,
+       c->tile_bl, bl,
+       c->tile_br, br, seed, propagate);
+
+   /* Np change need to be applied */
+   if ((c->tile_tl == tl) && (c->tile_tr == tr) &&
+       (c->tile_bl == bl) && (c->tile_br == br) &&
+       ((seed != 0xff && c->seed == seed) || (seed == 0xff)))
+     return EINA_TRUE;
 
    if (c->unit_below != PUD_UNIT_NONE)
      {
@@ -604,19 +675,151 @@ bitmap_tile_set(Editor * restrict ed,
          *    - if unit is a building and tile is constructible
          *    - else (unit is not a building) if tile is walkable
          */
-        if (!((tile_water_is(key) && pud_unit_marine_is(c->unit_below)) ||
+        if (!((TILE_WATER_IS(c) && pud_unit_marine_is(c->unit_below)) ||
               (pud_unit_flying_is(c->unit_below)) ||
               (pud_unit_land_is(c->unit_below) &&
                ((!pud_unit_building_is(c->unit_below) &&
-                 tile_walkable_is(key)) ||
+                 TILE_WALKABLE_IS(c)) ||
                 (pud_unit_building_is(c->unit_below) &&
-                 tile_constructible_is(key))))))
+                 TILE_GRASS_IS(c))))))
           bitmap_unit_del_at(ed, x, y, EINA_TRUE);
      }
-   ed->cells[y][x].tile = key;
 
+   /* Set tile internals */
+   c->tile_tl = tl;
+   c->tile_tr = tr;
+   c->tile_bl = bl;
+   c->tile_br = br;
+   c->tile = tile_calculate(tl, tr, bl, br, seed);
+   INF("Setting tile [%i,%i]: 0x%04x = {%x %x %x %x}", x, y, c->tile,
+       c->tile_tl, c->tile_tr, c->tile_bl, c->tile_br);
    minimap_update(ed, x, y);
-   return EINA_TRUE;
+
+   if (propagate == TILE_PROPAGATE_NONE)
+     return EINA_TRUE;
+
+   /* Code below allows to propagate safely */
+   enum {
+      TL, T, TR,
+       L,    R,
+      BL, B, BR
+   };
+   struct {
+      int               x;
+      int               y;
+      Eina_Bool         valid;
+      Tile_Propagate    prop;
+      uint8_t           tl;
+      uint8_t           tr;
+      uint8_t           bl;
+      uint8_t           br;
+   } next[8] = {{0}};
+   Cell *const *const cells = ed->cells;
+   Eina_Bool ok = EINA_TRUE;
+
+   if (x > 0)
+     {
+        next[L].x = x - 1;
+        next[L].y = y;
+        next[L].valid = EINA_TRUE;
+        next[L].prop = TILE_PROPAGATE_TL | TILE_PROPAGATE_BL;
+        next[L].tl = cells[y][x - 1].tile_tl;
+        next[L].tr = cells[y][x].tile_tl;
+        next[L].bl = cells[y][x - 1].tile_bl;
+        next[L].br = cells[y][x].tile_bl;
+        if (y > 0)
+          {
+             next[TL].x = x - 1;
+             next[TL].y = y - 1;
+             next[TL].valid = EINA_TRUE;
+             next[TL].prop = TILE_PROPAGATE_TL;
+             next[TL].tl = cells[y - 1][x - 1].tile_tl;
+             next[TL].tr = cells[y - 1][x - 1].tile_tr;
+             next[TL].bl = cells[y - 1][x - 1].tile_bl;
+             next[TL].br = cells[y][x].tile_tl;
+          }
+        if (y < (int)ed->pud->map_h - 1)
+          {
+             next[BL].x = x - 1;
+             next[BL].y = y + 1;
+             next[BL].valid = EINA_TRUE;
+             next[BL].prop = TILE_PROPAGATE_BL;
+             next[BL].tl = cells[y + 1][x - 1].tile_tl;
+             next[BL].tr = cells[y][x].tile_bl;
+             next[BL].bl = cells[y + 1][x - 1].tile_bl;
+             next[BL].br = cells[y + 1][x - 1].tile_br;
+          }
+     }
+   if (x < (int)ed->pud->map_w - 1)
+     {
+        next[R].x = x + 1;
+        next[R].y = y;
+        next[R].valid = EINA_TRUE;
+        next[R].prop = TILE_PROPAGATE_TR | TILE_PROPAGATE_BR;
+        next[R].tl = cells[y][x].tile_tr;
+        next[R].tr = cells[y][x + 1].tile_tr;
+        next[R].bl = cells[y][x].tile_br;
+        next[R].br = cells[y][x + 1].tile_br;
+
+        if (y > 0)
+          {
+             next[TR].x = x + 1;
+             next[TR].y = y - 1;
+             next[TR].valid = EINA_TRUE;
+             next[TR].prop = TILE_PROPAGATE_TR;
+             next[TR].tl = cells[y - 1][x + 1].tile_tl;
+             next[TR].tr = cells[y - 1][x + 1].tile_tr;
+             next[TR].bl = cells[y][x].tile_tr;
+             next[TR].br = cells[y - 1][x + 1].tile_br;
+          }
+        if (y < (int)ed->pud->map_h - 1)
+          {
+             next[BR].x = x + 1;
+             next[BR].y = y + 1;
+             next[BR].valid = EINA_TRUE;
+             next[BR].prop = TILE_PROPAGATE_BR;
+             next[BR].tl = cells[y][x].tile_br;
+             next[BR].tr = cells[y + 1][x + 1].tile_tr;
+             next[BR].bl = cells[y + 1][x + 1].tile_bl;
+             next[BR].br = cells[y + 1][x + 1].tile_br;
+          }
+     }
+   if (y > 0)
+     {
+        next[T].x = x;
+        next[T].y = y - 1;
+        next[T].valid = EINA_TRUE;
+        next[T].prop = TILE_PROPAGATE_TL | TILE_PROPAGATE_TR;
+        next[T].tl = cells[y - 1][x].tile_tl;
+        next[T].tr = cells[y - 1][x].tile_tr;
+        next[T].bl = cells[y][x].tile_tl;
+        next[T].br = cells[y][x].tile_tr;
+     }
+   if (y < (int)ed->pud->map_h - 1)
+     {
+        next[B].x = x;
+        next[B].y = y + 1;
+        next[B].valid = EINA_TRUE;
+        next[B].prop = TILE_PROPAGATE_BR | TILE_PROPAGATE_BL;
+        next[B].tl = cells[y][x].tile_bl;
+        next[B].tr = cells[y][x].tile_br;
+        next[B].bl = cells[y + 1][x].tile_bl;
+        next[B].br = cells[y + 1][x].tile_br;
+     }
+
+   for (k = 0; k < EINA_C_ARRAY_LENGTH(next); ++k)
+     {
+        if ((next[k].valid) && (next[k].prop & propagate))
+          {
+             ok &= bitmap_tile_set(ed,
+                                   next[k].x, next[k].y,
+                                   next[k].tl, next[k].tr,
+                                   next[k].bl, next[k].br,
+                                   0xff, next[k].prop);
+          }
+     }
+
+   return ok;
 }
 
 Eina_Bool

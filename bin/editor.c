@@ -481,6 +481,8 @@ editor_load(Editor * restrict  ed,
    unsigned int i, j, sw, sh;
    const Pud *pud;
    struct _Pud_Unit *u;
+   uint16_t tile;
+   uint8_t bl, br, tl, tr, seed;
 
    if (file)
      {
@@ -514,7 +516,13 @@ editor_load(Editor * restrict  ed,
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)
      for (i = 0; i < pud->map_w; i++)
-       bitmap_tile_set(ed, i, j, pud_tile_get(pud, i, j));
+       {
+          tile = pud_tile_get(pud, i, j);
+          tile_decompose(tile, &tl, &tr, &bl, &br, &seed);
+          WRN("Get 0x%x. Got: %x %x %x %x (%i)",
+              tile, tl, tr, bl, br, seed);
+          bitmap_tile_set(ed, i, j, bl, br, tl, tr, seed, TILE_PROPAGATE_NONE);
+       }
 
    for (i = 0; i < pud->units_count; ++i)
      {

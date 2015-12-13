@@ -27,6 +27,13 @@ struct _Cell
    unsigned int start_location_human : 1;
    unsigned int selected_below : 2;
    unsigned int selected_above : 2;
+
+   /* Top Left, Top Right, Bottom Left, Bottom Right */
+   unsigned int tile_tl : 4;
+   unsigned int tile_tr : 4;
+   unsigned int tile_bl : 4;
+   unsigned int tile_br : 4;
+   uint8_t seed;
 };
 
 #define CELL_NOT_START_LOCATION 0x0f

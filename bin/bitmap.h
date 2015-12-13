@@ -11,7 +11,6 @@
 #define BITMAP_UNIT_ABOVE ((Eina_Bool) EINA_FALSE)
 
 Eina_Bool bitmap_add(Editor *ed);
-Eina_Bool bitmap_tile_set(Editor * restrict ed, int x, int y, unsigned int key);
 void bitmap_unit_set(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
 
 void bitmap_redraw(Editor *restrict ed);
@@ -29,6 +28,17 @@ bitmap_unit_del_at(Editor *restrict ed,
                    unsigned int     x,
                    unsigned int     y,
                    Eina_Bool        below);
+
+Eina_Bool
+bitmap_tile_set(Editor * restrict ed,
+                int               x,
+                int               y,
+                uint8_t           tl,
+                uint8_t           tr,
+                uint8_t           bl,
+                uint8_t           br,
+                uint8_t           seed,
+                Tile_Propagate    propagate);
 
 #endif /* ! _BITMAP_H_ */
 

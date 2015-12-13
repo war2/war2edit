@@ -27,7 +27,7 @@ texture_load(Eet_File     *src,
    mem = eet_read(src, key_str, &size);
    if (!mem)
      {
-        DBG("Cannot find key \"%s\"", key_str);
+        //DBG("Cannot find key \"%s\"", key_str);
         /* Some tiles may not exist on some tilesets
          * Not finding the tile is likely not to be an error. */
         if (missing) *missing = EINA_TRUE;
