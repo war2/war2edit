@@ -151,9 +151,7 @@ editor_error(Editor     *ed,
       elm_obj_box_pack_end(o)
    );
 
-   elm_win_inwin_content_set(ed->inwin, box);
-   elm_win_inwin_activate(ed->inwin);
-   evas_object_show(ed->inwin);
+   inwin_activate(ed, box, INWIN_EDITOR_ERROR);
    evas_object_show(box);
    evas_object_show(o);
    evas_object_show(e);
@@ -245,8 +243,7 @@ editor_new(const char *pud_file,
    evas_object_show(ed->scroller);
 
    /* Add inwin */
-   ed->inwin = elm_win_inwin_add(ed->win);
-   EINA_SAFETY_ON_NULL_GOTO(ed->inwin, err_win_del);
+   inwin_add(ed);
 
    /* Show window */
    evas_object_show(ed->win);

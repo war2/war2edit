@@ -292,9 +292,7 @@ mainconfig_show(Editor *ed)
    menu_enabled_set(ed, EINA_FALSE);
 
    /* Show inwin */
-   elm_win_inwin_content_set(ed->inwin, ed->mainconfig->container);
-   elm_win_inwin_activate(ed->inwin);
-   evas_object_show(ed->inwin);
+   inwin_activate(ed, ed->mainconfig->container, INWIN_MAINCONFIG);
 }
 
 void
@@ -302,7 +300,7 @@ mainconfig_hide(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN(ed->mainconfig);
 
-   evas_object_hide(ed->inwin);
+   inwin_dismiss(ed);
    menu_enabled_set(ed, EINA_TRUE);
 }
 

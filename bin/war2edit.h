@@ -28,6 +28,7 @@ typedef struct _Editor Editor;
 #include "cell.h"
 #include "file.h"
 #include "menu.h"
+#include "inwin.h"
 #include "sprite.h"
 #include "bitmap.h"
 #include "editor.h"

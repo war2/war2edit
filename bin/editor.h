@@ -7,6 +7,8 @@
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 
+#include "inwin.h"
+
 typedef uint16_t Editor_Sel;
 
 #define EDITOR_SEL_NONE                      ((Editor_Sel) 0)
@@ -49,7 +51,10 @@ struct _Editor
    /* === GUI === */
    Evas_Object  *win;
    Evas_Object  *menu;
-   Evas_Object  *inwin;
+   struct {
+      Evas_Object  *obj;
+      Inwin         id;
+   } inwin;
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
    Evas_Object  *fs; /* File selector */

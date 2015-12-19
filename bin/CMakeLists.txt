@@ -17,6 +17,7 @@ set(
    minimap.c
    sel.c
    tile.c
+   inwin.c
 
    editor.h
    log.h
@@ -31,6 +32,7 @@ set(
    minimap.h
    sel.h
    tile.h
+   inwin.h
 
    war2edit.h
 )

@@ -14,15 +14,13 @@
 static void
 _fs_show(Editor *ed)
 {
-   elm_win_inwin_content_set(ed->inwin, ed->fs);
-   elm_win_inwin_activate(ed->inwin);
-   evas_object_show(ed->inwin);
+   inwin_activate(ed, ed->fs, INWIN_FILE_SELECTOR);
 }
 
 static void
 _fs_hide(Editor *ed)
 {
-   evas_object_hide(ed->inwin);
+   inwin_dismiss(ed);
 }
 
 
