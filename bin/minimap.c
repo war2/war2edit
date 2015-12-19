@@ -50,7 +50,7 @@ minimap_add(Editor *ed)
    Evas_Object *o, *win;
    unsigned int w = ed->pud->map_w;
    const unsigned int h = ed->pud->map_h;
-   unsigned int i;
+   unsigned int i, ratio, winw, winh;
 
    win = ed->minimap.win = elm_win_util_standard_add("Minimap", "Minimap");
    evas_object_smart_callback_add(win, "delete,request",
@@ -63,38 +63,28 @@ minimap_add(Editor *ed)
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_show(o);
 
+   ed->minimap.w = w;
+   ed->minimap.h = h;
+
    /* Define a ratio to resize the minimap (way too small overwise) */
    switch (ed->pud->dims)
      {
-      case PUD_DIMENSIONS_32_32:
-         ed->minimap.ratio = 12;
-         break;
-
-      case PUD_DIMENSIONS_64_64:
-         ed->minimap.ratio = 6;
-         break;
-
-      case PUD_DIMENSIONS_96_96:
-         ed->minimap.ratio = 4;
-         break;
-
-      case PUD_DIMENSIONS_128_128:
-         ed->minimap.ratio = 3;
-         break;
-
+      case PUD_DIMENSIONS_32_32:   ratio = 5; break;
+      case PUD_DIMENSIONS_64_64:   ratio = 3; break;
+      case PUD_DIMENSIONS_96_96:   ratio = 2; break;
+      case PUD_DIMENSIONS_128_128: ratio = 2; break;
       default:
          CRI("ed->pud->dims is %i. This MUST NEVER happen", ed->pud->dims);
-         ed->minimap.ratio = 1;
+         ratio = 1;
          break;
      }
 
-   ed->minimap.w = w * ed->minimap.ratio;
-   ed->minimap.h = h * ed->minimap.ratio;
-
    elm_win_resize_object_add(win, o);
-   evas_object_resize(win, ed->minimap.w, ed->minimap.h);
-   evas_object_size_hint_max_set(win, ed->minimap.w, ed->minimap.h);
-   evas_object_size_hint_min_set(win, ed->minimap.w, ed->minimap.h);
+   winw = ratio * ed->minimap.w;
+   winh = ratio * ed->minimap.h;
+   evas_object_size_hint_max_set(win, winw, winh);
+   evas_object_size_hint_min_set(win, winw, winh);
+   evas_object_resize(win, winw, winh);
 
    /* Current view mask */
    ed->minimap.rect = evas_object_rectangle_add(evas_object_evas_get(ed->minimap.win));
@@ -206,10 +196,10 @@ minimap_update(Editor *restrict ed,
      }
 
    /* Format ARGB8888: each pixel is 4 bytes long */
-   px = x * ed->minimap.ratio * 4;
-   py = y * ed->minimap.ratio;
-   rx = px + (ed->minimap.ratio * 4) + (w * 4 * ed->minimap.ratio);
-   ry = py + ed->minimap.ratio + (h * ed->minimap.ratio);
+   px = x * 4;
+   py = y;
+   rx = px + 4 + (w * 4);
+   ry = py + 1 + h;
 
    for (j = py; j < ry; ++j)
      {
@@ -268,11 +258,6 @@ minimap_view_move(Editor *restrict ed,
         x -= rw / 2;
         y -= rh / 2;
      }
-   else
-     {
-        x *= ed->minimap.ratio;
-        y *= ed->minimap.ratio;
-     }
 
    if (x < 0) x = 0;
    if (y < 0) y = 0;
@@ -289,8 +274,8 @@ minimap_view_move(Editor *restrict ed,
         );
 
         elm_bitmap_cell_size_get(ed->bitmap, &cx, &cy);
-        bx = x * cx / ed->minimap.ratio;
-        by = y * cy / ed->minimap.ratio;
+        bx = x * cx;
+        by = y * cy;
         elm_scroller_region_bring_in(ed->scroller, bx, by, srw, srh);
      }
 }
@@ -300,9 +285,6 @@ minimap_view_resize(Editor *restrict ed,
                     unsigned int     w,
                     unsigned int     h)
 {
-   w *= ed->minimap.ratio;
-   h *= ed->minimap.ratio;
-
    evas_object_resize(ed->minimap.rect, w, h);
 }
 

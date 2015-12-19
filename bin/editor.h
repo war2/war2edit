@@ -69,7 +69,6 @@ struct _Editor
       Evas_Object    *map;
       Evas_Object    *rect;
       unsigned char **data;
-      unsigned int    ratio;
       unsigned int    w;
       unsigned int    h;
    } minimap;
