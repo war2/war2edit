@@ -63,6 +63,7 @@ struct _Editor
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
 
+   // XXX Should minimap be shared for all instances??
    struct {
       Evas_Object    *win;
       Evas_Object    *map;

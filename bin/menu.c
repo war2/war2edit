@@ -189,6 +189,15 @@ _redo_cb(void        *data EINA_UNUSED,
    // TODO
 }
 
+static void
+_minimap_show_cb(void        *data,
+                 Evas_Object *obj  EINA_UNUSED,
+                 void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+   minimap_show(ed);
+}
+
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -220,6 +229,10 @@ menu_add(Editor *ed)
    elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed);
    elm_menu_item_separator_add(ed->menu, itm);
    elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
+
+   /*==== VIEW MENU ====*/
+   itm = elm_menu_item_add(ed->menu, NULL, NULL, "View", NULL, NULL);
+   elm_menu_item_add(ed->menu, itm, NULL, "Show Minimap", _minimap_show_cb, ed);
 
 
    /*==== TOOLS MENU ====*/

@@ -31,5 +31,7 @@ minimap_view_move(Editor *restrict ed,
 
 void minimap_view_resize(Editor *restrict ed, unsigned int w, unsigned int h);
 
+void minimap_show(Editor *ed);
+
 #endif /* ! _MINIMAP_H_ */
 

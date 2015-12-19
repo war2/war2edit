@@ -32,6 +32,14 @@ _mouse_move_cb(void        *data EINA_UNUSED,
  //    minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
 }
 
+static void
+_minimap_win_close_cb(void        *data,
+                      Evas_Object *obj  EINA_UNUSED,
+                      void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+   evas_object_hide(ed->minimap.win);
+}
 
 
 Eina_Bool
@@ -43,9 +51,10 @@ minimap_add(Editor *ed)
    unsigned int w = ed->pud->map_w;
    const unsigned int h = ed->pud->map_h;
    unsigned int i;
-   int winx, winy, winw;
 
-   win = ed->minimap.win = elm_win_add(ed->win, "Minimap", ELM_WIN_UTILITY);
+   win = ed->minimap.win = elm_win_util_standard_add("Minimap", "Minimap");
+   evas_object_smart_callback_add(win, "delete,request",
+                                  _minimap_win_close_cb, ed);
    evas_object_show(win);
 
    o = ed->minimap.map = evas_object_image_filled_add(evas_object_evas_get(win));
@@ -86,9 +95,6 @@ minimap_add(Editor *ed)
    evas_object_resize(win, ed->minimap.w, ed->minimap.h);
    evas_object_size_hint_max_set(win, ed->minimap.w, ed->minimap.h);
    evas_object_size_hint_min_set(win, ed->minimap.w, ed->minimap.h);
-
-   evas_object_geometry_get(ed->win, &winx, &winy, &winw, NULL);
-   evas_object_move(win, winx + winw - ed->minimap.w, winy);
 
    /* Current view mask */
    ed->minimap.rect = evas_object_rectangle_add(evas_object_evas_get(ed->minimap.win));
@@ -134,6 +140,12 @@ fail_free:
    free(ed->minimap.data);
 fail:
    return EINA_FALSE;
+}
+
+void
+minimap_show(Editor *ed)
+{
+   evas_object_show(ed->minimap.win);
 }
 
 void
