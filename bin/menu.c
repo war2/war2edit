@@ -495,6 +495,38 @@ menu_unit_selection_reset(Editor *ed)
  *                               Map Properties                               *
  *============================================================================*/
 
+static Evas_Object *
+_table_add(Evas_Object *frame)
+{
+   Evas_Object *t;
+
+   t = elm_table_add(frame);
+   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_table_homogeneous_set(t, EINA_TRUE);
+   evas_object_show(t);
+   elm_table_padding_set(t, 20, 6);
+   elm_object_content_set(frame, t);
+   evas_object_show(t);
+
+   return t;
+}
+
+static Evas_Object *
+_frame_add(Evas_Object *parent,
+           const char  *text)
+{
+   Evas_Object *f;
+
+   f = elm_frame_add(parent);
+   elm_object_text_set(f, text);
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(f);
+
+   return f;
+}
+
 static void
 _era_changed_cb(void        *data,
                 Evas_Object *obj,
@@ -790,18 +822,8 @@ menu_player_properties_new(Editor      *ed,
    Evas_Object *f, *t;
    unsigned int i;
 
-   f = elm_frame_add(parent);
-   elm_object_text_set(f, "Player Properties");
-   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(f);
-
-   t = elm_table_add(f);
-   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(t);
-   elm_table_padding_set(t, 20, 6);
-   elm_object_content_set(f, t);
+   f = _frame_add(parent, "Players Properties");
+   t = _table_add(f);
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
@@ -902,19 +924,8 @@ menu_starting_properties_new(Editor      *ed,
    Evas_Object *f, *t;
    unsigned int i;
 
-   f = elm_frame_add(parent);
-   elm_object_text_set(f, "Starting Properties");
-   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(f);
-
-   t = elm_table_add(f);
-   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(t);
-   elm_table_homogeneous_set(t, EINA_TRUE);
-   elm_table_padding_set(t, 20, 6);
-   elm_object_content_set(f, t);
+   f = _frame_add(parent, "Starting Properties");
+   t = _table_add(f);
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
@@ -941,7 +952,6 @@ menu_starting_properties_new(Editor      *ed,
    _pack_label(t, 0, 3, "Oil");
    for (i = 0; i < 8; ++i)
      _pack_word_entry(t, i + 1, 3, &(ed->pud->soil.players[i]));
-
 
    return f;
 }
