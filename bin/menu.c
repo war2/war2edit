@@ -6,6 +6,38 @@
 
 #include "war2edit.h"
 
+typedef struct
+{
+   Elm_Validator_Regexp *re;
+   uint16_t             *bind;
+} Word_Validator;
+
+static Word_Validator *
+_word_validator_new(const char *regexp,
+                    uint16_t   *bind)
+{
+   Word_Validator *val;
+
+   val = malloc(sizeof(*val));
+   if (EINA_UNLIKELY(!val))
+     {
+        CRI("Failed to allocate memory");
+        return NULL;
+     }
+
+   val->re = elm_validator_regexp_new(regexp, NULL);
+   val->bind = bind;
+
+   return val;
+}
+
+static void EINA_UNUSED
+_word_validator_free(Word_Validator *val)
+{
+   elm_validator_regexp_free(val->re);
+   free(val);
+}
+
 
 /*============================================================================*
  *                                 Private API                                *
@@ -117,7 +149,7 @@ _map_properties_cb(void        *data,
 }
 
 static void
-_player_properties_cb(void        *data  EINA_UNUSED,
+_player_properties_cb(void        *data,
                       Evas_Object *obj   EINA_UNUSED,
                       void        *event EINA_UNUSED)
 {
@@ -138,6 +170,16 @@ _starting_properties_cb(void        *data  EINA_UNUSED,
                         Evas_Object *obj   EINA_UNUSED,
                         void        *event EINA_UNUSED)
 {
+   Editor *ed = data;
+
+   if (inwin_id_is(ed, INWIN_STARTING_PROPERTIES))
+     inwin_activate(ed);
+   else
+     {
+        inwin_set(ed, menu_starting_properties_new(ed, ed->inwin.obj),
+                  INWIN_STARTING_PROPERTIES,
+                  "Close", NULL, NULL, NULL);
+     }
 }
 
 static void
@@ -786,6 +828,119 @@ menu_player_properties_new(Editor      *ed,
    _pack_label(t, 0, 3, "AI");
    for (i = 0; i < 8; ++i)
      _pack_ai_selector(t, i + 1, 3, &(ed->pud->ai.players[i]));
+
+
+   return f;
+}
+
+
+/*============================================================================*
+ *                             Starting Properties                            *
+ *============================================================================*/
+
+static Eina_Bool
+_word_validator(void                       *data,
+                Eo                         *obj,
+                const Eo_Event_Description *desc,
+                void                       *info)
+{
+   Eina_Bool status;
+   Word_Validator *val = data;
+   Elm_Validate_Content *vc = info;
+   int numeric;
+
+   status = elm_validator_regexp_helper(val->re, obj, desc, info);
+   if (status == EO_CALLBACK_CONTINUE)
+     {
+        status = EO_CALLBACK_STOP;
+        if (strlen(vc->text) <= 5)
+          {
+             numeric = atoi(vc->text);
+             if (numeric <= UINT16_MAX)
+               {
+                  *(val->bind) = numeric;
+                  status = EO_CALLBACK_CONTINUE;
+               }
+          }
+     }
+   return status;
+}
+
+static void
+_pack_word_entry(Evas_Object  *table,
+                 unsigned int  row,
+                 unsigned int  col,
+                 uint16_t     *bind)
+{
+   Evas_Object *o;
+   Word_Validator *val;
+   char buf[16];
+
+   o = elm_entry_add(table);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_entry_single_line_set(o, EINA_TRUE);
+   elm_entry_scrollable_set(o, EINA_TRUE);
+   elm_entry_editable_set(o, EINA_TRUE);
+   evas_object_show(o);
+
+   snprintf(buf, sizeof(buf), "%u", *bind);
+   elm_entry_entry_set(o, buf);
+
+   // FIXME Leak val
+   val = _word_validator_new("^[0-9]+$", bind);
+   eo_do(o, eo_event_callback_add(ELM_ENTRY_EVENT_VALIDATE,
+                                  _word_validator, val));
+
+   elm_table_pack(table, o, col, row, 1, 1);
+}
+
+Evas_Object *
+menu_starting_properties_new(Editor      *ed,
+                             Evas_Object *parent)
+{
+   Evas_Object *f, *t;
+   unsigned int i;
+
+   f = elm_frame_add(parent);
+   elm_object_text_set(f, "Starting Properties");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(f);
+
+   t = elm_table_add(f);
+   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(t);
+   elm_table_homogeneous_set(t, EINA_TRUE);
+   elm_table_padding_set(t, 20, 6);
+   elm_object_content_set(f, t);
+
+   /* Players */
+   _pack_label(t, 0, 0, "Player");
+   _pack_label(t, 1, 0, "Player 1 (RED)");
+   _pack_label(t, 2, 0, "Player 2 (BLUE)");
+   _pack_label(t, 3, 0, "Player 3 (GREEN)");
+   _pack_label(t, 4, 0, "Player 4 (VIOLET)");
+   _pack_label(t, 5, 0, "Player 5 (ORANGE)");
+   _pack_label(t, 6, 0, "Player 6 (BLACK)");
+   _pack_label(t, 7, 0, "Player 7 (WHITE)");
+   _pack_label(t, 8, 0, "Player 8 (YELLOW)");
+
+   /* Gold */
+   _pack_label(t, 0, 1, "Gold");
+   for (i = 0; i < 8; ++i)
+     _pack_word_entry(t, i + 1, 1, &(ed->pud->sgld.players[i]));
+
+   /* Lumber */
+   _pack_label(t, 0, 2, "Lumber");
+   for (i = 0; i < 8; ++i)
+     _pack_word_entry(t, i + 1, 2, &(ed->pud->slbr.players[i]));
+
+   /* Oil */
+   _pack_label(t, 0, 3, "Oil");
+   for (i = 0; i < 8; ++i)
+     _pack_word_entry(t, i + 1, 3, &(ed->pud->soil.players[i]));
 
 
    return f;
