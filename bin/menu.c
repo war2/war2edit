@@ -121,6 +121,16 @@ _player_properties_cb(void        *data  EINA_UNUSED,
                       Evas_Object *obj   EINA_UNUSED,
                       void        *event EINA_UNUSED)
 {
+   Editor *ed = data;
+
+   if (inwin_id_is(ed, INWIN_PLAYER_PROPERTIES))
+     inwin_activate(ed);
+   else
+     {
+        inwin_set(ed, menu_player_properties_new(ed, ed->inwin.obj),
+                  INWIN_PLAYER_PROPERTIES,
+                  "Close", NULL, NULL, NULL);
+     }
 }
 
 static void
@@ -439,6 +449,10 @@ menu_unit_selection_reset(Editor *ed)
 }
 
 
+/*============================================================================*
+ *                               Map Properties                               *
+ *============================================================================*/
+
 static void
 _era_changed_cb(void        *data,
                 Evas_Object *obj,
@@ -449,14 +463,14 @@ _era_changed_cb(void        *data,
 }
 
 Evas_Object *
-menu_map_properties_new(const Editor *ed,
-                        Evas_Object  *parent)
+menu_map_properties_new(Editor      *ed,
+                        Evas_Object *parent)
 {
    Evas_Object *f, *b, *o, *grp;
 
    /* Frame for map era */
    f = elm_frame_add(parent);
-   elm_object_text_set(f, "Tileset");
+   elm_object_text_set(f, "Map Properties");
    evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_show(f);
@@ -511,6 +525,268 @@ menu_map_properties_new(const Editor *ed,
 
    /* Default value */
    elm_radio_value_set(grp, PUD_ERA_FOREST);
+
+   return f;
+}
+
+
+/*============================================================================*
+ *                             Players Properties                             *
+ *============================================================================*/
+
+static void
+_hoversel_selected_cb(void        *data EINA_UNUSED,
+                      Evas_Object *obj,
+                      void        *info)
+{
+   elm_object_text_set(obj, elm_object_item_text_get(info));
+}
+
+static inline void
+_hoversel_item_add(Evas_Object   *hoversel,
+                   const char    *label,
+                   Evas_Smart_Cb  func,
+                   void          *bind,
+                   void          *data)
+{
+   Elm_Object_Item *eoi;
+
+   eoi = elm_hoversel_item_add(hoversel, label, NULL, ELM_ICON_NONE, func, bind);
+   elm_object_item_data_set(eoi, data);
+}
+
+static void
+_pack_label(Evas_Object  *table,
+            unsigned int  row,
+            unsigned int  col,
+            const char   *label)
+{
+   Evas_Object *o;
+
+   o = elm_label_add(table);
+   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   elm_object_text_set(o, label);
+   evas_object_show(o);
+   elm_table_pack(table, o, col, row, 1, 1);
+}
+
+static void
+_bind_set_cb(void        *data,
+             Evas_Object *obj  EINA_UNUSED,
+             void        *evt)
+{
+   uint8_t *bind = data;
+   uint8_t *val = elm_object_item_data_get(evt);
+   *bind = *val;
+}
+
+static Evas_Object *
+_hoversel_add(Evas_Object *parent,
+              const char  *init_label)
+{
+   Evas_Object *o;
+
+   o = elm_hoversel_add(parent);
+   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_smart_callback_add(o, "selected", _hoversel_selected_cb, NULL);
+   elm_hoversel_hover_parent_set(o, parent);
+   elm_object_text_set(o, init_label);
+   evas_object_show(o);
+
+   return o;
+}
+
+static void
+_pack_race_selector(Evas_Object  *table,
+                    unsigned int  row,
+                    unsigned int  col,
+                    uint8_t      *bind)
+{
+   static uint8_t values[] = {
+      PUD_SIDE_HUMAN,                   /* 0 */
+      PUD_SIDE_ORC                      /* 1 */
+   };
+   Evas_Object *o;
+   const char *human_race = "Human";
+   const char *orc_race = "Orc";
+   const char *race = (*bind == PUD_SIDE_HUMAN) ? human_race : orc_race;
+
+   o = _hoversel_add(table, race);
+   _hoversel_item_add(o, human_race, _bind_set_cb, bind, &(values[0]));
+   _hoversel_item_add(o, orc_race, _bind_set_cb, bind, &(values[1]));
+
+   elm_table_pack(table, o, col, row, 1, 1);
+}
+
+static const char *
+_owner_to_string(uint8_t owner)
+{
+   switch (owner)
+     {
+      case PUD_OWNER_COMPUTER:
+         return "Computer";
+
+      case PUD_OWNER_HUMAN:
+         return "Human";
+
+      case PUD_OWNER_RESCUE_PASSIVE:
+         return "Rescue (Passive)";
+
+      case PUD_OWNER_RESCUE_ACTIVE:
+         return "Rescue (Active)";
+
+      default:
+         CRI("Unhandled value %x", owner);
+         return NULL;
+     }
+}
+
+static void
+_pack_owner_selector(Evas_Object  *table,
+                     unsigned int  row,
+                     unsigned int  col,
+                     uint8_t      *bind)
+{
+   static uint8_t values[] = {
+      PUD_OWNER_HUMAN,
+      PUD_OWNER_COMPUTER,
+      PUD_OWNER_RESCUE_PASSIVE,
+      PUD_OWNER_RESCUE_ACTIVE
+   };
+   Evas_Object *o;
+   const char *label = _owner_to_string(*bind);
+   unsigned int i;
+
+   o = _hoversel_add(table, label);
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(values); ++i)
+     _hoversel_item_add(o, _owner_to_string(values[i]), _bind_set_cb,
+                        bind, &(values[i]));
+   elm_table_pack(table, o, col, row, 1, 1);
+}
+
+static const char *
+_ai_to_string(uint8_t ai)
+{
+   static char buf[32];
+
+   switch (ai)
+     {
+      case PUD_AI_LAND_ATTACK:
+         return "Land Attack";
+
+      case PUD_AI_SEA_ATTACK:
+         return "Sea Attack";
+
+      case PUD_AI_AIR_ATTACK:
+         return "Air Attack";
+
+      case PUD_AI_PASSIVE:
+         return "Passive";
+
+      default:
+         break;
+     }
+
+   if ((ai >= PUD_AI_ORC_3) && (ai <= PUD_AI_HUMAN_13))
+     {
+        if (ai % 2 == 0) /* orc */
+          snprintf(buf, sizeof(buf), "Orc %u", ai / 2);
+        else /* human */
+          snprintf(buf, sizeof(buf), "Human %u", (ai / 2) + 1);
+     }
+   else if ((ai >= PUD_AI_EXPANSION_1) && (ai <= PUD_AI_EXPANSION_51))
+     snprintf(buf, sizeof(buf), "Expansion %u", ai - PUD_AI_EXPANSION_1 + 1);
+   else
+     {
+        CRI("Unhandled AI value %x", ai);
+        return NULL;
+     }
+
+   return buf;
+}
+
+static void
+_pack_ai_selector(Evas_Object  *table,
+                  unsigned int  row,
+                  unsigned int  col,
+                  uint8_t      *bind)
+{
+   Evas_Object *o;
+   uint8_t *value;
+   unsigned int i;
+
+   o = _hoversel_add(table, _ai_to_string(*bind));
+
+#define ITEM_ADD(val) \
+   do { \
+      value = malloc(sizeof(uint8_t)); \
+      *value = val; \
+      _hoversel_item_add(o, _ai_to_string(val), _bind_set_cb, bind, value); \
+   } while (0)
+
+   // FIXME value leaks
+   ITEM_ADD(PUD_AI_LAND_ATTACK);
+   ITEM_ADD(PUD_AI_PASSIVE);
+   ITEM_ADD(PUD_AI_SEA_ATTACK);
+   ITEM_ADD(PUD_AI_AIR_ATTACK);
+
+   for (i = PUD_AI_ORC_4; i <= PUD_AI_HUMAN_6/*PUD_AI_ORC_13*/; ++i)
+     ITEM_ADD(i);
+   // More AIs. Slow!!
+   //for (i = PUD_AI_EXPANSION_1; i < PUD_AI_EXPANSION_51; ++i)
+   //  ITEM_ADD(i);
+
+#undef ITEM_ADD
+
+   elm_table_pack(table, o, col, row, 1, 1);
+}
+
+Evas_Object *
+menu_player_properties_new(Editor      *ed,
+                           Evas_Object *parent)
+{
+   Evas_Object *f, *t;
+   unsigned int i;
+
+   f = elm_frame_add(parent);
+   elm_object_text_set(f, "Player Properties");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(f);
+
+   t = elm_table_add(f);
+   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(t);
+   elm_table_padding_set(t, 20, 6);
+   elm_object_content_set(f, t);
+
+   /* Players */
+   _pack_label(t, 0, 0, "Player");
+   _pack_label(t, 1, 0, "Player 1 (RED)");
+   _pack_label(t, 2, 0, "Player 2 (BLUE)");
+   _pack_label(t, 3, 0, "Player 3 (GREEN)");
+   _pack_label(t, 4, 0, "Player 4 (VIOLET)");
+   _pack_label(t, 5, 0, "Player 5 (ORANGE)");
+   _pack_label(t, 6, 0, "Player 6 (BLACK)");
+   _pack_label(t, 7, 0, "Player 7 (WHITE)");
+   _pack_label(t, 8, 0, "Player 8 (YELLOW)");
+
+   /* Race */
+   _pack_label(t, 0, 1, "Race");
+   for (i = 0; i < 8; ++i)
+     _pack_race_selector(t, i + 1, 1, &(ed->pud->side.players[i]));
+
+   /* Owner */
+   _pack_label(t, 0, 2, "Owner");
+   for (i = 0; i < 8; ++i)
+     _pack_owner_selector(t, i + 1, 2, &(ed->pud->owner.players[i]));
+
+   /* AI */
+   _pack_label(t, 0, 3, "AI");
+   for (i = 0; i < 8; ++i)
+     _pack_ai_selector(t, i + 1, 3, &(ed->pud->ai.players[i]));
+
 
    return f;
 }
