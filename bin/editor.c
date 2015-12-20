@@ -112,7 +112,6 @@ editor_free(Editor *ed)
    pud_close(ed->pud);
    evas_object_del(ed->win);
    minimap_del(ed);
-   mainconfig_del(ed);
    free(ed);
 }
 
@@ -121,6 +120,12 @@ editor_error(Editor     *ed,
              const char *msg)
 {
    Evas_Object *box, *o, *e;
+
+   if (inwin_id_is(ed, INWIN_EDITOR_ERROR))
+     {
+        inwin_activate(ed);
+        return;
+     }
 
    /* Confirm button */
    o = elm_button_add(ed->win);
@@ -151,7 +156,7 @@ editor_error(Editor     *ed,
       elm_obj_box_pack_end(o)
    );
 
-   inwin_activate(ed, box, INWIN_EDITOR_ERROR);
+   inwin_set(ed, box, INWIN_EDITOR_ERROR, "Ok", NULL, NULL, NULL);
    evas_object_show(box);
    evas_object_show(o);
    evas_object_show(e);
@@ -287,8 +292,7 @@ editor_new(const char *pud_file,
 
         snprintf(title, sizeof(title), "Untitled - %u", _eds++);
 
-        /* Mainconfig: get user input for various mainstream parameters */
-        mainconfig_add(ed);
+        /* Mainconfig: get user input for config parameters */
         mainconfig_show(ed);
      }
 

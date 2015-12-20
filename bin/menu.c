@@ -100,10 +100,20 @@ _win_save_as_cb(void        *data,
 }
 
 static void
-_map_properties_cb(void        *data  EINA_UNUSED,
+_map_properties_cb(void        *data,
                    Evas_Object *obj   EINA_UNUSED,
                    void        *event EINA_UNUSED)
 {
+   Editor *ed = data;
+
+   if (inwin_id_is(ed, INWIN_MAP_PROPERTIES))
+     inwin_activate(ed);
+   else
+     {
+        inwin_set(ed, menu_map_properties_new(ed, ed->inwin.obj),
+                  INWIN_MAP_PROPERTIES,
+                  "Close", NULL, NULL, NULL);
+     }
 }
 
 static void
@@ -426,5 +436,82 @@ menu_unit_selection_reset(Editor *ed)
 {
    elm_radio_value_set(ed->radio_units_reset, PUD_UNIT_NONE);
    ed->sel_unit = PUD_UNIT_NONE;
+}
+
+
+static void
+_era_changed_cb(void        *data,
+                Evas_Object *obj,
+                void        *event_info EINA_UNUSED)
+{
+   Editor *ed = data;
+   pud_era_set(ed->pud, elm_radio_value_get(obj));
+}
+
+Evas_Object *
+menu_map_properties_new(const Editor *ed,
+                        Evas_Object  *parent)
+{
+   Evas_Object *f, *b, *o, *grp;
+
+   /* Frame for map era */
+   f = elm_frame_add(parent);
+   elm_object_text_set(f, "Tileset");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(f);
+   b = elm_box_add(f); /* Box */
+   elm_object_content_set(f, b);
+   elm_box_align_set(b, 0.0f, 0.0f);
+   evas_object_show(b);
+
+   /* Tileset item 1 (Forest) */
+   o = elm_radio_add(b);
+   elm_radio_state_value_set(o, PUD_ERA_FOREST);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   elm_object_text_set(o, "Forest");
+   elm_box_pack_end(b, o);
+   evas_object_show(o);
+   grp = o;
+   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
+
+   /* Tileset item 2 (Winter) */
+   o = elm_radio_add(b);
+   elm_radio_state_value_set(o, PUD_ERA_WINTER);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   elm_object_text_set(o, "Winter");
+   elm_box_pack_end(b, o);
+   evas_object_show(o);
+   elm_radio_group_add(o, grp);
+   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
+
+   /* Tileset item 3 (Wasteland) */
+   o = elm_radio_add(b);
+   elm_radio_state_value_set(o, PUD_ERA_WASTELAND);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   elm_object_text_set(o, "Wasteland");
+   elm_box_pack_end(b, o);
+   evas_object_show(o);
+   elm_radio_group_add(o, grp);
+   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
+
+   /* Tileset item 4 (Swamp) */
+   o = elm_radio_add(b);
+   elm_radio_state_value_set(o, PUD_ERA_SWAMP);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   elm_object_text_set(o, "Swamp");
+   elm_box_pack_end(b, o);
+   evas_object_show(o);
+   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
+   elm_radio_group_add(o, grp);
+
+   /* Default value */
+   elm_radio_value_set(grp, PUD_ERA_FOREST);
+
+   return f;
 }
 

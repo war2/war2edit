@@ -91,17 +91,6 @@ struct _Editor
       } rel1, rel2;
    } sel;
 
-   /* === Mainconfig === */
-   /* Mainconfig is dynamic because its life time is very short.
-    * There is no need to keep these pointers all the time...
-    * It is therefore allocated/freed dynamically */
-   struct _mainconfig {
-      Evas_Object *container;
-      Evas_Object *img;
-      Evas_Object *menu_size;
-      Evas_Object *menu_era;
-   } *mainconfig;
-
    Evas_Object *radio_units_reset;
 
    /* === PUD specific === */

@@ -14,7 +14,7 @@
 static void
 _fs_show(Editor *ed)
 {
-   inwin_activate(ed, ed->fs, INWIN_FILE_SELECTOR);
+   inwin_set(ed, ed->fs, INWIN_FILE_SELECTOR, NULL, NULL, NULL, NULL);
 }
 
 static void

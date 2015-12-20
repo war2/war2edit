@@ -28,7 +28,6 @@ _mc_create_cb(void        *data,
 
    editor_load(ed, NULL);
    mainconfig_hide(ed);
-   mainconfig_del(ed);
 }
 
 static void
@@ -53,27 +52,6 @@ _size_changed_cb(void        *data,
      }
 }
 
-static void
-_era_changed_cb(void        *data,
-                Evas_Object *obj,
-                void        *event_info EINA_UNUSED)
-{
-   Editor *ed = data;
-   int id;
-
-   id = elm_radio_value_get(obj);
-   switch (id)
-     {
-      case 1: pud_era_set(ed->pud, PUD_ERA_FOREST);    break;
-      case 2: pud_era_set(ed->pud, PUD_ERA_WINTER);    break;
-      case 3: pud_era_set(ed->pud, PUD_ERA_WASTELAND); break;
-      case 4: pud_era_set(ed->pud, PUD_ERA_SWAMP);     break;
-
-      default:
-              CRI("Invalid ID for era radio group [%i]", id);
-              break;
-     }
-}
 
 static void
 _has_extension_cb(void        *data,
@@ -97,16 +75,19 @@ _has_extension_cb(void        *data,
  *                                 Public API                                 *
  *============================================================================*/
 
-Eina_Bool
-mainconfig_add(Editor *ed)
+void
+mainconfig_show(Editor *ed)
 {
    Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp;
 
-   ed->mainconfig = malloc(sizeof(struct _mainconfig));
-   if (EINA_UNLIKELY(!ed->mainconfig))
+   /* Disable main menu */
+   menu_enabled_set(ed, EINA_FALSE);
+
+   /* Don't recreate widget if already set */
+   if (inwin_id_is(ed, INWIN_MAINCONFIG))
      {
-        CRI("Failed to allocate memory for mainconfig");
-        return EINA_FALSE;
+        inwin_activate(ed);
+        return;
      }
 
    /* Create main box (mainconfig) */
@@ -114,29 +95,7 @@ mainconfig_add(Editor *ed)
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_horizontal_set(box, EINA_FALSE);
-
-   /* Box to hold buttons */
-   b2 = elm_box_add(box);
-   elm_box_horizontal_set(b2, EINA_TRUE);
-   evas_object_size_hint_weight_set(b2, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_box_pack_end(box, b2);
-   evas_object_show(b2);
-
-   /* Cancel button */
-   o = elm_button_add(b2);
-   elm_object_text_set(o, "Cancel");
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_smart_callback_add(o, "clicked", _mc_cancel_cb, ed);
-   elm_box_pack_start(b2, o);
-   evas_object_show(o);
-
-   /* Create button */
-   o = elm_button_add(b2);
-   elm_object_text_set(o, "Create");
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_smart_callback_add(o, "clicked", _mc_create_cb, ed);
-   elm_box_pack_end(b2, o);
-   evas_object_show(o);
+   evas_object_show(box);
 
    /* Box to hold map and menus */
    b2 = elm_box_add(box);
@@ -215,91 +174,18 @@ mainconfig_add(Editor *ed)
    elm_radio_group_add(o, grp);
    evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
    elm_radio_value_set(grp, 1);
-   ed->mainconfig->menu_size = grp;
 
-   /* Frame for map era */
-   f = elm_frame_add(b3);
-   elm_object_text_set(f, "Tileset");
-   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_box_pack_end(b3, f);
-   evas_object_show(f);
-   b = elm_box_add(f); /* Box */
-   elm_object_content_set(f, b);
-   elm_box_align_set(b, 0.0f, 0.0f);
-   evas_object_show(b);
-   o = elm_radio_add(b); /* Tileset item 1 */
-   elm_radio_state_value_set(o, 1);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "Forest");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   grp = o;
-   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
-   o = elm_radio_add(b); /* Tileset item 2 */
-   elm_radio_state_value_set(o, 2);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "Winter");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   elm_radio_group_add(o, grp);
-   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
-   o = elm_radio_add(b); /* Tileset item 3 */
-   elm_radio_state_value_set(o, 3);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "Wasteland");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   elm_radio_group_add(o, grp);
-   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
-   o = elm_radio_add(b); /* Tileset item 4 */
-   elm_radio_state_value_set(o, 4);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "Swamp");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
-   elm_radio_group_add(o, grp);
-   elm_radio_value_set(grp, 1);
-   ed->mainconfig->menu_era = grp;
-
-   ed->mainconfig->container = box;
-   ed->mainconfig->img = img;
-
-   return EINA_TRUE;
-}
-
-void
-mainconfig_del(Editor *ed)
-{
-   if (!ed->mainconfig) return;
-
-   evas_object_del(ed->mainconfig->container);
-   free(ed->mainconfig);
-   ed->mainconfig = NULL;
-}
-
-void
-mainconfig_show(Editor *ed)
-{
-   EINA_SAFETY_ON_NULL_RETURN(ed->mainconfig);
-
-   /* Disable main menu */
-   menu_enabled_set(ed, EINA_FALSE);
+   elm_box_pack_end(b3, menu_map_properties_new(ed, b3));
 
    /* Show inwin */
-   inwin_activate(ed, ed->mainconfig->container, INWIN_MAINCONFIG);
+   inwin_set(ed, box, INWIN_MAINCONFIG,
+             "Create", _mc_create_cb,
+             "Cancel", _mc_cancel_cb);
 }
 
 void
 mainconfig_hide(Editor *ed)
 {
-   EINA_SAFETY_ON_NULL_RETURN(ed->mainconfig);
-
    inwin_dismiss(ed);
    menu_enabled_set(ed, EINA_TRUE);
 }
