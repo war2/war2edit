@@ -688,11 +688,31 @@ menu_init(void)
       PUD_AI_SEA_ATTACK,
       PUD_AI_AIR_ATTACK
    };
+   Eina_Bool chk;
+   Eina_Stringshare *shr;
 
    _values = eina_hash_stringshared_new(NULL);
+   if (EINA_UNLIKELY(!_values))
+     {
+        CRI("Failed to create hash of stringshares");
+        return EINA_FALSE;
+     }
 
 #define ADD(str, val) \
-   eina_hash_add(_values, eina_stringshare_add_length(str, sizeof(str) - 1), val)
+   do { \
+      shr = eina_stringshare_add_length(str, sizeof(str) - 1); \
+      if (EINA_UNLIKELY(!shr)) { \
+         CRI("Failed to create stringshare for string \"" str "\""); \
+         return EINA_FALSE; \
+      } \
+      chk = eina_hash_add(_values, shr, val); \
+      if (EINA_UNLIKELY(!chk)) { \
+         CRI("Failed to add value <0x%x> for stringshare \"%s\"", *val, shr); \
+         eina_stringshare_del(shr); \
+         eina_hash_free(_values); \
+         return EINA_FALSE; \
+      } \
+   } while (0)
 
    ADD(STR_PUD_SIDE_ORC            , &(values[0]));
    ADD(STR_PUD_SIDE_HUMAN          , &(values[1]));
@@ -707,7 +727,6 @@ menu_init(void)
 
 #undef ADD
 
-   // FIXME check for errors
    return EINA_TRUE;
 }
 
