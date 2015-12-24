@@ -501,14 +501,14 @@ menu_add(Editor *ed)
    _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb)
 
    rd = NULL; /* Reset the radio group */
-   rd = RADIO_ADD(PUD_PLAYER_RED, "Player 1 (Red)");
-   RADIO_ADD(PUD_PLAYER_BLUE,     "Player 2 (Blue)");
-   RADIO_ADD(PUD_PLAYER_GREEN,    "Player 3 (Green)");
-   RADIO_ADD(PUD_PLAYER_VIOLET,   "Player 4 (Violet)");
-   RADIO_ADD(PUD_PLAYER_ORANGE,   "Player 5 (Orange)");
-   RADIO_ADD(PUD_PLAYER_BLACK,    "Player 6 (Black)");
-   RADIO_ADD(PUD_PLAYER_WHITE,    "Player 7 (White)");
-   RADIO_ADD(PUD_PLAYER_YELLOW,   "Player 8 (Yellow)");
+   rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);
+   RADIO_ADD(PUD_PLAYER_BLUE,     STR_PLAYER_2);
+   RADIO_ADD(PUD_PLAYER_GREEN,    STR_PLAYER_3);
+   RADIO_ADD(PUD_PLAYER_VIOLET,   STR_PLAYER_4);
+   RADIO_ADD(PUD_PLAYER_ORANGE,   STR_PLAYER_5);
+   RADIO_ADD(PUD_PLAYER_BLACK,    STR_PLAYER_6);
+   RADIO_ADD(PUD_PLAYER_WHITE,    STR_PLAYER_7);
+   RADIO_ADD(PUD_PLAYER_YELLOW,   STR_PLAYER_8);
 
 #undef RADIO_ADD
 
@@ -944,14 +944,14 @@ menu_player_properties_new(Editor      *ed,
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
-   _pack_label(t, 1, 0, "Player 1 (RED)");
-   _pack_label(t, 2, 0, "Player 2 (BLUE)");
-   _pack_label(t, 3, 0, "Player 3 (GREEN)");
-   _pack_label(t, 4, 0, "Player 4 (VIOLET)");
-   _pack_label(t, 5, 0, "Player 5 (ORANGE)");
-   _pack_label(t, 6, 0, "Player 6 (BLACK)");
-   _pack_label(t, 7, 0, "Player 7 (WHITE)");
-   _pack_label(t, 8, 0, "Player 8 (YELLOW)");
+   _pack_label(t, 1, 0, STR_PLAYER_1);
+   _pack_label(t, 2, 0, STR_PLAYER_2);
+   _pack_label(t, 3, 0, STR_PLAYER_3);
+   _pack_label(t, 4, 0, STR_PLAYER_4);
+   _pack_label(t, 5, 0, STR_PLAYER_5);
+   _pack_label(t, 6, 0, STR_PLAYER_6);
+   _pack_label(t, 7, 0, STR_PLAYER_7);
+   _pack_label(t, 8, 0, STR_PLAYER_8);
 
    /* Race */
    _pack_label(t, 0, 1, "Race");

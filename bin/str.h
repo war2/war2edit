@@ -26,5 +26,14 @@
 #define STR_PUD_AI_ORC_FMT              "Orc %u"
 #define STR_PUD_AI_EXPANSION_FMT        "Expansion %u"
 
+#define STR_PLAYER_1                    "Player 1 (Red)"
+#define STR_PLAYER_2                    "Player 2 (Blue)"
+#define STR_PLAYER_3                    "Player 3 (Green)"
+#define STR_PLAYER_4                    "Player 4 (Violet)"
+#define STR_PLAYER_5                    "Player 5 (Orange)"
+#define STR_PLAYER_6                    "Player 6 (Black)"
+#define STR_PLAYER_7                    "Player 7 (White)"
+#define STR_PLAYER_8                    "Player 8 (Yellow)"
+
 #endif /* ! __STR_H__ */
 
