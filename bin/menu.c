@@ -484,10 +484,10 @@ menu_add(Editor *ed)
    i = elm_menu_item_add(ed->menu, itm, NULL, "NPC's", NULL, NULL);
 
    RADIO_ADD_ORC(PUD_UNIT_CHO_GALL, "Cho'Gall");
-   RADIO_ADD_ORC(PUD_UNIT_ZULJIN, "Zuljin");
+   RADIO_ADD_ORC(PUD_UNIT_ZUL_JIN, "Zul'Jin");
    RADIO_ADD_ORC(PUD_UNIT_GUL_DAN, "Gul'Dan");
    RADIO_ADD_ORC(PUD_UNIT_GROM_HELLSCREAM, "Grom Hellscream");
-   RADIO_ADD_ORC(PUD_UNIT_KHORGATH_BLADEFIST, "Khorgath Bladefist");
+   RADIO_ADD_ORC(PUD_UNIT_KARGATH_BLADEFIST, "Kargath Bladefist");
    RADIO_ADD_ORC(PUD_UNIT_DENTARG, "Dentarg");
    RADIO_ADD_ORC(PUD_UNIT_TERON_GOREFIEND, "Teron Gorefiend");
    RADIO_ADD_ORC(PUD_UNIT_DEATHWING, "Deathwing");

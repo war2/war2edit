@@ -34,6 +34,11 @@ TODO - Showstoppers
 - [X] Delete a unit
 - [ ] Undo/Redo
 
+Contributors
+============
+
+- Lucie Guyomarc'h:
+   - Fix mispelled names
 
 License
 =======
