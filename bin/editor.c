@@ -112,6 +112,8 @@ editor_free(Editor *ed)
    pud_close(ed->pud);
    evas_object_del(ed->win);
    minimap_del(ed);
+   eina_array_free(ed->orc_menus);
+   eina_array_free(ed->human_menus);
    free(ed);
 }
 
@@ -182,6 +184,10 @@ editor_new(const char *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
    ed->xdebug = xdebug;
+
+   // FIXME cleanup on error
+   ed->orc_menus = eina_array_new(4);
+   ed->human_menus = eina_array_new(4);
 
    for (i = 0; i < 8; i++)
      {
@@ -295,6 +301,8 @@ editor_new(const char *pud_file,
         /* Mainconfig: get user input for config parameters */
         mainconfig_show(ed);
      }
+
+   menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 
    /* Set window's title */
    editor_name_set(ed, title);
@@ -649,5 +657,11 @@ editor_handle_delete(Editor *restrict ed)
 {
    if (!sel_empty_is(ed))
      sel_del(ed);
+}
+
+Editor *
+editor_focused_get(void)
+{
+   return _focused;
 }
 

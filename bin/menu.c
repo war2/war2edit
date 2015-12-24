@@ -95,7 +95,8 @@ _radio_add(Editor          *ed,
            unsigned int     object,
            Elm_Object_Item *parent,
            const char      *label,
-           Evas_Smart_Cb    func)
+           Evas_Smart_Cb    func,
+           Eina_Array      *storage)
 {
    Evas_Object *o;
    Elm_Object_Item *eoi;
@@ -110,8 +111,10 @@ _radio_add(Editor          *ed,
      {
         eoi = elm_menu_item_add(ed->menu, parent, NULL, NULL, func, o);
         elm_object_item_content_set(eoi, o);
-     }
+        if (storage)
+          eina_array_push(storage, eoi);
 
+     }
    return o;
 }
 
@@ -274,13 +277,17 @@ _radio_units_changed_cb(void        *data,
 }
 
 static void
-_radio_players_changed_cb(void *data,
+_radio_players_changed_cb(void        *data,
                           Evas_Object *obj,
                           void        *event EINA_UNUSED)
 {
-   Editor *ed = evas_object_data_get(obj, "editor");
+   Editor *ed;
+
+   ed = evas_object_data_get(obj, "editor");
    _radio_changed_common_do(data, (int *)(&(ed->sel_player)));
    DBG("Player selection changed: <%s>", pud_color2str(ed->sel_player));
+
+   menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 }
 
 static void
@@ -357,98 +364,110 @@ menu_add(Editor *ed)
    /*==== TOOLS MENU ====*/
    i = itm = elm_menu_item_add(ed->menu, NULL, NULL, "Tools", NULL, NULL);
 
-#define RADIO_ADD(unit_, label_) \
-   _radio_add(ed, rd, unit_, i, label_, _radio_units_changed_cb)
+#define RADIO_ADD_COMMON(unit_, label_, storage_) \
+   _radio_add(ed, rd, unit_, i, label_, _radio_units_changed_cb, storage_)
+
+#define RADIO_ADD_HUMAN(unit_, label_) RADIO_ADD_COMMON(unit_, label_, ed->human_menus)
+#define RADIO_ADD_ORC(unit_, label_) RADIO_ADD_COMMON(unit_, label_, ed->orc_menus)
+#define RADIO_ADD(unit_, label_) RADIO_ADD_COMMON(unit_, label_, NULL)
 
    rd = NULL; /* Unset radio group */
-   rd = RADIO_ADD(PUD_UNIT_HUMAN_START, "Human Start Location");
+   rd = RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_START, "Human Start Location");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Human Air", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_GNOMISH_FLYING_MACHINE, "Gnomish Flying Machine");
-   RADIO_ADD(PUD_UNIT_GRYPHON_RIDER, "Gryphon Rider");
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_FLYING_MACHINE, "Gnomish Flying Machine");
+   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_RIDER, "Gryphon Rider");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Human Land", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_PEASANT, "Peasant");
-   RADIO_ADD(PUD_UNIT_INFANTRY, "Footman");
-   RADIO_ADD(PUD_UNIT_ARCHER, "Elven Archer");
-   RADIO_ADD(PUD_UNIT_KNIGHT, "Knight");
-   RADIO_ADD(PUD_UNIT_BALLISTA, "Balista");
-   RADIO_ADD(PUD_UNIT_DWARVES, "Dwarven Demolition Squad");
-   RADIO_ADD(PUD_UNIT_MAGE, "Mage");
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_PEASANT, "Peasant");
+   RADIO_ADD_HUMAN(PUD_UNIT_INFANTRY, "Footman");
+   RADIO_ADD_HUMAN(PUD_UNIT_ARCHER, "Elven Archer");
+   RADIO_ADD_HUMAN(PUD_UNIT_KNIGHT, "Knight");
+   RADIO_ADD_HUMAN(PUD_UNIT_BALLISTA, "Balista");
+   RADIO_ADD_HUMAN(PUD_UNIT_DWARVES, "Dwarven Demolition Squad");
+   RADIO_ADD_HUMAN(PUD_UNIT_MAGE, "Mage");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Human Water", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_HUMAN_TANKER, "Human Tanker");
-   RADIO_ADD(PUD_UNIT_ELVEN_DESTROYER, "Elven Destroyer");
-   RADIO_ADD(PUD_UNIT_BATTLESHIP, "Battleship");
-   RADIO_ADD(PUD_UNIT_HUMAN_TRANSPORT, "Human Transport");
-   RADIO_ADD(PUD_UNIT_GNOMISH_SUBMARINE, "Gnomish Submarine");
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TANKER, "Human Tanker");
+   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_DESTROYER, "Elven Destroyer");
+   RADIO_ADD_HUMAN(PUD_UNIT_BATTLESHIP, "Battleship");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TRANSPORT, "Human Transport");
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_SUBMARINE, "Gnomish Submarine");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Human Buildings", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_FARM, "Farm");
-   RADIO_ADD(PUD_UNIT_TOWN_HALL, "Town Hall");
-   RADIO_ADD(PUD_UNIT_KEEP, "Keep");
-   RADIO_ADD(PUD_UNIT_CASTLE, "Castle");
-   RADIO_ADD(PUD_UNIT_HUMAN_BARRACKS, "Human Barracks");
-   RADIO_ADD(PUD_UNIT_HUMAN_SHIPYARD, "Human Shipyard");
-   RADIO_ADD(PUD_UNIT_ELVEN_LUMBER_MILL, "Elven Lumber Mill");
-   RADIO_ADD(PUD_UNIT_HUMAN_FOUNDRY, "Human Foundry");
-   RADIO_ADD(PUD_UNIT_HUMAN_REFINERY, "Human Refinery");
-   RADIO_ADD(PUD_UNIT_HUMAN_OIL_WELL, "Human Oil Platform");
-   RADIO_ADD(PUD_UNIT_HUMAN_BLACKSMITH, "Human Blacksmith");
-   RADIO_ADD(PUD_UNIT_STABLES, "Stables");
-   RADIO_ADD(PUD_UNIT_CHURCH, "Church");
-   RADIO_ADD(PUD_UNIT_GNOMISH_INVENTOR, "Gnomish Inventor");
-   RADIO_ADD(PUD_UNIT_GRYPHON_AVIARY, "Gryphon Aviary");
-   RADIO_ADD(PUD_UNIT_HUMAN_SCOUT_TOWER, "Human Scout Tower");
-   RADIO_ADD(PUD_UNIT_HUMAN_GUARD_TOWER, "Human Guard Tower");
-   RADIO_ADD(PUD_UNIT_HUMAN_CANNON_TOWER, "Human Cannon Tower");
-   RADIO_ADD(PUD_UNIT_MAGE_TOWER, "Mage Tower");
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_FARM, "Farm");
+   RADIO_ADD_HUMAN(PUD_UNIT_TOWN_HALL, "Town Hall");
+   RADIO_ADD_HUMAN(PUD_UNIT_KEEP, "Keep");
+   RADIO_ADD_HUMAN(PUD_UNIT_CASTLE, "Castle");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BARRACKS, "Human Barracks");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SHIPYARD, "Human Shipyard");
+   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_LUMBER_MILL, "Elven Lumber Mill");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_FOUNDRY, "Human Foundry");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_REFINERY, "Human Refinery");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_OIL_WELL, "Human Oil Platform");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BLACKSMITH, "Human Blacksmith");
+   RADIO_ADD_HUMAN(PUD_UNIT_STABLES, "Stables");
+   RADIO_ADD_HUMAN(PUD_UNIT_CHURCH, "Church");
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_INVENTOR, "Gnomish Inventor");
+   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_AVIARY, "Gryphon Aviary");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SCOUT_TOWER, "Human Scout Tower");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_GUARD_TOWER, "Human Guard Tower");
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_CANNON_TOWER, "Human Cannon Tower");
+   RADIO_ADD_HUMAN(PUD_UNIT_MAGE_TOWER, "Mage Tower");
 
    elm_menu_item_separator_add(ed->menu, itm);
 
    i = itm;
-   RADIO_ADD(PUD_UNIT_ORC_START, "Orc Start Location");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_START, "Orc Start Location");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Air", NULL, NULL);
+   eina_array_push(ed->orc_menus, i);
    RADIO_ADD(PUD_UNIT_GOBLIN_ZEPPLIN, "Goblin Zepplin");
    RADIO_ADD(PUD_UNIT_DRAGON, "Dragon");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Land", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_PEON, "Peon");
-   RADIO_ADD(PUD_UNIT_GRUNT, "Grunt");
-   RADIO_ADD(PUD_UNIT_AXETHROWER, "Troll Axethrower");
-   RADIO_ADD(PUD_UNIT_OGRE, "Ogre");
-   RADIO_ADD(PUD_UNIT_CATAPULT, "Catapult");
-   RADIO_ADD(PUD_UNIT_GOBLIN_SAPPER, "Goblin Sapper");
-   RADIO_ADD(PUD_UNIT_DEATH_KNIGHT, "Death Knight");
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_PEON, "Peon");
+   RADIO_ADD_ORC(PUD_UNIT_GRUNT, "Grunt");
+   RADIO_ADD_ORC(PUD_UNIT_AXETHROWER, "Troll Axethrower");
+   RADIO_ADD_ORC(PUD_UNIT_OGRE, "Ogre");
+   RADIO_ADD_ORC(PUD_UNIT_CATAPULT, "Catapult");
+   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_SAPPER, "Goblin Sapper");
+   RADIO_ADD_ORC(PUD_UNIT_DEATH_KNIGHT, "Death Knight");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Water", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_ORC_TANKER, "Orc Tanker");
-   RADIO_ADD(PUD_UNIT_TROLL_DESTROYER, "Troll Destroyer");
-   RADIO_ADD(PUD_UNIT_JUGGERNAUGHT, "Juggernaught");
-   RADIO_ADD(PUD_UNIT_ORC_TRANSPORT, "Orc Transport");
-   RADIO_ADD(PUD_UNIT_GIANT_TURTLE, "Giant Turtle");
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_TANKER, "Orc Tanker");
+   RADIO_ADD_ORC(PUD_UNIT_TROLL_DESTROYER, "Troll Destroyer");
+   RADIO_ADD_ORC(PUD_UNIT_JUGGERNAUGHT, "Juggernaught");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_TRANSPORT, "Orc Transport");
+   RADIO_ADD_ORC(PUD_UNIT_GIANT_TURTLE, "Giant Turtle");
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Buildings", NULL, NULL);
-   RADIO_ADD(PUD_UNIT_PIG_FARM, "Pig Farm");
-   RADIO_ADD(PUD_UNIT_GREAT_HALL, "Great Hall");
-   RADIO_ADD(PUD_UNIT_STRONGHOLD, "Stronghold");
-   RADIO_ADD(PUD_UNIT_FORTRESS, "Fortress");
-   RADIO_ADD(PUD_UNIT_ORC_BARRACKS, "Orc Barracks");
-   RADIO_ADD(PUD_UNIT_ORC_SHIPYARD, "Orc Shipyard");
-   RADIO_ADD(PUD_UNIT_TROLL_LUMBER_MILL, "Troll Lumber Mill");
-   RADIO_ADD(PUD_UNIT_ORC_FOUNDRY, "Orc Foundry");
-   RADIO_ADD(PUD_UNIT_ORC_REFINERY, "Orc Refinery");
-   RADIO_ADD(PUD_UNIT_ORC_OIL_WELL, "Orc Oil Platform");
-   RADIO_ADD(PUD_UNIT_ORC_BLACKSMITH, "Orc Blacksmith");
-   RADIO_ADD(PUD_UNIT_OGRE_MOUND, "Ogre Mound");
-   RADIO_ADD(PUD_UNIT_ALTAR_OF_STORMS, "Altar of Storms");
-   RADIO_ADD(PUD_UNIT_GOBLIN_ALCHEMIST, "Goblin Alchemist");
-   RADIO_ADD(PUD_UNIT_DRAGON_ROOST, "Dragon Roost");
-   RADIO_ADD(PUD_UNIT_ORC_SCOUT_TOWER, "Orc Scout Tower");
-   RADIO_ADD(PUD_UNIT_ORC_GUARD_TOWER, "Orc Guard Tower");
-   RADIO_ADD(PUD_UNIT_ORC_CANNON_TOWER, "Orc Cannon Tower");
-   RADIO_ADD(PUD_UNIT_TEMPLE_OF_THE_DAMNED, "Temple of the Damned");
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_PIG_FARM, "Pig Farm");
+   RADIO_ADD_ORC(PUD_UNIT_GREAT_HALL, "Great Hall");
+   RADIO_ADD_ORC(PUD_UNIT_STRONGHOLD, "Stronghold");
+   RADIO_ADD_ORC(PUD_UNIT_FORTRESS, "Fortress");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_BARRACKS, "Orc Barracks");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_SHIPYARD, "Orc Shipyard");
+   RADIO_ADD_ORC(PUD_UNIT_TROLL_LUMBER_MILL, "Troll Lumber Mill");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_FOUNDRY, "Orc Foundry");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_REFINERY, "Orc Refinery");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_OIL_WELL, "Orc Oil Platform");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_BLACKSMITH, "Orc Blacksmith");
+   RADIO_ADD_ORC(PUD_UNIT_OGRE_MOUND, "Ogre Mound");
+   RADIO_ADD_ORC(PUD_UNIT_ALTAR_OF_STORMS, "Altar of Storms");
+   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_ALCHEMIST, "Goblin Alchemist");
+   RADIO_ADD_ORC(PUD_UNIT_DRAGON_ROOST, "Dragon Roost");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_SCOUT_TOWER, "Orc Scout Tower");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_GUARD_TOWER, "Orc Guard Tower");
+   RADIO_ADD_ORC(PUD_UNIT_ORC_CANNON_TOWER, "Orc Cannon Tower");
+   RADIO_ADD_ORC(PUD_UNIT_TEMPLE_OF_THE_DAMNED, "Temple of the Damned");
 
    elm_menu_item_separator_add(ed->menu, itm);
 
@@ -464,24 +483,24 @@ menu_add(Editor *ed)
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "NPC's", NULL, NULL);
 
-   RADIO_ADD(PUD_UNIT_CHO_GALL, "Cho'Gall");
-   RADIO_ADD(PUD_UNIT_ZULJIN, "Zuljin");
-   RADIO_ADD(PUD_UNIT_GUL_DAN, "Gul'Dan");
-   RADIO_ADD(PUD_UNIT_GROM_HELLSCREAM, "Grom Hellscream");
-   RADIO_ADD(PUD_UNIT_KHORGATH_BLADEFIST, "Khorgath Bladefist");
-   RADIO_ADD(PUD_UNIT_DENTARG, "Dentarg");
-   RADIO_ADD(PUD_UNIT_TERON_GOREFIEND, "Teron Gorefiend");
-   RADIO_ADD(PUD_UNIT_DEATHWING, "Deathwing");
+   RADIO_ADD_ORC(PUD_UNIT_CHO_GALL, "Cho'Gall");
+   RADIO_ADD_ORC(PUD_UNIT_ZULJIN, "Zuljin");
+   RADIO_ADD_ORC(PUD_UNIT_GUL_DAN, "Gul'Dan");
+   RADIO_ADD_ORC(PUD_UNIT_GROM_HELLSCREAM, "Grom Hellscream");
+   RADIO_ADD_ORC(PUD_UNIT_KHORGATH_BLADEFIST, "Khorgath Bladefist");
+   RADIO_ADD_ORC(PUD_UNIT_DENTARG, "Dentarg");
+   RADIO_ADD_ORC(PUD_UNIT_TERON_GOREFIEND, "Teron Gorefiend");
+   RADIO_ADD_ORC(PUD_UNIT_DEATHWING, "Deathwing");
 
    elm_menu_item_separator_add(ed->menu, i);
 
-   RADIO_ADD(PUD_UNIT_LOTHAR, "Lothar");
-   RADIO_ADD(PUD_UNIT_UTHER_LIGHTBRINGER, "Uther Lightbringer");
-   RADIO_ADD(PUD_UNIT_TURALYON, "Turalyon");
-   RADIO_ADD(PUD_UNIT_ALLERIA, "Alleria");
-   RADIO_ADD(PUD_UNIT_DANATH, "Danath");
-   RADIO_ADD(PUD_UNIT_KHADGAR, "Khadgar");
-   RADIO_ADD(PUD_UNIT_KURDAN_AND_SKY_REE, "Kurdan and Sky'Ree");
+   RADIO_ADD_HUMAN(PUD_UNIT_LOTHAR, "Lothar");
+   RADIO_ADD_HUMAN(PUD_UNIT_UTHER_LIGHTBRINGER, "Uther Lightbringer");
+   RADIO_ADD_HUMAN(PUD_UNIT_TURALYON, "Turalyon");
+   RADIO_ADD_HUMAN(PUD_UNIT_ALLERIA, "Alleria");
+   RADIO_ADD_HUMAN(PUD_UNIT_DANATH, "Danath");
+   RADIO_ADD_HUMAN(PUD_UNIT_KHADGAR, "Khadgar");
+   RADIO_ADD_HUMAN(PUD_UNIT_KURDAN_AND_SKY_REE, "Kurdan and Sky'Ree");
 
    elm_menu_item_separator_add(ed->menu, i);
 
@@ -489,16 +508,18 @@ menu_add(Editor *ed)
    RADIO_ADD(PUD_UNIT_DAEMON, "Daemon");
 
    /* Add a fictive radio which will be used to reset the units selection */
-   ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL, _radio_units_changed_cb);
+   ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL,
+                                      _radio_units_changed_cb, EINA_FALSE);
    menu_unit_selection_reset(ed);
-
 #undef RADIO_ADD
-
+#undef RADIO_ADD_HUMAN
+#undef RADIO_ADD_ORC
+#undef RADIO_ADD_COMMON
 
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Players", NULL, NULL);
 
 #define RADIO_ADD(unit_, label_) \
-   _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb)
+   _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb, EINA_FALSE)
 
    rd = NULL; /* Reset the radio group */
    rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);
@@ -526,6 +547,23 @@ menu_add(Editor *ed)
 
 
    return EINA_TRUE;
+}
+
+void
+menu_units_side_enable(Editor   *ed,
+                       Pud_Side  enable)
+{
+   Elm_Object_Item *menu;
+   Eina_Array_Iterator iterator;
+   unsigned int i;
+   const Eina_Bool disable_orcs = (enable == PUD_SIDE_HUMAN);
+   const Eina_Bool disable_humans = !disable_orcs;
+
+   EINA_ARRAY_ITER_NEXT(ed->orc_menus, i, menu, iterator)
+      elm_object_item_disabled_set(menu, disable_orcs);
+
+   EINA_ARRAY_ITER_NEXT(ed->human_menus, i, menu, iterator)
+      elm_object_item_disabled_set(menu, disable_humans);
 }
 
 void
@@ -795,6 +833,21 @@ _bind_cb(void        *data,
    *bind = *val;
 }
 
+static void
+_bind_side_cb(void        *data,
+              Evas_Object *obj,
+              void        *evt)
+{
+   Editor *ed;
+
+   _bind_cb(data, obj, evt);
+
+   /* This callback is called from UI exclusively.
+    * It is therefore safe to call editor_focused_get() */
+   ed = editor_focused_get();
+   menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
+}
+
 static Evas_Object *
 _hoversel_add(Evas_Object *parent,
               const char  *init_label)
@@ -823,8 +876,8 @@ _pack_race_selector(Evas_Object  *table,
    const char *race = (*bind == PUD_SIDE_HUMAN) ? human_race : orc_race;
 
    o = _hoversel_add(table, race);
-   _hoversel_item_add(o, human_race, _bind_cb, bind);
-   _hoversel_item_add(o, orc_race, _bind_cb, bind);
+   _hoversel_item_add(o, human_race, _bind_side_cb, bind);
+   _hoversel_item_add(o, orc_race, _bind_side_cb, bind);
 
    elm_table_pack(table, o, col, row, 1, 1);
 }

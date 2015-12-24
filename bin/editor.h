@@ -92,6 +92,8 @@ struct _Editor
    } sel;
 
    Evas_Object *radio_units_reset;
+   Eina_Array  *orc_menus;
+   Eina_Array  *human_menus;
 
    /* === PUD specific === */
    Pud        *pud;
@@ -181,6 +183,8 @@ editor_tb_sel_set(Editor *restrict ed,
                   Editor_Sel       sel);
 
 void editor_handle_delete(Editor *restrict ed);
+
+Editor *editor_focused_get(void);
 
 #define EDITOR_ERROR_RET(ed_, msg_, ...) \
    do { \
