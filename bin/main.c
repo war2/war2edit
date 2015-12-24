@@ -84,12 +84,19 @@ elm_main(int    argc,
         goto texture_done;
      }
 
+   if (EINA_UNLIKELY(!menu_init()))
+     {
+        CRI("Failed to init menu module");
+        ret = EXIT_FAILURE;
+        goto sprite_done;
+     }
+
    /* Init editor module */
    if (EINA_UNLIKELY(!editor_init()))
      {
         CRI("Failed to init editor module");
         ret = EXIT_FAILURE;
-        goto sprite_done;
+        goto menu_done;
      }
 
    /* Open editors for each specified files */
@@ -119,6 +126,8 @@ elm_main(int    argc,
 
 editor_done:
    editor_shutdown();
+menu_done:
+   menu_shutdown();
 sprite_done:
    sprite_shutdown();
 texture_done:

@@ -6,6 +6,7 @@
 
 #include "war2edit.h"
 
+static Eina_Hash *_values = NULL;
 #define PUD_DATA "war2edit/pud"
 
 typedef uint32_t (*Prescalor_Cb)(uint32_t val);
@@ -672,6 +673,49 @@ menu_map_properties_new(Editor      *ed,
    return f;
 }
 
+Eina_Bool
+menu_init(void)
+{
+   static uint8_t values[] = {
+      PUD_SIDE_ORC,
+      PUD_SIDE_HUMAN,
+      PUD_OWNER_HUMAN,
+      PUD_OWNER_COMPUTER,
+      PUD_OWNER_RESCUE_PASSIVE,
+      PUD_OWNER_RESCUE_ACTIVE,
+      PUD_AI_LAND_ATTACK,
+      PUD_AI_PASSIVE,
+      PUD_AI_SEA_ATTACK,
+      PUD_AI_AIR_ATTACK
+   };
+
+   _values = eina_hash_stringshared_new(NULL);
+
+#define ADD(str, val) \
+   eina_hash_add(_values, eina_stringshare_add_length(str, sizeof(str) - 1), val)
+
+   ADD(STR_PUD_SIDE_ORC            , &(values[0]));
+   ADD(STR_PUD_SIDE_HUMAN          , &(values[1]));
+   ADD(STR_PUD_OWNER_HUMAN         , &(values[2]));
+   ADD(STR_PUD_OWNER_COMPUTER      , &(values[3]));
+   ADD(STR_PUD_OWNER_RESCUE_PASSIVE, &(values[4]));
+   ADD(STR_PUD_OWNER_RESCUE_ACTIVE , &(values[5]));
+   ADD(STR_PUD_AI_LAND_ATTACK      , &(values[7]));
+   ADD(STR_PUD_AI_PASSIVE          , &(values[7]));
+   ADD(STR_PUD_AI_SEA_ATTACK       , &(values[8]));
+   ADD(STR_PUD_AI_AIR_ATTACK       , &(values[9]));
+
+#undef ADD
+
+   // FIXME check for errors
+   return EINA_TRUE;
+}
+
+void
+menu_shutdown(void)
+{
+   eina_hash_free(_values);
+}
 
 /*============================================================================*
  *                             Players Properties                             *
@@ -689,13 +733,9 @@ static inline void
 _hoversel_item_add(Evas_Object   *hoversel,
                    const char    *label,
                    Evas_Smart_Cb  func,
-                   void          *bind,
-                   void          *data)
+                   void          *bind)
 {
-   Elm_Object_Item *eoi;
-
-   eoi = elm_hoversel_item_add(hoversel, label, NULL, ELM_ICON_NONE, func, bind);
-   elm_object_item_data_set(eoi, data);
+   elm_hoversel_item_add(hoversel, label, NULL, ELM_ICON_NONE, func, bind);
 }
 
 static void
@@ -714,12 +754,22 @@ _pack_label(Evas_Object  *table,
 }
 
 static void
-_bind_set_cb(void        *data,
-             Evas_Object *obj  EINA_UNUSED,
-             void        *evt)
+_bind_cb(void        *data,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *evt)
 {
    uint8_t *bind = data;
-   uint8_t *val = elm_object_item_data_get(evt);
+   uint8_t *val;
+   Eina_Stringshare *text;
+
+   eo_do(evt, text = elm_wdg_item_part_text_get("default"));
+
+   val = eina_hash_find(_values, text);
+   if (EINA_UNLIKELY(!val))
+     {
+        CRI("Failed to get bind value for text \"%s\"", text);
+        return;
+     }
    *bind = *val;
 }
 
@@ -745,18 +795,14 @@ _pack_race_selector(Evas_Object  *table,
                     unsigned int  col,
                     uint8_t      *bind)
 {
-   static uint8_t values[] = {
-      PUD_SIDE_HUMAN,                   /* 0 */
-      PUD_SIDE_ORC                      /* 1 */
-   };
    Evas_Object *o;
-   const char *human_race = "Human";
-   const char *orc_race = "Orc";
+   const char *human_race = STR_PUD_SIDE_HUMAN;
+   const char *orc_race = STR_PUD_SIDE_ORC;
    const char *race = (*bind == PUD_SIDE_HUMAN) ? human_race : orc_race;
 
    o = _hoversel_add(table, race);
-   _hoversel_item_add(o, human_race, _bind_set_cb, bind, &(values[0]));
-   _hoversel_item_add(o, orc_race, _bind_set_cb, bind, &(values[1]));
+   _hoversel_item_add(o, human_race, _bind_cb, bind);
+   _hoversel_item_add(o, orc_race, _bind_cb, bind);
 
    elm_table_pack(table, o, col, row, 1, 1);
 }
@@ -766,17 +812,10 @@ _owner_to_string(uint8_t owner)
 {
    switch (owner)
      {
-      case PUD_OWNER_COMPUTER:
-         return "Computer";
-
-      case PUD_OWNER_HUMAN:
-         return "Human";
-
-      case PUD_OWNER_RESCUE_PASSIVE:
-         return "Rescue (Passive)";
-
-      case PUD_OWNER_RESCUE_ACTIVE:
-         return "Rescue (Active)";
+      case PUD_OWNER_COMPUTER:       return STR_PUD_OWNER_COMPUTER;
+      case PUD_OWNER_HUMAN:          return STR_PUD_OWNER_HUMAN;
+      case PUD_OWNER_RESCUE_PASSIVE: return STR_PUD_OWNER_RESCUE_PASSIVE;
+      case PUD_OWNER_RESCUE_ACTIVE:  return STR_PUD_OWNER_RESCUE_ACTIVE;
 
       default:
          CRI("Unhandled value %x", owner);
@@ -790,20 +829,18 @@ _pack_owner_selector(Evas_Object  *table,
                      unsigned int  col,
                      uint8_t      *bind)
 {
-   static uint8_t values[] = {
-      PUD_OWNER_HUMAN,
+   uint8_t values[] = {
       PUD_OWNER_COMPUTER,
+      PUD_OWNER_HUMAN,
       PUD_OWNER_RESCUE_PASSIVE,
-      PUD_OWNER_RESCUE_ACTIVE
+      PUD_OWNER_RESCUE_ACTIVE,
    };
    Evas_Object *o;
-   const char *label = _owner_to_string(*bind);
    unsigned int i;
 
-   o = _hoversel_add(table, label);
+   o = _hoversel_add(table, _owner_to_string(*bind));
    for (i = 0; i < EINA_C_ARRAY_LENGTH(values); ++i)
-     _hoversel_item_add(o, _owner_to_string(values[i]), _bind_set_cb,
-                        bind, &(values[i]));
+     _hoversel_item_add(o, _owner_to_string(values[i]), _bind_cb, bind);
    elm_table_pack(table, o, col, row, 1, 1);
 }
 
@@ -814,17 +851,10 @@ _ai_to_string(uint8_t ai)
 
    switch (ai)
      {
-      case PUD_AI_LAND_ATTACK:
-         return "Land Attack";
-
-      case PUD_AI_SEA_ATTACK:
-         return "Sea Attack";
-
-      case PUD_AI_AIR_ATTACK:
-         return "Air Attack";
-
-      case PUD_AI_PASSIVE:
-         return "Passive";
+      case PUD_AI_LAND_ATTACK: return STR_PUD_AI_LAND_ATTACK;
+      case PUD_AI_SEA_ATTACK:  return STR_PUD_AI_SEA_ATTACK;
+      case PUD_AI_AIR_ATTACK:  return STR_PUD_AI_AIR_ATTACK;
+      case PUD_AI_PASSIVE:     return STR_PUD_AI_PASSIVE;
 
       default:
          break;
@@ -833,12 +863,15 @@ _ai_to_string(uint8_t ai)
    if ((ai >= PUD_AI_ORC_3) && (ai <= PUD_AI_HUMAN_13))
      {
         if (ai % 2 == 0) /* orc */
-          snprintf(buf, sizeof(buf), "Orc %u", ai / 2);
+          snprintf(buf, sizeof(buf), STR_PUD_AI_HUMAN_FMT, ai / 2);
         else /* human */
-          snprintf(buf, sizeof(buf), "Human %u", (ai / 2) + 1);
+          snprintf(buf, sizeof(buf), STR_PUD_AI_ORC_FMT, (ai / 2) + 1);
      }
    else if ((ai >= PUD_AI_EXPANSION_1) && (ai <= PUD_AI_EXPANSION_51))
-     snprintf(buf, sizeof(buf), "Expansion %u", ai - PUD_AI_EXPANSION_1 + 1);
+     {
+        snprintf(buf, sizeof(buf), STR_PUD_AI_EXPANSION_FMT,
+                 ai - PUD_AI_EXPANSION_1 + 1);
+     }
    else
      {
         CRI("Unhandled AI value %x", ai);
@@ -855,31 +888,24 @@ _pack_ai_selector(Evas_Object  *table,
                   uint8_t      *bind)
 {
    Evas_Object *o;
-   uint8_t *value;
    unsigned int i;
+   uint8_t values[] = {
+      PUD_AI_LAND_ATTACK,
+      PUD_AI_PASSIVE,
+      PUD_AI_SEA_ATTACK,
+      PUD_AI_AIR_ATTACK
+   };
 
    o = _hoversel_add(table, _ai_to_string(*bind));
 
-#define ITEM_ADD(val) \
-   do { \
-      value = malloc(sizeof(uint8_t)); \
-      *value = val; \
-      _hoversel_item_add(o, _ai_to_string(val), _bind_set_cb, bind, value); \
-   } while (0)
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(values); ++i)
+     _hoversel_item_add(o, _ai_to_string(values[i]), _bind_cb, bind);
 
-   // FIXME value leaks
-   ITEM_ADD(PUD_AI_LAND_ATTACK);
-   ITEM_ADD(PUD_AI_PASSIVE);
-   ITEM_ADD(PUD_AI_SEA_ATTACK);
-   ITEM_ADD(PUD_AI_AIR_ATTACK);
-
-   for (i = PUD_AI_ORC_4; i <= PUD_AI_HUMAN_6/*PUD_AI_ORC_13*/; ++i)
-     ITEM_ADD(i);
    // More AIs. Slow!!
+   //for (i = PUD_AI_ORC_4; i <= PUD_AI_HUMAN_6/*PUD_AI_ORC_13*/; ++i)
+   //  ITEM_ADD(i);
    //for (i = PUD_AI_EXPANSION_1; i < PUD_AI_EXPANSION_51; ++i)
    //  ITEM_ADD(i);
-
-#undef ITEM_ADD
 
    elm_table_pack(table, o, col, row, 1, 1);
 }
@@ -1021,7 +1047,7 @@ _pack_range_entry(Evas_Object  *table,
       case POINTER_TYPE_WORD: value = *(val->bind.ptr.word_ptr); break;
       case POINTER_TYPE_LONG: value = *(val->bind.ptr.long_ptr); break;
      }
-   
+
    if (val->prescalor.operation) value = val->prescalor.operation(value);
    snprintf(buf, sizeof(buf), "%u", value);
    elm_entry_entry_set(o, buf);
@@ -1121,7 +1147,7 @@ menu_starting_properties_new(Editor      *ed,
 //   const Pud *pud;
 //
 //   printf("Part: %s\n", part);
-//   
+//
 //   pud = evas_object_data_get(obj, PUD_DATA);
 //
 //   t = elm_table_add(obj);
@@ -1152,7 +1178,7 @@ menu_starting_properties_new(Editor      *ed,
 //    //    _pack_checkbox(t, 15, i + 1, &(udta->has_magic));
 //    //    _pack_checkbox(t, 16, i + 1, &(udta->weapons_upgradable));
 //    //    _pack_checkbox(t, 17, i + 1, &(udta->armor_upgradable));
-//   
+//
 //   evas_object_show(t);
 //   return t;
 //}

@@ -19,6 +19,7 @@ set(
    tile.c
    inwin.c
 
+   str.h
    editor.h
    log.h
    bitmap.h
