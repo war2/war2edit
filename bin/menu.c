@@ -6,33 +6,78 @@
 
 #include "war2edit.h"
 
+#define PUD_DATA "war2edit/pud"
+
+typedef uint32_t (*Prescalor_Cb)(uint32_t val);
+
+typedef struct
+{
+   Prescalor_Cb operation;
+   Prescalor_Cb inverse;
+} Prescalor;
+
+typedef enum
+{
+   POINTER_TYPE_BYTE,
+   POINTER_TYPE_WORD,
+   POINTER_TYPE_LONG
+} Pointer_Type;
+
+typedef struct
+{
+   union {
+      uint8_t      *byte_ptr;
+      uint16_t     *word_ptr;
+      uint32_t     *long_ptr;
+   } ptr;
+
+   Pointer_Type type;
+
+} Pointer;
+
+typedef struct
+{
+   uint32_t     start;
+   uint32_t     end;
+} Range;
+
 typedef struct
 {
    Elm_Validator_Regexp *re;
-   uint16_t             *bind;
-} Word_Validator;
+   Pointer               bind;
+   Range                 range;
+   Prescalor             prescalor;
+} Validator;
 
-static Word_Validator *
-_word_validator_new(const char *regexp,
-                    uint16_t   *bind)
+
+static void _validator_init(Validator *val);
+
+static Validator *
+_validator_new(void)
 {
-   Word_Validator *val;
+   Validator *val;
 
-   val = malloc(sizeof(*val));
+   val = calloc(1, sizeof(*val));
    if (EINA_UNLIKELY(!val))
      {
         CRI("Failed to allocate memory");
         return NULL;
      }
 
-   val->re = elm_validator_regexp_new(regexp, NULL);
-   val->bind = bind;
+   _validator_init(val);
 
    return val;
 }
 
+static void
+_validator_init(Validator *val)
+{
+   /* Digits only, and at least one */
+   val->re = elm_validator_regexp_new("^[0-9]+$", NULL);
+}
+
 static void EINA_UNUSED
-_word_validator_free(Word_Validator *val)
+_validator_free(Validator *val)
 {
    elm_validator_regexp_free(val->re);
    free(val);
@@ -166,7 +211,7 @@ _player_properties_cb(void        *data,
 }
 
 static void
-_starting_properties_cb(void        *data  EINA_UNUSED,
+_starting_properties_cb(void        *data,
                         Evas_Object *obj   EINA_UNUSED,
                         void        *event EINA_UNUSED)
 {
@@ -187,6 +232,17 @@ _units_properties_cb(void        *data  EINA_UNUSED,
                      Evas_Object *obj   EINA_UNUSED,
                      void        *event EINA_UNUSED)
 {
+// TODO Uncomment when perf issue will be resolved
+//   Editor *ed = data;
+//
+//   if (inwin_id_is(ed, INWIN_UNITS_PROPERTIES))
+//     inwin_activate(ed);
+//   else
+//     {
+//        inwin_set(ed, menu_units_properties_new(ed, ed->inwin.obj),
+//                  INWIN_UNITS_PROPERTIES,
+//                  "Close", NULL, NULL, NULL);
+//     }
 }
 
 static void
@@ -496,17 +552,16 @@ menu_unit_selection_reset(Editor *ed)
  *============================================================================*/
 
 static Evas_Object *
-_table_add(Evas_Object *frame)
+_table_add(Evas_Object *obj)
 {
    Evas_Object *t;
 
-   t = elm_table_add(frame);
+   t = elm_table_add(obj);
    evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_table_homogeneous_set(t, EINA_TRUE);
-   evas_object_show(t);
    elm_table_padding_set(t, 20, 6);
-   elm_object_content_set(frame, t);
+   elm_object_content_set(obj, t);
    evas_object_show(t);
 
    return t;
@@ -526,6 +581,20 @@ _frame_add(Evas_Object *parent,
 
    return f;
 }
+
+static Evas_Object *
+_scroller_add(Evas_Object *parent)
+{
+   Evas_Object *s;
+
+   s = elm_scroller_add(parent);
+   evas_object_size_hint_weight_set(s, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(s, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(s);
+
+   return s;
+}
+
 
 static void
 _era_changed_cb(void        *data,
@@ -861,26 +930,48 @@ menu_player_properties_new(Editor      *ed,
  *============================================================================*/
 
 static Eina_Bool
-_word_validator(void                       *data,
-                Eo                         *obj,
-                const Eo_Event_Description *desc,
-                void                       *info)
+_validator_cb(void                       *data,
+              Eo                         *obj,
+              const Eo_Event_Description *desc,
+              void                       *info)
 {
    Eina_Bool status;
-   Word_Validator *val = data;
+   Validator *val = data;
    Elm_Validate_Content *vc = info;
-   int numeric;
+   unsigned long int numeric;
+   const char *str;
 
    status = elm_validator_regexp_helper(val->re, obj, desc, info);
    if (status == EO_CALLBACK_CONTINUE)
      {
         status = EO_CALLBACK_STOP;
-        if (strlen(vc->text) <= 5)
+
+        /* Trim leading zeros */
+        str = vc->text;
+        while ((*str == '0') && (*str != '\0')) str++;
+
+        /* Avoid overflows */
+        if (strlen(str) <= 10)
           {
-             numeric = atoi(vc->text);
-             if (numeric <= UINT16_MAX)
+             numeric = strtoul(str, NULL, 10);
+             if ((numeric >= val->range.start) && (numeric <= val->range.end))
                {
-                  *(val->bind) = numeric;
+                  if (val->prescalor.inverse)
+                    numeric = val->prescalor.inverse(numeric);
+                  switch (val->bind.type)
+                    {
+                     case POINTER_TYPE_BYTE:
+                        *(val->bind.ptr.byte_ptr) = (uint8_t)numeric;
+                        break;
+
+                     case POINTER_TYPE_WORD:
+                        *(val->bind.ptr.word_ptr) = (uint16_t)numeric;
+                        break;
+
+                     case POINTER_TYPE_LONG:
+                        *(val->bind.ptr.long_ptr) = (uint32_t)numeric;
+                        break;
+                    }
                   status = EO_CALLBACK_CONTINUE;
                }
           }
@@ -889,14 +980,20 @@ _word_validator(void                       *data,
 }
 
 static void
-_pack_word_entry(Evas_Object  *table,
-                 unsigned int  row,
-                 unsigned int  col,
-                 uint16_t     *bind)
+_pack_range_entry(Evas_Object  *table,
+                  unsigned int  row,
+                  unsigned int  col,
+                  uint32_t      start,
+                  uint32_t      end,
+                  void         *bind,
+                  Pointer_Type  type,
+                  Prescalor_Cb  operation,
+                  Prescalor_Cb  inverse)
 {
    Evas_Object *o;
-   Word_Validator *val;
-   char buf[16];
+   Validator *val;
+   char buf[8];
+   uint32_t value;
 
    o = elm_entry_add(table);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -906,16 +1003,65 @@ _pack_word_entry(Evas_Object  *table,
    elm_entry_editable_set(o, EINA_TRUE);
    evas_object_show(o);
 
-   snprintf(buf, sizeof(buf), "%u", *bind);
-   elm_entry_entry_set(o, buf);
-
    // FIXME Leak val
-   val = _word_validator_new("^[0-9]+$", bind);
+   val = _validator_new();
+   val->range.start = start;
+   val->range.end = end;
+   val->bind.type = type;
+   val->bind.ptr.byte_ptr = bind;
+   val->prescalor.operation = operation;
+   val->prescalor.inverse = inverse;
+
    eo_do(o, eo_event_callback_add(ELM_ENTRY_EVENT_VALIDATE,
-                                  _word_validator, val));
+                                  _validator_cb, val));
+
+   switch (val->bind.type)
+     {
+      case POINTER_TYPE_BYTE: value = *(val->bind.ptr.byte_ptr); break;
+      case POINTER_TYPE_WORD: value = *(val->bind.ptr.word_ptr); break;
+      case POINTER_TYPE_LONG: value = *(val->bind.ptr.long_ptr); break;
+     }
+   
+   if (val->prescalor.operation) value = val->prescalor.operation(value);
+   snprintf(buf, sizeof(buf), "%u", value);
+   elm_entry_entry_set(o, buf);
 
    elm_table_pack(table, o, col, row, 1, 1);
 }
+
+static inline void
+_pack_byte_entry(Evas_Object *table,
+                 unsigned int  row,
+                 unsigned int  col,
+                 uint8_t      *bind)
+{
+   _pack_range_entry(table, row, col, 0, UINT8_MAX, bind, POINTER_TYPE_BYTE,
+                     NULL, NULL);
+}
+
+static inline void
+_pack_word_entry(Evas_Object *table,
+                 unsigned int  row,
+                 unsigned int  col,
+                 uint16_t     *bind)
+{
+   _pack_range_entry(table, row, col, 0, UINT16_MAX, bind, POINTER_TYPE_WORD,
+                     NULL, NULL);
+}
+
+static uint32_t _x10(uint32_t val) { return val * 10; }
+static uint32_t _d10(uint32_t val) { return val / 10; }
+
+static inline void
+_pack_build_cost_entry(Evas_Object  *table,
+                       unsigned int  row,
+                       unsigned int  col,
+                       uint8_t      *bind)
+{
+   _pack_range_entry(table, row, col, 0, UINT8_MAX, bind, POINTER_TYPE_BYTE,
+                     _x10, _d10);
+}
+
 
 Evas_Object *
 menu_starting_properties_new(Editor      *ed,
@@ -955,4 +1101,127 @@ menu_starting_properties_new(Editor      *ed,
 
    return f;
 }
+
+
+// FIXME Units properties is waaaaay to slow.
+// FIXME There is nothing much I can do, ELM does not scale well for massive UI
+//
+///*============================================================================*
+// *                              Units Properties                              *
+// *============================================================================*/
+//
+//static Evas_Object *
+//_menu_prop_genlist_get_cb(void        *data,
+//                          Evas_Object *obj,
+//                          const char  *part)
+//{
+//   Evas_Object *t;
+//   struct _unit_data *udta = data;
+//   unsigned int unit;
+//   const Pud *pud;
+//
+//   printf("Part: %s\n", part);
+//   
+//   pud = evas_object_data_get(obj, PUD_DATA);
+//
+//   t = elm_table_add(obj);
+//   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+//   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
+//   elm_table_homogeneous_set(t, EINA_TRUE);
+//
+//
+//   unit = udta - &(pud->unit_data[0]);
+//   printf("Unit is %u\n", unit);
+//
+//   _pack_label(t, 0, 0, pud_unit2str(unit));
+//   _pack_range_entry(t, 0, 1, 0, 9, &(udta->sight),
+//                     POINTER_TYPE_LONG, NULL, NULL);
+//   _pack_word_entry(t, 0, 2, &(udta->hp));
+//   _pack_byte_entry(t, 0, 3, &(udta->build_time));
+//   _pack_build_cost_entry(t, 0, 4, &(udta->gold_cost));
+//   _pack_build_cost_entry(t, 0, 5, &(udta->lumber_cost));
+//   _pack_build_cost_entry(t, 0, 6, &(udta->oil_cost));
+//   _pack_byte_entry(t, 0, 7, &(udta->range));
+//   _pack_byte_entry(t, 0, 8, &(udta->computer_react_range));
+//   _pack_byte_entry(t, 0, 9, &(udta->human_react_range));
+//   _pack_byte_entry(t, 0, 10, &(udta->armor));
+//   _pack_byte_entry(t, 0, 11, &(udta->basic_damage));
+//   _pack_byte_entry(t, 0, 12, &(udta->piercing_damage));
+//   _pack_byte_entry(t, 0, 13, &(udta->decay_rate));
+//   _pack_byte_entry(t, 0, 14, &(udta->annoy));
+//    //    _pack_checkbox(t, 15, i + 1, &(udta->has_magic));
+//    //    _pack_checkbox(t, 16, i + 1, &(udta->weapons_upgradable));
+//    //    _pack_checkbox(t, 17, i + 1, &(udta->armor_upgradable));
+//   
+//   evas_object_show(t);
+//   return t;
+//}
+//
+//static void
+//_unselect_cb(void        *data EINA_UNUSED,
+//             Evas_Object *obj,
+//             void        *evt)
+//{
+//   elm_genlist_item_selected_set(evt, EINA_FALSE);
+//}
+//
+//Evas_Object *
+//menu_units_properties_new(Editor      *ed,
+//                          Evas_Object *parent)
+//{
+//   Evas_Object *f, *gen, *s;
+//   Elm_Genlist_Item_Class *itc;
+//   Pud *pud = ed->pud;
+//   const unsigned int units = 110;
+//   unsigned int i;
+//   struct _unit_data *udta;
+//   Validator *validators, *v;
+//
+//   f = _frame_add(parent, "Units Properties");
+//   gen = elm_genlist_add(f);
+//   evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+//   evas_object_size_hint_align_set(gen, EVAS_HINT_FILL, EVAS_HINT_FILL);
+//   evas_object_show(gen);
+//   elm_object_content_set(f, gen);
+//
+//   itc = elm_genlist_item_class_new();
+//   itc->item_style = "full";
+//   itc->func.text_get = NULL;
+//   itc->func.content_get = _menu_prop_genlist_get_cb;
+//   itc->func.state_get = NULL;
+//   itc->func.del = NULL;
+//
+//   evas_object_data_set(gen, PUD_DATA, pud);
+//
+//
+//   /* Settings column */
+//   //_pack_label(t,  1, 0, "Sight");
+//   //_pack_label(t,  2, 0, "Hit Points");
+//   //_pack_label(t,  3, 0, "Build Time");
+//   //_pack_label(t,  4, 0, "Gold Cost");
+//   //_pack_label(t,  5, 0, "Lumber Cost");
+//   //_pack_label(t,  6, 0, "Oil Cost");
+//   //_pack_label(t,  7, 0, "Range");
+//   //_pack_label(t,  8, 0, "Computer Reaction Range");
+//   //_pack_label(t,  9, 0, "Human Reaction Range");
+//   //_pack_label(t, 10, 0, "Armor");
+//   //_pack_label(t, 11, 0, "Basic Damage");
+//   //_pack_label(t, 12, 0, "Piercing Damage");
+//   //_pack_label(t, 13, 0, "Decay Rate");
+//   //_pack_label(t, 14, 0, "Annoyance");
+//   //_pack_label(t, 15, 0, "Has Magic");
+//   //_pack_label(t, 16, 0, "Weapons Upgradable");
+//   //_pack_label(t, 17, 0, "Armor Upgradable");
+//
+//   for (i = 0; i < 11; ++i)
+//     {
+//        elm_genlist_item_append(gen, itc, &(pud->unit_data[i]), NULL,
+//                                ELM_GENLIST_ITEM_NONE, _unselect_cb, NULL);
+// //       udta = &(pud->unit_data[i]);
+//     }
+//
+//   elm_genlist_item_class_free(itc);
+//
+//   return f;
+//}
 
