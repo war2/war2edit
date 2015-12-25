@@ -6,6 +6,20 @@
 
 #include "war2edit.h"
 
+/*
+ * This applies to anchors...
+ * cell->selected_xxx will have the following bits
+ *  - [0] SEL_SET if the selection is effective
+ *  - [1] SEL_MARK if the anchor was proccessed during the seletion
+ *    Indeed, for NxN units, N>1 the anchor will likely to be processed
+ *    several times. This system is used to handle the "inclusive"
+ *    selection that allows to de-select previously selected units.
+ */
+enum {
+   SEL_MARK = (1 << 1),
+   SEL_SET  = (1 << 0)
+};
+
 Evas_Object *
 sel_add(Editor *restrict ed)
 {
@@ -112,20 +126,6 @@ sel_end(Editor *restrict ed)
    Cell **cells = ed->cells;
    const Eina_Bool inclusive = ed->sel.inclusive;
 
-   /*
-    * This applies to anchors...
-    * cell->selected_xxx will have the following bits
-    *  - [0] SEL_SET if the selection is effective
-    *  - [1] SEL_MARK if the anchor was proccessed during the seletion
-    *    Indeed, for NxN units, N>1 the anchor will likely to be processed
-    *    several times. This system is used to handle the "inclusive"
-    *    selection that allows to de-select previously selected units.
-    */
-   enum {
-      SEL_MARK = (1 << 1),
-      SEL_SET  = (1 << 0)
-   };
-
    for (j = ed->sel.rel1.y; j <= ed->sel.rel2.y; ++j)
      {
         for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
@@ -220,9 +220,9 @@ sel_del(Editor *restrict ed)
      for (i = 0; i < ed->pud->map_w; ++i)
        {
           c = &(ed->cells[j][i]);
-          if (c->anchor_below)
+          if ((c->anchor_below) && (c->selected_below == SEL_SET))
             bitmap_unit_del_at(ed, i, j, EINA_TRUE);
-          if (c->anchor_above)
+          if ((c->anchor_above) && (c->selected_above == SEL_SET))
             bitmap_unit_del_at(ed, i, j, EINA_FALSE);
        }
    bitmap_redraw(ed);
