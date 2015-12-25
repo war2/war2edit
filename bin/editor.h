@@ -76,6 +76,7 @@ struct _Editor
       unsigned char **data;
       unsigned int    w;
       unsigned int    h;
+      unsigned int    ratio;
    } minimap;
 
    struct {

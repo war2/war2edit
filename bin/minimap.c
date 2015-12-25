@@ -50,7 +50,7 @@ minimap_add(Editor *ed)
    Evas_Object *o, *win;
    unsigned int w = ed->pud->map_w;
    const unsigned int h = ed->pud->map_h;
-   unsigned int i, ratio, winw, winh;
+   unsigned int i, winw, winh;
 
    win = ed->minimap.win = elm_win_util_standard_add("Minimap", "Minimap");
    evas_object_smart_callback_add(win, "delete,request",
@@ -69,19 +69,19 @@ minimap_add(Editor *ed)
    /* Define a ratio to resize the minimap (way too small overwise) */
    switch (ed->pud->dims)
      {
-      case PUD_DIMENSIONS_32_32:   ratio = 5; break;
-      case PUD_DIMENSIONS_64_64:   ratio = 3; break;
-      case PUD_DIMENSIONS_96_96:   ratio = 2; break;
-      case PUD_DIMENSIONS_128_128: ratio = 2; break;
+      case PUD_DIMENSIONS_32_32:   ed->minimap.ratio = 5; break;
+      case PUD_DIMENSIONS_64_64:   ed->minimap.ratio = 3; break;
+      case PUD_DIMENSIONS_96_96:   ed->minimap.ratio = 2; break;
+      case PUD_DIMENSIONS_128_128: ed->minimap.ratio = 2; break;
       default:
          CRI("ed->pud->dims is %i. This MUST NEVER happen", ed->pud->dims);
-         ratio = 1;
+         ed->minimap.ratio = 1;
          break;
      }
 
    elm_win_resize_object_add(win, o);
-   winw = ratio * ed->minimap.w;
-   winh = ratio * ed->minimap.h;
+   winw = ed->minimap.ratio * ed->minimap.w;
+   winh = ed->minimap.ratio * ed->minimap.h;
    evas_object_size_hint_max_set(win, winw, winh);
    evas_object_size_hint_min_set(win, winw, winh);
    evas_object_resize(win, winw, winh);
@@ -250,6 +250,7 @@ minimap_view_move(Editor *restrict ed,
                   Eina_Bool        clicked)
 {
    int bx, by, rw = 0, rh = 0, srw, srh, cx, cy;
+   int winw, winh;
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
 
@@ -259,12 +260,15 @@ minimap_view_move(Editor *restrict ed,
         y -= rh / 2;
      }
 
+   winw = ed->minimap.w * ed->minimap.ratio;
+   winh = ed->minimap.h * ed->minimap.ratio;
    if (x < 0) x = 0;
    if (y < 0) y = 0;
-   if (x + rw > (int)ed->minimap.w) x = ed->minimap.w - rw;
-   if (y + rh > (int)ed->minimap.h) y = ed->minimap.h - rh;
+   if (x + rw > winw) x = winw - rw;
+   if (y + rh > winh) y = winh - rh;
 
-   evas_object_move(ed->minimap.rect, x, y);
+   evas_object_move(ed->minimap.rect,
+                    x * ed->minimap.ratio, y * ed->minimap.ratio);
 
    if (clicked)
      {
@@ -285,6 +289,7 @@ minimap_view_resize(Editor *restrict ed,
                     unsigned int     w,
                     unsigned int     h)
 {
-   evas_object_resize(ed->minimap.rect, w, h);
+   evas_object_resize(ed->minimap.rect,
+                      w * ed->minimap.ratio, h * ed->minimap.ratio);
 }
 
