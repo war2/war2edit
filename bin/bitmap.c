@@ -273,6 +273,30 @@ _unit_below_cursor_is(const Editor *restrict ed,
    return EINA_FALSE;
 }
 
+static inline Eina_Bool
+_cells_type_get(Cell         **cells,
+                unsigned int   ox,
+                unsigned int   oy,
+                unsigned int   w,
+                unsigned int   h,
+                Eina_Bool    (*iterator)(const uint8_t, const uint8_t,
+                                         const uint8_t, const uint8_t))
+{
+   unsigned int i, j;
+   Eina_Bool res = EINA_FALSE;
+   Cell *c;
+
+   for (j = oy; j < oy + h; ++j)
+     for (i = ox; i < ox + w; ++i)
+       {
+          c = &(cells[j][i]);
+          res |= iterator(c->tile_tl, c->tile_tr, c->tile_bl, c->tile_br);
+       }
+
+   return res;
+}
+
+
 /*============================================================================*
  *                                   Events                                   *
  *============================================================================*/
@@ -284,7 +308,6 @@ _hovered_cb(void        *data,
 {
    Editor *ed = data;
    Elm_Bitmap_Event_Hovered *ev = info;
-   const Cell *c;
    int x, y;
    unsigned int cw, ch;
 
@@ -301,11 +324,9 @@ _hovered_cb(void        *data,
 
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
-   c = &(ed->cells[y][x]);
-
-   if (TILE_ROCKS_IS(c) ||
+   if (_cells_type_get(ed->cells, x, y, cw, ch, tile_rocks_is) ||
        //TILE_WALL_IS(c) || // FIXME
-       TILE_TREES_IS(c))
+       _cells_type_get(ed->cells, x, y, cw, ch, tile_trees_is))
      {
         /* Handle only flying units: they are the only one
          * that can be placed there */
@@ -333,7 +354,7 @@ _hovered_cb(void        *data,
           }
         else /* marine,ground units */
           {
-             if (TILE_WATER_IS(c)) /* water */
+             if (_cells_type_get(ed->cells, x, y, cw, ch, tile_water_is)) /* water */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
