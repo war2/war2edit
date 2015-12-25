@@ -627,20 +627,6 @@ _frame_add(Evas_Object *parent,
    return f;
 }
 
-static Evas_Object *
-_scroller_add(Evas_Object *parent)
-{
-   Evas_Object *s;
-
-   s = elm_scroller_add(parent);
-   evas_object_size_hint_weight_set(s, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(s, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(s);
-
-   return s;
-}
-
-
 static void
 _era_changed_cb(void        *data,
                 Evas_Object *obj,
