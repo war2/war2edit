@@ -535,16 +535,18 @@ menu_add(Editor *ed)
 #undef RADIO_ADD
 
    elm_menu_item_separator_add(ed->menu, itm);
-   elm_menu_item_add(ed->menu, itm, NULL, "Map Properties...", _map_properties_cb, ed);
+   i = elm_menu_item_add(ed->menu, itm, NULL, "Map Properties...", _map_properties_cb, ed);
+   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
    elm_menu_item_add(ed->menu, itm, NULL, "Player Properties...", _player_properties_cb, ed);
    elm_menu_item_add(ed->menu, itm, NULL, "Starting Properties...", _starting_properties_cb, ed);
+
    i = elm_menu_item_add(ed->menu, itm, NULL, "Units Properties...", _units_properties_cb, ed);
-   elm_object_item_disabled_set(i, EINA_TRUE);
+   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
    i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
-   elm_object_item_disabled_set(i, EINA_TRUE);
+   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
 
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
-   elm_object_item_disabled_set(itm, EINA_TRUE);
+   elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
 
 
    return EINA_TRUE;
