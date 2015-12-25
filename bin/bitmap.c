@@ -139,6 +139,22 @@ _solid_component_get(const Editor_Sel action,
 }
 
 static void
+_place_selected_tile(Editor             *ed,
+                     const Editor_Sel    action,
+                     const Editor_Sel    tint,
+                     const unsigned int  x,
+                     const unsigned int  y)
+{
+   uint8_t component;
+
+   component = _solid_component_get(action, tint);
+   bitmap_tile_set(ed, x, y, component, component,
+                   component, component, 0x01,
+                   TILE_PROPAGATE_TL | TILE_PROPAGATE_TR |
+                   TILE_PROPAGATE_BL | TILE_PROPAGATE_BR);
+}
+
+static void
 _click_handle(Editor *ed,
               int     x,
               int     y)
@@ -192,30 +208,32 @@ _click_handle(Editor *ed,
           {
            case EDITOR_SEL_ACTION_SELECTION:
               /* Handled by mouse,down mouse,move mouve,up callbacks */
-              break;
+              return;
 
               /* Tiles drawing */
+           case EDITOR_SEL_ACTION_TREES:
+              component = TILE_GRASS_LIGHT;
+              break;
+
+           case EDITOR_SEL_ACTION_ROCKS:
            case EDITOR_SEL_ACTION_WATER:
+              component = TILE_GROUND_LIGHT;
+              break;
+
            case EDITOR_SEL_ACTION_GROUND:
            case EDITOR_SEL_ACTION_GRASS:
-           case EDITOR_SEL_ACTION_TREES:
-           case EDITOR_SEL_ACTION_ROCKS:
            case EDITOR_SEL_ACTION_HUMAN_WALLS:
            case EDITOR_SEL_ACTION_ORCS_WALLS:
-              printf("=====================================\n");
-              component = _solid_component_get(action, editor_sel_tint_get(ed));
-              bitmap_tile_set(ed, x, y, component, component,
-                              component, component, 0x01,
-                              TILE_PROPAGATE_TL | TILE_PROPAGATE_TR |
-                              TILE_PROPAGATE_BL | TILE_PROPAGATE_BR);
-              bitmap_redraw(ed); // FIXME Bad
               break;
 
            case EDITOR_SEL_ACTION_NONE:
            default:
               CRI("Unhandled action <0x%x>", action);
-              break;
+              return;
           }
+
+        _place_selected_tile(ed, action, editor_sel_tint_get(ed), x, y);
+        bitmap_redraw(ed); // FIXME Bad
      }
 }
 
@@ -749,7 +767,7 @@ bitmap_tile_set(Editor * restrict ed,
              next[BL].bl = cells[y + 1][x - 1].tile_bl;
              next[BL].br = cells[y + 1][x - 1].tile_br;
           }
-     }
+   }
    if (x < (int)ed->pud->map_w - 1)
      {
         next[R].x = x + 1;
@@ -811,6 +829,9 @@ bitmap_tile_set(Editor * restrict ed,
      {
         if ((next[k].valid) && (next[k].prop & propagate))
           {
+             DBG("calling tile_set() for k=%i, [%i,%i] = {%x %x %x %x}",
+                 k, next[k].x, next[k].y, next[k].tl, next[k].tr,
+                 next[k].bl, next[k].br);
              ok &= bitmap_tile_set(ed,
                                    next[k].x, next[k].y,
                                    next[k].tl, next[k].tr,
