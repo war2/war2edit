@@ -52,7 +52,6 @@ elm_main(int    argc,
    /* Quit option requested? End now, with success */
    if (quit_opt) goto end;
 
-
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
  //  elm_language_set("");
   // elm_app_compile_bin_dir_set(PACKAGE_COMPILE_BIN_DIR);
@@ -68,12 +67,20 @@ elm_main(int    argc,
      }
    DBG("Size of a single Cell is %zu", sizeof(Cell));
 
+   /* Init ipc module */
+   if (EINA_UNLIKELY(!ipc_init()))
+     {
+        CRI("Failed to init ipc module");
+        ret = EXIT_FAILURE;
+        goto log_done;
+     }
+
    /* Init texture module */
    if (EINA_UNLIKELY(!texture_init()))
      {
         CRI("Failed to init texture module");
         ret = EXIT_FAILURE;
-        goto log_done;
+        goto ipc_done;
      }
 
    /* Init texture module */
@@ -141,6 +148,8 @@ menu_done:
    menu_shutdown();
 sprite_done:
    sprite_shutdown();
+ipc_done:
+   ipc_shutdown();
 texture_done:
    texture_shutdown();
 log_done:

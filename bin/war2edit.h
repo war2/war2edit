@@ -27,6 +27,7 @@ typedef struct _Editor Editor;
 #include "texture.h"
 #include "mainconfig.h"
 #include "toolbar.h"
+#include "ipc.h"
 #include "cell.h"
 #include "file.h"
 #include "menu.h"

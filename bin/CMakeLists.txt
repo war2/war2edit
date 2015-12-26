@@ -19,6 +19,7 @@ set(
    tile.c
    inwin.c
    prefs.c
+   ipc.c
 
    str.h
    editor.h
@@ -36,6 +37,7 @@ set(
    tile.h
    inwin.h
    prefs.h
+   ipc.h
 
    war2edit.h
 )

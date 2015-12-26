@@ -75,6 +75,17 @@ _focus_in_cb(void        *data,
    _focused = data;
 }
 
+static void
+_spawn_cb(void         *data  EINA_UNUSED,
+          unsigned int  spawns)
+{
+   Eina_List *l;
+   Editor *ed;
+   const Eina_Bool select = (spawns == 0) ? EINA_FALSE : EINA_TRUE;
+
+   EINA_LIST_FOREACH(_editors, l, ed)
+      toolbar_runner_segment_selected_set(ed, select);
+}
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -89,6 +100,8 @@ editor_init(void)
         CRI("Failed to attach key down handler");
         return EINA_FALSE;
      }
+
+   ipc_spawns_cb_set(_spawn_cb, NULL);
    return EINA_TRUE;
 }
 

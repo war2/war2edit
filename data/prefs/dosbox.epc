@@ -32,7 +32,7 @@ collection {
             editable: 1;
             label: "Path to Warcraft II Binary Within its Installation Folder (mounted as C:\\)";
             text {
-               placeholder: "C:\\path\\to\\warcraft2\\binary";
+               placeholder: "path\\to\\warcraft2\\binary (from C:\\)";
             }
          }
 

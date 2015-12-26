@@ -67,6 +67,7 @@ struct _Editor
    Editor_Sel    tb_sel;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
+   Evas_Object  *runner;
 
    // XXX Should minimap be shared for all instances??
    struct {
@@ -93,6 +94,7 @@ struct _Editor
    } sel;
 
    Evas_Object *radio_units_reset;
+
    Eina_Array  *orc_menus;
    Eina_Array  *human_menus;
 
