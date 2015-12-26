@@ -50,7 +50,7 @@ prefs_shutdown(void)
      elm_prefs_data_unref(_prefs[i]);
 }
 
-Elm_Prefs_Data *
+const Elm_Prefs_Data *
 prefs_get(Prefs type)
 {
    return _prefs[type];
@@ -72,5 +72,17 @@ prefs_new(Evas_Object *parent,
    evas_object_show(obj);
 
    return obj;
+}
+
+const char *
+prefs_value_string_get(Prefs       type,
+                       const char *key)
+{
+   Eina_Value value;
+   const char *val;
+
+   elm_prefs_data_value_get(prefs_get(type), key, NULL, &value);
+   eina_value_get(&value, &val);
+   return val;
 }
 
