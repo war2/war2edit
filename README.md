@@ -20,15 +20,15 @@ TODO - Showstoppers
 - [ ] Redo completly the graphical part. Elm_Bitmap is waayyy to heavy and inefficient.
       Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
       and so efficient, but the smart_move kills it...
-- [ ] Minimap window is annoying and suboptimal (let's Evas do the scaling)
+- [X] Minimap window is annoying and suboptimal (let's Evas do the scaling)
 - [ ] Place textures
 - [ ] Different brush types
 - [ ] Different brush sizes
 - [X] Load a map
-- [ ] Auto-run war2 to test the map
+- [X] Auto-run war2 to test the map
 - [ ] Implement properties editors
 - [ ] Help/About panel
-- [ ] Toggle race in menu
+- [X] Toggle race in menu
 - [ ] Toggle extension mode
 - [X] Selection mode to select units
 - [X] Delete a unit
