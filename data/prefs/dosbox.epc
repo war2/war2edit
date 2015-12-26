@@ -14,6 +14,7 @@ collection {
       items {
          item { name: "dosbox/cdrom"; type: TEXT;
             editable: 1;
+            label: "Path to Warcraft II CD-ROM Folder";
             text {
                placeholder: "/path/to/warcraft2/cdrom";
             }
@@ -21,15 +22,25 @@ collection {
 
          item { name: "dosbox/disk"; type: TEXT;
             editable: 1;
+            label: "Path to Warcraft II Installation Folder";
             text {
                placeholder: "/path/to/warcraft2/folder";
             }
          }
 
+         item { name: "dosbox/path"; type: TEXT;
+            editable: 1;
+            label: "Path to Warcraft II Binary Within its Installation Folder (mounted as C:\\)";
+            text {
+               placeholder: "C:\\path\\to\\warcraft2\\binary";
+            }
+         }
+
          item { name: "dosbox/bin"; type: TEXT;
             editable: 1;
+            label: "DOSBox binary";
             text {
-               placeholder: "dosbox";
+               placeholder: "/usr/bin/dosbox";
             }
          }
       }
