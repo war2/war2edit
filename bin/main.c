@@ -84,6 +84,7 @@ elm_main(int    argc,
         goto texture_done;
      }
 
+   /* Init menu module */
    if (EINA_UNLIKELY(!menu_init()))
      {
         CRI("Failed to init menu module");
@@ -91,12 +92,20 @@ elm_main(int    argc,
         goto sprite_done;
      }
 
+   /* Init prefs module */
+   if (EINA_UNLIKELY(!prefs_init()))
+     {
+        CRI("Failed to init prefs module");
+        ret = EXIT_FAILURE;
+        goto menu_done;
+     }
+
    /* Init editor module */
    if (EINA_UNLIKELY(!editor_init()))
      {
         CRI("Failed to init editor module");
         ret = EXIT_FAILURE;
-        goto menu_done;
+        goto prefs_done;
      }
 
    /* Open editors for each specified files */
@@ -126,6 +135,8 @@ elm_main(int    argc,
 
 editor_done:
    editor_shutdown();
+prefs_done:
+   prefs_shutdown();
 menu_done:
    menu_shutdown();
 sprite_done:

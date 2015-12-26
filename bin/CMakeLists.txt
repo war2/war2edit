@@ -18,6 +18,7 @@ set(
    sel.c
    tile.c
    inwin.c
+   prefs.c
 
    str.h
    editor.h
@@ -34,6 +35,7 @@ set(
    sel.h
    tile.h
    inwin.h
+   prefs.h
 
    war2edit.h
 )
@@ -62,6 +64,10 @@ target_link_libraries(war2edit
    ${ELM_BITMAP_LIBRARIES}
    ${LIBPUD_LIBRARIES}
    ${LIBWAR2_LIBRARIES}
+)
+add_dependencies(
+   war2edit
+   prefs
 )
 
 install(

@@ -324,6 +324,22 @@ _minimap_show_cb(void        *data,
    minimap_show(ed);
 }
 
+static void
+_prefs_dosbox_cb(void        *data,
+                 Evas_Object *obj  EINA_UNUSED,
+                 void        *evt  EINA_UNUSED)
+{
+   Editor *ed = data;
+
+   if (inwin_id_is(ed, INWIN_PREFS_DOSBOX))
+     inwin_activate(ed);
+   else
+     {
+        inwin_set(ed, prefs_new(ed->inwin.obj, PREFS_DOSBOX),
+                  INWIN_PREFS_DOSBOX,
+                  "Close", NULL, NULL, NULL);
+     }
+}
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -359,6 +375,7 @@ menu_add(Editor *ed)
    /*==== VIEW MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "View", NULL, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "Show Minimap", _minimap_show_cb, ed);
+   elm_menu_item_add(ed->menu, itm, NULL, "DOSBox Preferences", _prefs_dosbox_cb, ed);
 
 
    /*==== TOOLS MENU ====*/

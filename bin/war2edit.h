@@ -21,6 +21,7 @@ typedef struct _Cell Cell;
 typedef struct _Editor Editor;
 
 #include "str.h"
+#include "prefs.h"
 #include "log.h"
 #include "tile.h"
 #include "texture.h"

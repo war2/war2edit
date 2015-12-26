@@ -19,6 +19,7 @@ Evas_Object *menu_map_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_player_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_starting_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_units_properties_new(Editor *ed, Evas_Object *parent);
+Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
 
 #endif /* ! _MENU_H_ */
 

@@ -1,0 +1,38 @@
+/*
+ * dosbox.epc
+ *
+ * Copyright (c) 2015 Jean Guyomarc'h
+ */
+
+collection {
+   page {
+      name: "main";
+      version: 1;
+      title: "DOSBox Preferences";
+      widget: "elm/vertical_frame";
+
+      items {
+         item { name: "dosbox/cdrom"; type: TEXT;
+            editable: 1;
+            text {
+               placeholder: "/path/to/warcraft2/cdrom";
+            }
+         }
+
+         item { name: "dosbox/disk"; type: TEXT;
+            editable: 1;
+            text {
+               placeholder: "/path/to/warcraft2/folder";
+            }
+         }
+
+         item { name: "dosbox/bin"; type: TEXT;
+            editable: 1;
+            text {
+               placeholder: "dosbox";
+            }
+         }
+      }
+   }
+}
+
