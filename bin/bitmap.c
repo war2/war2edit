@@ -296,31 +296,12 @@ _cells_type_get(Cell         **cells,
    return res;
 }
 
-
-/*============================================================================*
- *                                   Events                                   *
- *============================================================================*/
-
-static void
-_hovered_cb(void        *data,
-            Evas_Object *bmp  EINA_UNUSED,
-            void        *info)
+void
+bitmap_cursor_state_evaluate(Editor       *ed,
+                             unsigned int  x,
+                             unsigned int  y)
 {
-   Editor *ed = data;
-   Elm_Bitmap_Event_Hovered *ev = info;
-   int x, y;
    unsigned int cw, ch;
-
-   /* Disabled by elm_bitmap: don't even bother to set the cursor status */
-   if (!elm_bitmap_cursor_enabled_get(ed->bitmap))
-     return;
-
-   x = ev->cell_x;
-   y = ev->cell_y;
-
-   /* If we are playing with tiles, algorithm below is pointless */
-   if (ed->sel_unit == PUD_UNIT_NONE)
-     goto end;
 
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
@@ -381,10 +362,34 @@ _hovered_cb(void        *data,
                }
           }
      }
+}
+
+
+/*============================================================================*
+ *                                   Events                                   *
+ *============================================================================*/
+
+static void
+_hovered_cb(void        *data,
+            Evas_Object *bmp  EINA_UNUSED,
+            void        *info)
+{
+   Editor *ed = data;
+   Elm_Bitmap_Event_Hovered *ev = info;
+
+   /* Disabled by elm_bitmap: don't even bother to set the cursor status */
+   if (!elm_bitmap_cursor_enabled_get(ed->bitmap))
+     return;
+
+   /* If we are playing with tiles, algorithm below is pointless */
+   if (ed->sel_unit == PUD_UNIT_NONE)
+     goto end;
+
+   bitmap_cursor_state_evaluate(ed, ev->cell_x, ev->cell_y);
 
 end:
    if (ev->mouse.buttons & 1)
-     _click_handle(ed, x, y);
+     _click_handle(ed, ev->cell_x, ev->cell_y);
 }
 
 static void

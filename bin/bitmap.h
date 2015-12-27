@@ -40,5 +40,10 @@ bitmap_tile_set(Editor * restrict ed,
                 uint8_t           seed,
                 Tile_Propagate    propagate);
 
+void
+bitmap_cursor_state_evaluate(Editor       *ed,
+                             unsigned int  x,
+                             unsigned int  y);
+
 #endif /* ! _BITMAP_H_ */
 
