@@ -29,6 +29,7 @@ typedef struct _Editor Editor;
 #include "toolbar.h"
 #include "ipc.h"
 #include "cell.h"
+#include "undo.h"
 #include "file.h"
 #include "menu.h"
 #include "inwin.h"

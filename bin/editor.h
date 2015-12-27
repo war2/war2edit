@@ -98,6 +98,8 @@ struct _Editor
    Eina_Array  *orc_menus;
    Eina_Array  *human_menus;
 
+   Eina_Array *undo;
+
    /* === PUD specific === */
    Pud        *pud;
    uint8_t     sides[8]; /* Orc, Human */

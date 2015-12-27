@@ -20,6 +20,7 @@ set(
    inwin.c
    prefs.c
    ipc.c
+   undo.c
 
    str.h
    editor.h
@@ -38,6 +39,7 @@ set(
    inwin.h
    prefs.h
    ipc.h
+   undo.h
 
    war2edit.h
 )

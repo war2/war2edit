@@ -49,10 +49,12 @@ _scroll_cb(void        *data,
            Evas_Object *obj  EINA_UNUSED,
            void        *info EINA_UNUSED)
 {
+   Editor *ed = data;
+
    // FIXME BAAAAAAD!!!! when minimap changes the view,
    // it makes the scroller scroll, then this callback is called,
    // and it loops until bounce ends....
-   editor_view_update(data);
+   editor_view_update(ed);
 }
 
 static Eina_Bool
@@ -127,6 +129,7 @@ editor_free(Editor *ed)
    minimap_del(ed);
    eina_array_free(ed->orc_menus);
    eina_array_free(ed->human_menus);
+   undo_del(ed);
    free(ed);
 }
 
@@ -265,6 +268,8 @@ editor_new(const char *pud_file,
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
+
+   undo_add(ed);
 
    /* Add inwin */
    inwin_add(ed);
