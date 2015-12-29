@@ -59,15 +59,17 @@ _has_extension_cb(void        *data,
                   void        *event_info EINA_UNUSED)
 {
    Editor *ed = data;
-   Eina_Bool state;
+   const Eina_Bool with_extension = !!elm_check_state_get(obj);
+   const Eina_Bool no_extension = !with_extension;
 
-   state = !!elm_check_state_get(obj);
+   elm_object_disabled_set(ed->menu_swamp_radio, no_extension);
+   if ((no_extension) &&
+       (elm_radio_value_get(ed->menu_map_radio_group) == PUD_ERA_SWAMP))
+     {
+        elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
+     }
 
-   // TODO Disable/Enable menu
-   if (state == EINA_FALSE) {}
-   else {}
-
-   ed->pud->extension_pack = state;
+   ed->pud->extension_pack = with_extension;
 }
 
 
@@ -107,9 +109,7 @@ mainconfig_show(Editor *ed)
    /* Extension checker */
    o = elm_check_add(box);
    elm_object_text_set(o, "Use Warcraft II extension - Beyond the Dark Portal");
-   // FIXME Remove the disabled when cb will be implemented
    elm_check_state_set(o, EINA_TRUE);
-   elm_object_disabled_set(o, EINA_TRUE);
    evas_object_smart_callback_add(o, "changed", _has_extension_cb, ed);
    elm_box_pack_start(box, o);
    evas_object_show(o);

@@ -59,6 +59,8 @@ struct _Editor
    Evas_Object  *scroller;
    Evas_Object  *fs; /* File selector */
    Evas_Object  *bitmap;
+   Evas_Object  *menu_swamp_radio;
+   Evas_Object  *menu_map_radio_group;
 
    Cell        **cells;
 

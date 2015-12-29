@@ -113,7 +113,6 @@ _radio_add(Editor          *ed,
         elm_object_item_content_set(eoi, o);
         if (storage)
           eina_array_push(storage, eoi);
-
      }
    return o;
 }
@@ -529,6 +528,7 @@ menu_add(Editor *ed)
    ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL,
                                       _radio_units_changed_cb, EINA_FALSE);
    menu_unit_selection_reset(ed);
+
 #undef RADIO_ADD
 #undef RADIO_ADD_HUMAN
 #undef RADIO_ADD_ORC
@@ -564,7 +564,6 @@ menu_add(Editor *ed)
 
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
    elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
-
 
    return EINA_TRUE;
 }
@@ -607,7 +606,6 @@ menu_unit_selection_reset(Editor *ed)
    elm_radio_value_set(ed->radio_units_reset, PUD_UNIT_NONE);
    ed->sel_unit = PUD_UNIT_NONE;
 }
-
 
 /*============================================================================*
  *                               Map Properties                               *
@@ -657,7 +655,7 @@ Evas_Object *
 menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
 {
-   Evas_Object *f, *b, *o, *grp;
+   Evas_Object *f, *b, *o;
 
    /* Frame for map era */
    f = elm_frame_add(parent);
@@ -678,7 +676,7 @@ menu_map_properties_new(Editor      *ed,
    elm_object_text_set(o, "Forest");
    elm_box_pack_end(b, o);
    evas_object_show(o);
-   grp = o;
+   ed->menu_map_radio_group = o;
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
 
    /* Tileset item 2 (Winter) */
@@ -689,7 +687,7 @@ menu_map_properties_new(Editor      *ed,
    elm_object_text_set(o, "Winter");
    elm_box_pack_end(b, o);
    evas_object_show(o);
-   elm_radio_group_add(o, grp);
+   elm_radio_group_add(o, ed->menu_map_radio_group);
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
 
    /* Tileset item 3 (Wasteland) */
@@ -700,11 +698,11 @@ menu_map_properties_new(Editor      *ed,
    elm_object_text_set(o, "Wasteland");
    elm_box_pack_end(b, o);
    evas_object_show(o);
-   elm_radio_group_add(o, grp);
+   elm_radio_group_add(o, ed->menu_map_radio_group);
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
 
    /* Tileset item 4 (Swamp) */
-   o = elm_radio_add(b);
+   ed->menu_swamp_radio = o = elm_radio_add(b);
    elm_radio_state_value_set(o, PUD_ERA_SWAMP);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
@@ -712,10 +710,11 @@ menu_map_properties_new(Editor      *ed,
    elm_box_pack_end(b, o);
    evas_object_show(o);
    evas_object_smart_callback_add(o, "changed", _era_changed_cb, ed);
-   elm_radio_group_add(o, grp);
+   elm_radio_group_add(o, ed->menu_map_radio_group);
 
    /* Default value */
-   elm_radio_value_set(grp, PUD_ERA_FOREST);
+   elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
+   ed->pud->extension_pack = EINA_TRUE;
 
    return f;
 }
