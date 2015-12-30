@@ -125,7 +125,7 @@ texture_get(unsigned int  key,
         tex = texture_load(_tilesets[tileset], key);
         if (EINA_UNLIKELY(tex == NULL))
           {
-             ERR("Failed to load texture for key [%u]", key);
+             ERR("Failed to load texture for key [%u] (0x%04x)", key, key);
              return NULL;
           }
         chk = eina_hash_add(_textures, &key, tex);
