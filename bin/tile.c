@@ -6,6 +6,34 @@
 
 #include "war2edit.h"
 
+static const uint8_t _tiles_compatible[__TILE_LAST][__TILE_LAST] =
+{
+   /*             F   GL  CL  WL  WD  GD  CD  R */
+   /*    */ {  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+   /*  F */ {  0,  1,  1,  0,  0,  0,  0,  0,  0 },
+   /* GL */ {  0,  1,  1,  1,  0,  0,  1,  0,  0 },
+   /* CL */ {  0,  0,  1,  1,  1,  0,  0,  1,  1 },
+   /* WL */ {  0,  0,  0,  1,  1,  1,  0,  0,  0 },
+   /* WD */ {  0,  0,  0,  0,  1,  1,  0,  0,  0 },
+   /* GD */ {  0,  0,  1,  0,  0,  0,  1,  0,  0 },
+   /* CD */ {  0,  0,  0,  1,  0,  0,  0,  1,  0 },
+   /*  R */ {  0,  0,  0,  1,  0,  0,  0,  0,  1 }
+};
+
+static const uint8_t _tiles_conflicts[__TILE_LAST] =
+{
+   /*    */ TILE_NONE,
+   /*  F */ TILE_GRASS_LIGHT,
+   /* GL */ TILE_GROUND_LIGHT,
+   /* CL */ TILE_GRASS_LIGHT,
+   /* WL */ TILE_GROUND_LIGHT,
+   /* WD */ TILE_WATER_LIGHT,
+   /* GD */ TILE_GRASS_LIGHT,
+   /* CD */ TILE_GROUND_LIGHT,
+   /*  R */ TILE_GROUND_LIGHT
+};
+
+
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
@@ -185,7 +213,7 @@ tile_decompose(uint16_t  tile_code,
 {
    if ((tile_code & 0xff00) == 0x0000) /* Solid */
      {
-        uint8_t code = 0xff;
+        uint8_t code = TILE_NONE;
         switch (tile_code & 0x00f0)
           {
            case 0x0010: code = TILE_WATER_LIGHT; break;
@@ -205,5 +233,35 @@ tile_decompose(uint16_t  tile_code,
      {
         CRI("IMPLEMENT ME");
      }
+}
+
+Eina_Bool
+tile_fragments_compatible_are(const uint8_t t1,
+                              const uint8_t t2)
+{
+   EINA_SAFETY_ON_FALSE_RETURN_VAL((t1 < __TILE_LAST) &&
+                                   (t2 < __TILE_LAST),
+                                   EINA_FALSE);
+
+   return _tiles_compatible[t1][t2];
+}
+
+Eina_Bool
+tile_compatible_is(const uint8_t tl,
+                   const uint8_t tr,
+                   const uint8_t bl,
+                   const uint8_t br)
+{
+   return (tile_fragments_compatible_are(tl, tr) &&
+           tile_fragments_compatible_are(tl, bl) &&
+           tile_fragments_compatible_are(tl, br));
+
+}
+
+uint8_t
+tile_conflict_resolve_get(const uint8_t t)
+{
+   EINA_SAFETY_ON_FALSE_RETURN_VAL(t < __TILE_LAST,  TILE_NONE);
+   return _tiles_conflicts[t];
 }
 

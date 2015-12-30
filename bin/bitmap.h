@@ -37,13 +37,18 @@ bitmap_tile_set(Editor * restrict ed,
                 uint8_t           tr,
                 uint8_t           bl,
                 uint8_t           br,
-                uint8_t           seed,
-                Tile_Propagate    propagate);
+                uint8_t           seed);
 
 void
 bitmap_cursor_state_evaluate(Editor       *ed,
                              unsigned int  x,
                              unsigned int  y);
+
+Eina_Bool
+bitmap_tile_calculate(Editor           *ed,
+                      int               px,
+                      int               py,
+                      Tile_Propagation *prop);
 
 #endif /* ! _BITMAP_H_ */
 

@@ -97,7 +97,7 @@ static uint8_t
 _solid_component_get(const Editor_Sel action,
                      const Editor_Sel tint)
 {
-   uint8_t component = 0xff;
+   uint8_t component = TILE_NONE;
 
    switch (action)
      {
@@ -149,9 +149,8 @@ _place_selected_tile(Editor             *ed,
 
    component = _solid_component_get(action, tint);
    bitmap_tile_set(ed, x, y, component, component,
-                   component, component, 0x01,
-                   TILE_PROPAGATE_TL | TILE_PROPAGATE_TR |
-                   TILE_PROPAGATE_BL | TILE_PROPAGATE_BR);
+                   component, component, 0x01);
+   bitmap_tile_calculate(ed, x, y, NULL);
 }
 
 static void
@@ -201,37 +200,7 @@ _click_handle(Editor *ed,
      }
    else
      {
-        uint8_t component;
-
         action = editor_sel_action_get(ed);
-        switch (action)
-          {
-           case EDITOR_SEL_ACTION_SELECTION:
-              /* Handled by mouse,down mouse,move mouve,up callbacks */
-              return;
-
-              /* Tiles drawing */
-           case EDITOR_SEL_ACTION_TREES:
-              component = TILE_GRASS_LIGHT;
-              break;
-
-           case EDITOR_SEL_ACTION_ROCKS:
-           case EDITOR_SEL_ACTION_WATER:
-              component = TILE_GROUND_LIGHT;
-              break;
-
-           case EDITOR_SEL_ACTION_GROUND:
-           case EDITOR_SEL_ACTION_GRASS:
-           case EDITOR_SEL_ACTION_HUMAN_WALLS:
-           case EDITOR_SEL_ACTION_ORCS_WALLS:
-              break;
-
-           case EDITOR_SEL_ACTION_NONE:
-           default:
-              CRI("Unhandled action <0x%x>", action);
-              return;
-          }
-
         _place_selected_tile(ed, action, editor_sel_tint_get(ed), x, y);
         bitmap_redraw(ed); // FIXME Bad
      }
@@ -675,6 +644,178 @@ bitmap_tile_draw(Editor *restrict ed,
    minimap_render(ed, x, y, 1, 1);
 }
 
+enum
+{
+   TL, T, TR,
+   L,     R,
+   BL, B, BR
+};
+
+static inline uint8_t
+_conflit_solve(const uint8_t  imposed,
+               const uint8_t  conflict,
+               Eina_Bool     *result_is_conflict)
+{
+   /* If the imposed and potential conflictual fragments are compatible,
+    * the potential conflict is not a conflict. Otherwise,
+    * force a compatible tile */
+   if (tile_fragments_compatible_are(imposed, conflict) == EINA_FALSE)
+     {
+        *result_is_conflict = EINA_TRUE;
+        return tile_conflict_resolve_get(imposed);
+     }
+   return conflict;
+}
+
+
+Eina_Bool
+bitmap_tile_calculate(Editor           *ed,
+                      int               px,
+                      int               py,
+                      Tile_Propagation *prop)
+{
+   Cell *const *const cells = ed->cells;
+   Eina_Bool ok = EINA_TRUE;
+   Tile_Propagation next[8] = { {0} };
+   const Tile_Propagate current_prop = (prop) ? prop->prop : TILE_PROPAGATE_FULL;
+   const int x = (prop) ? prop->x : px;
+   const int y = (prop) ? prop->y : py;
+   unsigned int k;
+   uint8_t imposed;
+
+#define _TILE_RESOLVE(T, SUB, X, Y) \
+   next[T].SUB = _conflit_solve(imposed, cells[Y][X].tile_ ## SUB, \
+                                &(next[T].conflict))
+
+   if (x > 0)
+     {
+        next[L].x = x - 1;
+        next[L].y = y;
+        next[L].valid = EINA_TRUE;
+        next[L].prop = TILE_PROPAGATE_L;
+
+        imposed = cells[y][x].tile_tl;
+        _TILE_RESOLVE(L, tl, x - 1, y);
+        next[L].tr = cells[y][x].tile_tl;
+        _TILE_RESOLVE(L, bl, x - 1, y);
+        next[L].br = cells[y][x].tile_bl;
+
+        if (y > 0)
+          {
+             next[TL].x = x - 1;
+             next[TL].y = y - 1;
+             next[TL].valid = EINA_TRUE;
+             next[TL].prop = TILE_PROPAGATE_TL;
+
+             imposed = cells[y][x].tile_tl;
+             _TILE_RESOLVE(TL, tl, x - 1, y - 1);
+             _TILE_RESOLVE(TL, tr, x - 1, y - 1);
+             _TILE_RESOLVE(TL, bl, x - 1, y - 1);
+             next[TL].br = imposed;
+          }
+        if (y < (int)ed->pud->map_h - 1)
+          {
+             next[BL].x = x - 1;
+             next[BL].y = y + 1;
+             next[BL].valid = EINA_TRUE;
+             next[BL].prop = TILE_PROPAGATE_BL;
+
+             imposed = cells[y][x].tile_bl;
+             _TILE_RESOLVE(BL, tl, x - 1, y + 1);
+             next[BL].tr = imposed;
+             _TILE_RESOLVE(BL, bl, x - 1, y + 1);
+             _TILE_RESOLVE(BL, br, x - 1, y + 1);
+          }
+     }
+   if (x < (int)ed->pud->map_w - 1)
+     {
+        next[R].x = x + 1;
+        next[R].y = y;
+        next[R].valid = EINA_TRUE;
+        next[R].prop = TILE_PROPAGATE_R;
+
+        imposed = cells[y][x].tile_tr;
+        next[R].tl = imposed;
+        _TILE_RESOLVE(R, tr, x + 1, y);
+        next[R].bl = imposed;
+        _TILE_RESOLVE(R, br, x + 1, y);
+
+        if (y > 0)
+          {
+             next[TR].x = x + 1;
+             next[TR].y = y - 1;
+             next[TR].valid = EINA_TRUE;
+             next[TR].prop = TILE_PROPAGATE_TR;
+
+             imposed = cells[y][x].tile_tr;
+             _TILE_RESOLVE(TR, tl, x + 1, y - 1);
+             _TILE_RESOLVE(TR, tr, x + 1, y - 1);
+             next[TR].bl = imposed;
+             _TILE_RESOLVE(TR, br, x + 1, y - 1);
+          }
+        if (y < (int)ed->pud->map_h - 1)
+          {
+             next[BR].x = x + 1;
+             next[BR].y = y + 1;
+             next[BR].valid = EINA_TRUE;
+             next[BR].prop = TILE_PROPAGATE_BR;
+
+             imposed = cells[y][x].tile_br;
+             next[BR].tl = imposed;
+             _TILE_RESOLVE(BR, tr, x + 1, y + 1);
+             _TILE_RESOLVE(BR, bl, x + 1, y + 1);
+             _TILE_RESOLVE(BR, br, x + 1, y + 1);
+          }
+     }
+   if (y > 0)
+     {
+        next[T].x = x;
+        next[T].y = y - 1;
+        next[T].valid = EINA_TRUE;
+        next[T].prop = TILE_PROPAGATE_T;
+
+        imposed = cells[y][x].tile_tl;
+        _TILE_RESOLVE(T, tl, x, y - 1);
+        _TILE_RESOLVE(T, tr, x, y - 1);
+        next[T].bl = imposed;
+        next[T].br = imposed;
+     }
+   if (y < (int)ed->pud->map_h - 1)
+     {
+        next[B].x = x;
+        next[B].y = y + 1;
+        next[B].valid = EINA_TRUE;
+        next[B].prop = TILE_PROPAGATE_B;
+
+        imposed = cells[y][x].tile_bl;
+        next[B].tl = imposed;
+        next[B].tr = imposed;
+        _TILE_RESOLVE(B, bl, x, y + 1);
+        _TILE_RESOLVE(B, br, x, y + 1);
+     }
+
+#undef _TILE_RESOLVE
+
+   for (k = 0; k < EINA_C_ARRAY_LENGTH(next); ++k)
+     {
+        if ((next[k].valid) && (next[k].prop & current_prop))
+          {
+             ok &= bitmap_tile_set(ed, next[k].x, next[k].y,
+                                   next[k].tl, next[k].tr,
+                                   next[k].bl, next[k].br,
+                                   0xff);
+
+             if (next[k].conflict == EINA_FALSE)
+               continue;
+
+             ok &= bitmap_tile_calculate(ed, x, y, &(next[k]));
+          }
+     }
+
+   return ok;
+}
+
+
 Eina_Bool
 bitmap_tile_set(Editor * restrict ed,
                 int               x,
@@ -683,8 +824,7 @@ bitmap_tile_set(Editor * restrict ed,
                 uint8_t           tr,
                 uint8_t           bl,
                 uint8_t           br,
-                uint8_t           seed,
-                Tile_Propagate    propagate)
+                uint8_t           seed)
 {
    /* Safety checks */
    EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
@@ -692,21 +832,7 @@ bitmap_tile_set(Editor * restrict ed,
                                   (y >= (int)ed->pud->map_h),
                                   EINA_FALSE);
 
-   unsigned int k;
    Cell *c = &(ed->cells[y][x]);
-
-   DBG("TileSet[%i,%i]: %x|%x %x|%x %x|%x %x|%x (%i) %x",
-       x, y,
-       c->tile_tl, tl,
-       c->tile_tr, tr,
-       c->tile_bl, bl,
-       c->tile_br, br, seed, propagate);
-
-   /* Np change need to be applied */
-   if ((c->tile_tl == tl) && (c->tile_tr == tr) &&
-       (c->tile_bl == bl) && (c->tile_br == br) &&
-       ((seed != 0xff && c->seed == seed) || (seed == 0xff)))
-     return EINA_TRUE;
 
    if (c->unit_below != PUD_UNIT_NONE)
      {
@@ -730,143 +856,17 @@ bitmap_tile_set(Editor * restrict ed,
      }
 
    /* Set tile internals */
-   c->tile_tl = tl;
-   c->tile_tr = tr;
-   c->tile_bl = bl;
-   c->tile_br = br;
-   c->tile = tile_calculate(tl, tr, bl, br, seed);
-   INF("Setting tile [%i,%i]: 0x%04x = {%x %x %x %x}", x, y, c->tile,
-       c->tile_tl, c->tile_tr, c->tile_bl, c->tile_br);
+   if (tl != TILE_NONE) c->tile_tl = tl;
+   if (tr != TILE_NONE) c->tile_tr = tr;
+   if (bl != TILE_NONE) c->tile_bl = bl;
+   if (br != TILE_NONE) c->tile_br = br;
+
+   c->tile = tile_calculate(c->tile_tl, c->tile_tr,
+                            c->tile_bl, c->tile_br,
+                            seed);
+
    minimap_update(ed, x, y);
-
-   if (propagate == TILE_PROPAGATE_NONE)
-     return EINA_TRUE;
-
-   /* Code below allows to propagate safely */
-   enum {
-      TL, T, TR,
-       L,    R,
-      BL, B, BR
-   };
-   struct {
-      int               x;
-      int               y;
-      Eina_Bool         valid;
-      Tile_Propagate    prop;
-      uint8_t           tl;
-      uint8_t           tr;
-      uint8_t           bl;
-      uint8_t           br;
-   } next[8] = {{0}};
-   Cell *const *const cells = ed->cells;
-   Eina_Bool ok = EINA_TRUE;
-
-   if (x > 0)
-     {
-        next[L].x = x - 1;
-        next[L].y = y;
-        next[L].valid = EINA_TRUE;
-        next[L].prop = TILE_PROPAGATE_TL | TILE_PROPAGATE_BL;
-        next[L].tl = cells[y][x - 1].tile_tl;
-        next[L].tr = cells[y][x].tile_tl;
-        next[L].bl = cells[y][x - 1].tile_bl;
-        next[L].br = cells[y][x].tile_bl;
-        if (y > 0)
-          {
-             next[TL].x = x - 1;
-             next[TL].y = y - 1;
-             next[TL].valid = EINA_TRUE;
-             next[TL].prop = TILE_PROPAGATE_TL;
-             next[TL].tl = cells[y - 1][x - 1].tile_tl;
-             next[TL].tr = cells[y - 1][x - 1].tile_tr;
-             next[TL].bl = cells[y - 1][x - 1].tile_bl;
-             next[TL].br = cells[y][x].tile_tl;
-          }
-        if (y < (int)ed->pud->map_h - 1)
-          {
-             next[BL].x = x - 1;
-             next[BL].y = y + 1;
-             next[BL].valid = EINA_TRUE;
-             next[BL].prop = TILE_PROPAGATE_BL;
-             next[BL].tl = cells[y + 1][x - 1].tile_tl;
-             next[BL].tr = cells[y][x].tile_bl;
-             next[BL].bl = cells[y + 1][x - 1].tile_bl;
-             next[BL].br = cells[y + 1][x - 1].tile_br;
-          }
-   }
-   if (x < (int)ed->pud->map_w - 1)
-     {
-        next[R].x = x + 1;
-        next[R].y = y;
-        next[R].valid = EINA_TRUE;
-        next[R].prop = TILE_PROPAGATE_TR | TILE_PROPAGATE_BR;
-        next[R].tl = cells[y][x].tile_tr;
-        next[R].tr = cells[y][x + 1].tile_tr;
-        next[R].bl = cells[y][x].tile_br;
-        next[R].br = cells[y][x + 1].tile_br;
-
-        if (y > 0)
-          {
-             next[TR].x = x + 1;
-             next[TR].y = y - 1;
-             next[TR].valid = EINA_TRUE;
-             next[TR].prop = TILE_PROPAGATE_TR;
-             next[TR].tl = cells[y - 1][x + 1].tile_tl;
-             next[TR].tr = cells[y - 1][x + 1].tile_tr;
-             next[TR].bl = cells[y][x].tile_tr;
-             next[TR].br = cells[y - 1][x + 1].tile_br;
-          }
-        if (y < (int)ed->pud->map_h - 1)
-          {
-             next[BR].x = x + 1;
-             next[BR].y = y + 1;
-             next[BR].valid = EINA_TRUE;
-             next[BR].prop = TILE_PROPAGATE_BR;
-             next[BR].tl = cells[y][x].tile_br;
-             next[BR].tr = cells[y + 1][x + 1].tile_tr;
-             next[BR].bl = cells[y + 1][x + 1].tile_bl;
-             next[BR].br = cells[y + 1][x + 1].tile_br;
-          }
-     }
-   if (y > 0)
-     {
-        next[T].x = x;
-        next[T].y = y - 1;
-        next[T].valid = EINA_TRUE;
-        next[T].prop = TILE_PROPAGATE_TL | TILE_PROPAGATE_TR;
-        next[T].tl = cells[y - 1][x].tile_tl;
-        next[T].tr = cells[y - 1][x].tile_tr;
-        next[T].bl = cells[y][x].tile_tl;
-        next[T].br = cells[y][x].tile_tr;
-     }
-   if (y < (int)ed->pud->map_h - 1)
-     {
-        next[B].x = x;
-        next[B].y = y + 1;
-        next[B].valid = EINA_TRUE;
-        next[B].prop = TILE_PROPAGATE_BR | TILE_PROPAGATE_BL;
-        next[B].tl = cells[y][x].tile_bl;
-        next[B].tr = cells[y][x].tile_br;
-        next[B].bl = cells[y + 1][x].tile_bl;
-        next[B].br = cells[y + 1][x].tile_br;
-     }
-
-   for (k = 0; k < EINA_C_ARRAY_LENGTH(next); ++k)
-     {
-        if ((next[k].valid) && (next[k].prop & propagate))
-          {
-             DBG("calling tile_set() for k=%i, [%i,%i] = {%x %x %x %x}",
-                 k, next[k].x, next[k].y, next[k].tl, next[k].tr,
-                 next[k].bl, next[k].br);
-             ok &= bitmap_tile_set(ed,
-                                   next[k].x, next[k].y,
-                                   next[k].tl, next[k].tr,
-                                   next[k].bl, next[k].br,
-                                   0xff, next[k].prop);
-          }
-     }
-
-   return ok;
+   return EINA_TRUE;
 }
 
 Eina_Bool

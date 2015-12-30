@@ -9,24 +9,52 @@
 
 #include "editor.h"
 
-/* Values must not overflow 4 bits */
-#define TILE_WATER_LIGHT                0
-#define TILE_WATER_DARK                 1
-#define TILE_GRASS_LIGHT                2
-#define TILE_GRASS_DARK                 3
-#define TILE_GROUND_LIGHT               4
-#define TILE_GROUND_DARK                5
-#define TILE_TREES                      6
-#define TILE_ROCKS                      7
+typedef enum
+{
+   TILE_NONE            = 0,
+   TILE_TREES           = 1,
+   TILE_GRASS_LIGHT     = 2,
+   TILE_GROUND_LIGHT    = 3,
+   TILE_WATER_LIGHT     = 4,
+   TILE_WATER_DARK      = 5,
+   TILE_GRASS_DARK      = 6,
+   TILE_GROUND_DARK     = 7,
+   TILE_ROCKS           = 8,
+
+   __TILE_LAST
+} Tile;
 
 typedef enum
 {
    TILE_PROPAGATE_NONE  = 0,
-   TILE_PROPAGATE_TL    = (1 << 0), /* 0001 */
-   TILE_PROPAGATE_TR    = (1 << 1), /* 0010 */
-   TILE_PROPAGATE_BL    = (1 << 2), /* 0100 */
-   TILE_PROPAGATE_BR    = (1 << 3)  /* 1000 */
+   TILE_PROPAGATE_FULL  = 0xf,      /* 1111 */
+
+   TILE_PROPAGATE_T     = (1 << 0), /* 0001 */
+   TILE_PROPAGATE_B     = (1 << 1), /* 0010 */
+   TILE_PROPAGATE_L     = (1 << 2), /* 0100 */
+   TILE_PROPAGATE_R     = (1 << 3), /* 1000 */
+
+   TILE_PROPAGATE_TL    = (TILE_PROPAGATE_T | TILE_PROPAGATE_L),
+   TILE_PROPAGATE_TR    = (TILE_PROPAGATE_T | TILE_PROPAGATE_R),
+   TILE_PROPAGATE_BL    = (TILE_PROPAGATE_B | TILE_PROPAGATE_L),
+   TILE_PROPAGATE_BR    = (TILE_PROPAGATE_B | TILE_PROPAGATE_R)
+
 } Tile_Propagate;
+
+typedef struct
+{
+   int                  x;
+   int                  y;
+   Tile_Propagate       prop;
+   uint8_t              tl;
+   uint8_t              tr;
+   uint8_t              bl;
+   uint8_t              br;
+
+   Eina_Bool            valid;
+   Eina_Bool            conflict;
+
+} Tile_Propagation;
 
 static inline Eina_Bool
 tile_solid_is(const uint8_t tl,
@@ -119,6 +147,18 @@ tile_decompose(uint16_t  tile_code,
                uint8_t  *tl,
                uint8_t  *tr,
                uint8_t  *seed);
+
+Eina_Bool
+tile_fragments_compatible_are(const uint8_t t1,
+                              const uint8_t t2);
+
+Eina_Bool
+tile_compatible_is(const uint8_t tl,
+                   const uint8_t tr,
+                   const uint8_t bl,
+                   const uint8_t br);
+
+uint8_t tile_conflict_resolve_get(const uint8_t t);
 
 /* Helpers */
 #define TILE_SOLID_IS(cptr) \

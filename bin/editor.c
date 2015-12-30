@@ -201,7 +201,7 @@ editor_new(const char *pud_file,
 
    ed->xdebug = xdebug;
 
-   // FIXME cleanup on error
+   // FIXME cleanup on error + set max size
    ed->orc_menus = eina_array_new(4);
    ed->human_menus = eina_array_new(4);
 
@@ -546,9 +546,7 @@ editor_load(Editor * restrict  ed,
        {
           tile = pud_tile_get(pud, i, j);
           tile_decompose(tile, &tl, &tr, &bl, &br, &seed);
-          WRN("Get 0x%x. Got: %x %x %x %x (%i)",
-              tile, tl, tr, bl, br, seed);
-          bitmap_tile_set(ed, i, j, bl, br, tl, tr, seed, TILE_PROPAGATE_NONE);
+          bitmap_tile_set(ed, i, j, bl, br, tl, tr, seed);
        }
 
    for (i = 0; i < pud->units_count; ++i)
