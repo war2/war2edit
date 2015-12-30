@@ -856,7 +856,7 @@ bitmap_tile_set(Editor * restrict ed,
 
    c->tile = tile_calculate(c->tile_tl, c->tile_tr,
                             c->tile_bl, c->tile_br,
-                            seed);
+                            seed, ed->pud->era);
 
    minimap_update(ed, x, y);
    return EINA_TRUE;

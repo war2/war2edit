@@ -180,7 +180,8 @@ tile_calculate(const uint8_t tl,
                const uint8_t tr,
                const uint8_t bl,
                const uint8_t br,
-               const uint8_t seed)
+               const uint8_t seed,
+               const Pud_Era era)
 {
    // FIXME randomize if seed is 0xff
    const uint16_t seed_mask = (seed == 0xff) ? 0x0001 : (uint16_t)seed & 0x000f;
@@ -189,11 +190,26 @@ tile_calculate(const uint8_t tl,
    tile_code = tile_mask_calculate(tl, tr, bl, br) | seed_mask;
    switch (tile_code)
      {
+      case 0x0015:
+      case 0x0016:
+      case 0x0017:
+      case 0x0025:
+      case 0x0026:
+      case 0x0027:
+         /* These tiles exist only in winter and wasteland (floating
+          * ice/different water tile).
+          * They must be remapped in forest and swamp. */
+         if ((era == PUD_ERA_FOREST) || (era == PUD_ERA_SWAMP))
+           tile_code -= 0x0004;
+         break;
+
       case 0x003a:
       case 0x003b:
       case 0x004a:
       case 0x004b:
-         CRI("BLACK PLAGUE TILE <0x%x>! REMAP THIS!!!!", tile_code);
+         /* These tiles do not exist in swamp */
+         if (era == PUD_ERA_SWAMP)
+           tile_code -= 0x0005;
          break;
 
       default:

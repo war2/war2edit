@@ -132,7 +132,8 @@ tile_calculate(const uint8_t tl,
                const uint8_t tr,
                const uint8_t bl,
                const uint8_t br,
-               const uint8_t seed);
+               const uint8_t seed,
+               const Pud_Era era);
 
 uint16_t
 tile_mask_calculate(const uint8_t tl,
