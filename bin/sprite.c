@@ -119,13 +119,13 @@ sprite_buildings_open(Pud_Era era)
      }
 
    snprintf(path, sizeof(path), "%s/%s", elm_app_data_dir_get(), file);
-   ef = eet_open(file, EET_FILE_MODE_READ);
+   ef = eet_open(path, EET_FILE_MODE_READ);
    if (EINA_UNLIKELY(ef == NULL))
      {
-        CRI("Failed to open [%s]", file);
+        CRI("Failed to open [%s]", path);
         return NULL;
      }
-   DBG("Open buildings file [%s]", file);
+   DBG("Open buildings file [%s]", path);
 
    _buildings[era] = ef;
 
