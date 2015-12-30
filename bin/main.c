@@ -24,11 +24,32 @@ static const Ecore_Getopt _options =
    }
 };
 
+typedef struct
+{
+   const char *name;
+   Eina_Bool (*init)(void);
+   void (*shutdown)(void);
+} Module;
+
+
+static const Module _modules[] =
+{
+#define MODULE(name_) { #name_, name_ ## _init, name_ ## _shutdown }
+   MODULE(log),
+   MODULE(ipc),
+   MODULE(texture),
+   MODULE(sprite),
+   MODULE(menu),
+   MODULE(prefs),
+   MODULE(editor)
+#undef MODULE
+};
+
 EAPI_MAIN int
 elm_main(int    argc,
          char **argv)
 {
-   int ret = EXIT_SUCCESS;
+   int ret = EXIT_FAILURE;
    int args;
    int i;
    Editor *ed;
@@ -40,17 +61,22 @@ elm_main(int    argc,
       ECORE_GETOPT_VALUE_BOOL(quit_opt),
       ECORE_GETOPT_VALUE_BOOL(quit_opt)
    };
+   const Module *mod_ptr;
+   const Module *mod_end = &(_modules[EINA_C_ARRAY_LENGTH(_modules)]);
 
    args = ecore_getopt_parse(&_options, values, argc, argv);
    if (args < 0)
      {
         EINA_LOG_CRIT("Getopt failed");
-        ret = EXIT_FAILURE;
         goto end;
      }
 
    /* Quit option requested? End now, with success */
-   if (quit_opt) goto end;
+   if (quit_opt)
+     {
+        ret = EXIT_SUCCESS;
+        goto end;
+     }
 
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
  //  elm_language_set("");
@@ -58,62 +84,17 @@ elm_main(int    argc,
   // elm_app_compile_data_dir_set(PACKAGE_COMPILE_DATA_DIR);
   // elm_app_info_set(elm_main, "war2edit", "themes/default.edj");
 
-   /* Init log module */
-   if (EINA_UNLIKELY(!log_init()))
+   for (mod_ptr = _modules; mod_ptr != mod_end; ++mod_ptr)
      {
-        EINA_LOG_CRIT("Failed to init log module");
-        ret = EXIT_FAILURE;
-        goto end;
+       if (EINA_UNLIKELY(EINA_FALSE == mod_ptr->init()))
+         {
+            EINA_LOG_CRIT("Failed to initialize module \"%s\"", mod_ptr->name);
+            goto modules_shutdown;
+         }
+       DBG("Init module \"%s\"", mod_ptr->name);
      }
    DBG("Size of a single Cell is %zu", sizeof(Cell));
 
-   /* Init ipc module */
-   if (EINA_UNLIKELY(!ipc_init()))
-     {
-        CRI("Failed to init ipc module");
-        ret = EXIT_FAILURE;
-        goto log_done;
-     }
-
-   /* Init texture module */
-   if (EINA_UNLIKELY(!texture_init()))
-     {
-        CRI("Failed to init texture module");
-        ret = EXIT_FAILURE;
-        goto ipc_done;
-     }
-
-   /* Init texture module */
-   if (EINA_UNLIKELY(!sprite_init()))
-     {
-        CRI("Failed to init sprite module");
-        ret = EXIT_FAILURE;
-        goto texture_done;
-     }
-
-   /* Init menu module */
-   if (EINA_UNLIKELY(!menu_init()))
-     {
-        CRI("Failed to init menu module");
-        ret = EXIT_FAILURE;
-        goto sprite_done;
-     }
-
-   /* Init prefs module */
-   if (EINA_UNLIKELY(!prefs_init()))
-     {
-        CRI("Failed to init prefs module");
-        ret = EXIT_FAILURE;
-        goto menu_done;
-     }
-
-   /* Init editor module */
-   if (EINA_UNLIKELY(!editor_init()))
-     {
-        CRI("Failed to init editor module");
-        ret = EXIT_FAILURE;
-        goto prefs_done;
-     }
 
    /* Open editors for each specified files */
    for (i = args; i < argc; ++i)
@@ -132,28 +113,17 @@ elm_main(int    argc,
         if (EINA_UNLIKELY(!ed))
           {
              CRI("Failed to create editor");
-             ret = EXIT_FAILURE;
-             goto editor_done;
+             goto modules_shutdown;
           }
      }
 
    /* === Main loop === */
    elm_run();
+   ret = EXIT_SUCCESS;
 
-editor_done:
-   editor_shutdown();
-prefs_done:
-   prefs_shutdown();
-menu_done:
-   menu_shutdown();
-sprite_done:
-   sprite_shutdown();
-ipc_done:
-   ipc_shutdown();
-texture_done:
-   texture_shutdown();
-log_done:
-   log_shutdown();
+modules_shutdown:
+   for (; mod_ptr >= _modules; --mod_ptr)
+     mod_ptr->shutdown();
 end:
    return ret;
 }
