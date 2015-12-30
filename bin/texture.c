@@ -12,8 +12,7 @@ static Eet_File *_tilesets[4] = { NULL, NULL, NULL, NULL };
 
 void *
 texture_load(Eet_File     *src,
-             unsigned int  key,
-             Eina_Bool    *missing)
+             unsigned int  key)
 {
    /* 4 channels (rgba) of 1 byte each */
    const int expected_size = TEXTURE_WIDTH * TEXTURE_HEIGHT * 4 * sizeof(unsigned char);
@@ -27,13 +26,9 @@ texture_load(Eet_File     *src,
    mem = eet_read(src, key_str, &size);
    if (!mem)
      {
-        //DBG("Cannot find key \"%s\"", key_str);
-        /* Some tiles may not exist on some tilesets
-         * Not finding the tile is likely not to be an error. */
-        if (missing) *missing = EINA_TRUE;
+        ERR("Cannot find key \"%s\"", key_str);
         return NULL;
      }
-   if (missing) *missing = EINA_FALSE;
 
    /* Check the size */
    if (EINA_UNLIKELY(size != expected_size))
@@ -113,8 +108,7 @@ texture_shutdown(void)
 
 unsigned char *
 texture_get(unsigned int  key,
-            Pud_Era       tileset,
-            Eina_Bool    *missing)
+            Pud_Era       tileset)
 {
    Eina_Bool chk;
    unsigned char *tex;
@@ -122,17 +116,11 @@ texture_get(unsigned int  key,
    tex = eina_hash_find(_textures, &key);
    if (tex == NULL)
      {
-        tex = texture_load(_tilesets[tileset], key, missing);
-        if (tex == NULL)
+        tex = texture_load(_tilesets[tileset], key);
+        if (EINA_UNLIKELY(tex == NULL))
           {
-             /* See texture_load() */
-             if (EINA_LIKELY(missing && *missing))
-               return NULL;
-             else
-               {
-                  ERR("Failed to load texture for key [%u]", key);
-                  return NULL;
-               }
+             ERR("Failed to load texture for key [%u]", key);
+             return NULL;
           }
         chk = eina_hash_add(_textures, &key, tex);
         if (chk == EINA_FALSE)

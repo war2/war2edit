@@ -593,7 +593,7 @@ editor_texture_tile_access(const Editor * restrict ed,
    unsigned int key;
 
    key = ed->cells[y][x].tile;
-   return texture_get(key, ed->pud->era, NULL);
+   return texture_get(key, ed->pud->era);
 }
 
 void

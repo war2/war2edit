@@ -629,15 +629,9 @@ bitmap_tile_draw(Editor *restrict ed,
                  unsigned int     y)
 {
    unsigned char *tex;
-   Eina_Bool missing;
 
-   tex = texture_get(ed->cells[y][x].tile, ed->pud->era, &missing);
-   /* If the texture could not be loaded because of an internal error,
-    * return TRUE because we can do nothing about it.
-    * If the texture was non-existant, let's try again: the tileset
-    * is not helping us */
-   // FIXME I don't understand what is going on this the "missing" thing...
-   if (!tex) return;
+   tex = texture_get(ed->cells[y][x].tile, ed->pud->era);
+   if (EINA_UNLIKELY(!tex)) return;
 
    _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
          TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
