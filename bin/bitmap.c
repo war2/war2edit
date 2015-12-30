@@ -160,10 +160,10 @@ _click_handle(Editor *ed,
 {
    Sprite_Info orient;
    unsigned int w, h;
-   Editor_Sel action;
 
    if (!elm_bitmap_cursor_enabled_get(ed->bitmap)) return;
 
+   const Editor_Sel action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
      {
         if (pud_unit_start_location_is(ed->sel_unit))
@@ -198,9 +198,8 @@ _click_handle(Editor *ed,
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
         bitmap_redraw(ed); // FIXME ZONE!
      }
-   else
+   else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
-        action = editor_sel_action_get(ed);
         _place_selected_tile(ed, action, editor_sel_tint_get(ed), x, y);
         bitmap_redraw(ed); // FIXME Bad
      }
