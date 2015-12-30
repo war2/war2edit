@@ -78,7 +78,6 @@ elm_main(int    argc,
         goto end;
      }
 
-   printf("=> %s\n", PACKAGE_DATA_DIR);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_language_set("");
    elm_app_compile_bin_dir_set(PACKAGE_BIN_DIR);

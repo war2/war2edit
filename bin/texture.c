@@ -70,7 +70,6 @@ texture_tileset_open(Pud_Era era)
    if (EINA_UNLIKELY(!ef))
      {
         CRI("Failed to open tileset at path \"%s\"", path);
-        exit(1);
         return NULL;
      }
    DBG("Open tileset file [%s]", file);
