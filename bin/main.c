@@ -14,7 +14,7 @@ static const Ecore_Getopt _options =
    "0.1",
    "2014-2015 © Jean Guyomarc'h",
    "MIT",
-   "A modest clone of Warcraft II Wolrd Map Editor",
+   "A modest clone of Warcraft II World Map Editor",
    EINA_TRUE,
    {
       ECORE_GETOPT_STORE_TRUE('x', "xdebug", "Enable graphical debug"),
