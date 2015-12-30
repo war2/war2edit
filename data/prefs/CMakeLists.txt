@@ -14,6 +14,6 @@ list(APPEND CONFIG_FILES
 
 install(
    FILES ${CONFIG_FILES}
-   DESTINATION share/${PROJECT_NAME_LOWER}/prefs
+   DESTINATION share/${CMAKE_PROJECT_NAME}/prefs
 )
 

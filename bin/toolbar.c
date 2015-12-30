@@ -171,12 +171,17 @@ toolbar_add(Editor      *ed,
    Evas_Object *s[5];
    Elm_Object_Item *eoi;
    unsigned int i;
+   char path[PATH_MAX];
 
 #define SEG_ADD(cb) \
    _segment_add(ed, box, cb)
 
 #define SEG_IT_ADD(seg_, icon_, value_) \
-   _segment_item_add(seg_, DATA_DIR"/images/"icon_, value_)
+   do { \
+      snprintf(path, sizeof(path), "%s/images/%s", \
+               elm_app_data_dir_get(), icon_); \
+      _segment_item_add(seg_, path, value_); \
+   } while (0)
 
    /* Tint segment */
    s[0] = SEG_ADD(_seg_changed_cb);

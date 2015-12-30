@@ -78,11 +78,13 @@ elm_main(int    argc,
         goto end;
      }
 
+   printf("=> %s\n", PACKAGE_DATA_DIR);
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
- //  elm_language_set("");
-  // elm_app_compile_bin_dir_set(PACKAGE_COMPILE_BIN_DIR);
-  // elm_app_compile_data_dir_set(PACKAGE_COMPILE_DATA_DIR);
-  // elm_app_info_set(elm_main, "war2edit", "themes/default.edj");
+   elm_language_set("");
+   elm_app_compile_bin_dir_set(PACKAGE_BIN_DIR);
+   elm_app_compile_lib_dir_set(PACKAGE_LIB_DIR);
+   elm_app_compile_data_dir_set(PACKAGE_DATA_DIR);
+   elm_app_info_set(elm_main, "war2edit", "sprites/units/units.eet");
 
    for (mod_ptr = _modules; mod_ptr != mod_end; ++mod_ptr)
      {

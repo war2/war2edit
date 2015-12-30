@@ -1,39 +1,38 @@
-copy_file(tiles/forest.eet)
-copy_file(tiles/winter.eet)
-copy_file(tiles/wasteland.eet)
-copy_file(tiles/swamp.eet)
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/forest.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/winter.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/wasteland.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/swamp.eet
+   DESTINATION share/${CMAKE_PROJECT_NAME}/tiles
+)
 
-copy_file(sprites/buildings/forest.eet)
-copy_file(sprites/buildings/winter.eet)
-copy_file(sprites/buildings/wasteland.eet)
-copy_file(sprites/buildings/swamp.eet)
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/buildings/forest.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/buildings/winter.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/buildings/wasteland.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/buildings/swamp.eet
+   DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/buildings
+)
 
-copy_file(sprites/units/units.eet)
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/units/units.eet
+   DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/units
+)
 
-copy_file(sprites/misc/sel.eet)
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel.eet
+   DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/misc
+)
 
-copy_file(images/efl.png)
-copy_file(images/dark.png)
-copy_file(images/light.png)
-copy_file(images/radius_small.png)
-copy_file(images/radius_medium.png)
-copy_file(images/radius_big.png)
-copy_file(images/spread_normal.png)
-copy_file(images/spread_circle.png)
-copy_file(images/spread_random.png)
-copy_file(images/magnifying_glass.png)
-copy_file(images/water.png)
-copy_file(images/mud.png)
-copy_file(images/grass.png)
-copy_file(images/trees.png)
-copy_file(images/rocks.png)
-copy_file(images/human_wall.png)
-copy_file(images/orc_wall.png)
-
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/tiles/forest.eet DESTINATION share/${PROJECT_NAME}/tiles)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/tiles/winter.eet DESTINATION share/${PROJECT_NAME}/tiles)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/tiles/wasteland.eet DESTINATION share/${PROJECT_NAME}/tiles)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/tiles/swamp.eet DESTINATION share/${PROJECT_NAME}/tiles)
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/efl.png
+   DESTINATION share/${CMAKE_PROJECT_NAME}/images
+)
 
 add_subdirectory(prefs)
 

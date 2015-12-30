@@ -72,8 +72,6 @@ pkg_check_modules(ELM_BITMAP elm-bitmap REQUIRED)
 pkg_check_modules(LIBPUD pud REQUIRED)
 pkg_check_modules(LIBWAR2 war2 REQUIRED)
 
-include(cmake/copy_file.cmake)
-
 add_subdirectory(bin)
 add_subdirectory(data)
 

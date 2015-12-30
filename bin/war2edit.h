@@ -15,8 +15,6 @@
 #include <Elementary.h>
 #include <Elm_Bitmap.h>
 
-#define DATA_DIR PACKAGE_COMPILE_DATA_DIR
-
 typedef struct _Cell Cell;
 typedef struct _Editor Editor;
 

@@ -77,20 +77,21 @@ Eet_File *
 sprite_units_open(void)
 {
    Eet_File *ef;
-   const char *file;
+   char path[PATH_MAX];
 
    /* Don't open the units file twice */
    if  (_units_ef)
      return _units_ef;
 
-   file = DATA_DIR"/sprites/units/units.eet";
-   ef = eet_open(file, EET_FILE_MODE_READ);
+   snprintf(path, sizeof(path),
+            "%s/sprites/units/units.eet", elm_app_data_dir_get());
+   ef = eet_open(path, EET_FILE_MODE_READ);
    if (EINA_UNLIKELY(ef == NULL))
      {
-        CRI("Failed to open [%s]", file);
+        CRI("Failed to open [%s]", path);
         return NULL;
      }
-   DBG("Open units file [%s]", file);
+   DBG("Open units file [%s]", path);
    _units_ef = ef;
 
    return ef;
@@ -102,7 +103,8 @@ sprite_buildings_open(Pud_Era era)
    EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), NULL);
 
    Eet_File *ef;
-   const char *file;
+   const char *file = NULL;
+   char path[PATH_MAX];
 
    /* Don't load buildings file twice */
    if (_buildings[era])
@@ -110,12 +112,13 @@ sprite_buildings_open(Pud_Era era)
 
    switch (era)
      {
-      case PUD_ERA_FOREST:    file = DATA_DIR"/sprites/buildings/forest.eet";    break;
-      case PUD_ERA_WINTER:    file = DATA_DIR"/sprites/buildings/winter.eet";    break;
-      case PUD_ERA_WASTELAND: file = DATA_DIR"/sprites/buildings/wasteland.eet"; break;
-      case PUD_ERA_SWAMP:     file = DATA_DIR"/sprites/buildings/swamp.eet";     break;
+      case PUD_ERA_FOREST:    file = "sprites/buildings/forest.eet";    break;
+      case PUD_ERA_WINTER:    file = "sprites/buildings/winter.eet";    break;
+      case PUD_ERA_WASTELAND: file = "sprites/buildings/wasteland.eet"; break;
+      case PUD_ERA_SWAMP:     file = "sprites/buildings/swamp.eet";     break;
      }
 
+   snprintf(path, sizeof(path), "%s/%s", elm_app_data_dir_get(), file);
    ef = eet_open(file, EET_FILE_MODE_READ);
    if (EINA_UNLIKELY(ef == NULL))
      {
@@ -260,8 +263,10 @@ Eina_Bool
 sprite_init(void)
 {
    Eet_File *ef;
-   const char *f = DATA_DIR"/sprites/misc/sel.eet";
+   char path[PATH_MAX];
 
+   snprintf(path, sizeof(path),
+            "%s/sprites/misc/sel.eet", elm_app_data_dir_get());
    if (EINA_UNLIKELY(!sprite_units_open()))
      {
         CRI("Failed to open units file");
@@ -281,10 +286,10 @@ sprite_init(void)
         goto units_fail;
      }
 
-   ef = eet_open(f, EET_FILE_MODE_READ);
+   ef = eet_open(path, EET_FILE_MODE_READ);
    if (EINA_UNLIKELY(!ef))
      {
-        CRI("Failed to open file \"%s\"", f);
+        CRI("Failed to open file \"%s\"", path);
         goto sel_fail;
      }
 

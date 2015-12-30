@@ -27,7 +27,7 @@ _prefs_file_get(Prefs type)
    switch (type)
      {
       case PREFS_DOSBOX:
-         return DATA_DIR"/prefs/dosbox.epb";
+         return "dosbox.epb";
 
       default:
          return NULL;
@@ -61,13 +61,16 @@ prefs_new(Evas_Object *parent,
           Prefs        type)
 {
    Evas_Object *obj;
+   char path[PATH_MAX];
 
    obj = elm_prefs_add(parent);
    evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(obj, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_prefs_autosave_set(obj, EINA_TRUE);
 
-   elm_prefs_file_set(obj, _prefs_file_get(type), NULL);
+   snprintf(path, sizeof(path), "%s/prefs/%s",
+            elm_app_data_dir_get(), _prefs_file_get(type));
+   elm_prefs_file_set(obj, path, NULL);
    elm_prefs_data_set(obj, _prefs[type]);
    evas_object_show(obj);
 

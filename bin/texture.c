@@ -50,7 +50,8 @@ texture_tileset_open(Pud_Era era)
    EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), NULL);
 
    Eet_File *ef;
-   const char *file;
+   const char *file = NULL;
+   char path[PATH_MAX];
 
    /* Don't load a tileset twice */
    if (_tilesets[era])
@@ -58,14 +59,20 @@ texture_tileset_open(Pud_Era era)
 
    switch (era)
      {
-      case PUD_ERA_FOREST:    file = DATA_DIR"/tiles/forest.eet";    break;
-      case PUD_ERA_WINTER:    file = DATA_DIR"/tiles/winter.eet";    break;
-      case PUD_ERA_WASTELAND: file = DATA_DIR"/tiles/wasteland.eet"; break;
-      case PUD_ERA_SWAMP:     file = DATA_DIR"/tiles/swamp.eet";     break;
+      case PUD_ERA_FOREST:    file = "tiles/forest.eet";    break;
+      case PUD_ERA_WINTER:    file = "tiles/winter.eet";    break;
+      case PUD_ERA_WASTELAND: file = "tiles/wasteland.eet"; break;
+      case PUD_ERA_SWAMP:     file = "tiles/swamp.eet";     break;
      }
 
-   ef = eet_open(file, EET_FILE_MODE_READ);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(ef, NULL);
+   snprintf(path, sizeof(path), "%s/%s", elm_app_data_dir_get(), file);
+   ef = eet_open(path, EET_FILE_MODE_READ);
+   if (EINA_UNLIKELY(!ef))
+     {
+        CRI("Failed to open tileset at path \"%s\"", path);
+        exit(1);
+        return NULL;
+     }
    DBG("Open tileset file [%s]", file);
 
    _tilesets[era] = ef;
