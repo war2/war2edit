@@ -40,6 +40,9 @@ Contributors
 - Lucie Guyomarc'h:
    - Fix mispelled names
 
+- Jean-Luc Guyomarc'h
+   - Toolbar icons
+
 License
 =======
 

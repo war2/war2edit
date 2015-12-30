@@ -185,8 +185,8 @@ toolbar_add(Editor      *ed,
 
    /* Tint segment */
    s[0] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[0], "efl.png", TL);
-   SEG_IT_ADD(s[0], "efl.png", TD);
+   SEG_IT_ADD(s[0], "light.png", TL);
+   SEG_IT_ADD(s[0], "dark.png", TD);
    _segment_size_autoset(s[0], 2);
 
    /* Spread segmen,t */
@@ -198,21 +198,21 @@ toolbar_add(Editor      *ed,
 
    /* Radius segment */
    s[2] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[2], "efl.png", RS);
+   SEG_IT_ADD(s[2], "brush_small.png", RS);
    SEG_IT_ADD(s[2], "efl.png", RM);
-   SEG_IT_ADD(s[2], "efl.png", RB);
+   SEG_IT_ADD(s[2], "brush_big.png", RB);
    _segment_size_autoset(s[2], 3);
 
    /* Action segment */
    s[3] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[3], "efl.png", AS);
-   SEG_IT_ADD(s[3], "efl.png", AW);
-   SEG_IT_ADD(s[3], "efl.png", AN);
-   SEG_IT_ADD(s[3], "efl.png", AC);
-   SEG_IT_ADD(s[3], "efl.png", AT);
-   SEG_IT_ADD(s[3], "efl.png", AR);
-   SEG_IT_ADD(s[3], "efl.png", AH);
-   SEG_IT_ADD(s[3], "efl.png", AO);
+   SEG_IT_ADD(s[3], "selection.png", AS);
+   SEG_IT_ADD(s[3], "water.png", AW);
+   SEG_IT_ADD(s[3], "ground.png", AN);
+   SEG_IT_ADD(s[3], "grass.png", AC);
+   SEG_IT_ADD(s[3], "trees.png", AT);
+   SEG_IT_ADD(s[3], "rocks.png", AR);
+   SEG_IT_ADD(s[3], "human_walls.png", AH);
+   SEG_IT_ADD(s[3], "orc_walls.png", AO);
    _segment_size_autoset(s[3], 8);
 
    /* Run segment */
