@@ -91,10 +91,7 @@ elm_main(int    argc,
             EINA_LOG_CRIT("Failed to initialize module \"%s\"", mod_ptr->name);
             goto modules_shutdown;
          }
-       DBG("Init module \"%s\"", mod_ptr->name);
      }
-   DBG("Size of a single Cell is %zu", sizeof(Cell));
-
 
    /* Open editors for each specified files */
    for (i = args; i < argc; ++i)
@@ -122,7 +119,7 @@ elm_main(int    argc,
    ret = EXIT_SUCCESS;
 
 modules_shutdown:
-   for (; mod_ptr >= _modules; --mod_ptr)
+   for (--mod_ptr; mod_ptr >= _modules; --mod_ptr)
      mod_ptr->shutdown();
 end:
    return ret;
