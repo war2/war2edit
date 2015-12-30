@@ -250,7 +250,6 @@ minimap_view_move(Editor *restrict ed,
                   Eina_Bool        clicked)
 {
    int bx, by, rw = 0, rh = 0, srw, srh, cx, cy;
-   int winw, winh;
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
 
@@ -260,12 +259,8 @@ minimap_view_move(Editor *restrict ed,
         y -= rh / 2;
      }
 
-   winw = ed->minimap.w * ed->minimap.ratio;
-   winh = ed->minimap.h * ed->minimap.ratio;
    if (x < 0) x = 0;
    if (y < 0) y = 0;
-   if (x + rw > winw) x = winw - rw;
-   if (y + rh > winh) y = winh - rh;
 
    evas_object_move(ed->minimap.rect,
                     x * ed->minimap.ratio, y * ed->minimap.ratio);
