@@ -493,7 +493,6 @@ bitmap_unit_draw(Editor *restrict ed,
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
 }
 
-/* FIXME Zones */
 void
 bitmap_selections_draw(Editor *restrict ed,
                        int              x,
@@ -507,6 +506,8 @@ bitmap_selections_draw(Editor *restrict ed,
    unsigned int y2 = y1 + h;
    unsigned int i, j;
    Cell *c;
+
+   if (ed->sel.selections <= 0) return;
 
    if (x2 >= ed->pud->map_w) x2 = ed->pud->map_w - 1;
    if (y2 >= ed->pud->map_h) y2 = ed->pud->map_h - 1;
