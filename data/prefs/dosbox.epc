@@ -12,25 +12,49 @@ collection {
       widget: "elm/vertical_frame";
 
       items {
-         item { name: "dosbox/cdrom"; type: TEXT;
+         item { name: "dosbox/tod/cdrom"; type: TEXT;
             editable: 1;
-            label: "Path to Warcraft II CD-ROM Folder";
+            label: "Path to Warcraft II Tides Of Darkness CD-ROM Folder";
             text {
                placeholder: "/path/to/warcraft2/cdrom";
             }
          }
 
-         item { name: "dosbox/disk"; type: TEXT;
+         item { name: "dosbox/tod/disk"; type: TEXT;
             editable: 1;
-            label: "Path to Warcraft II Installation Folder";
+            label: "Path to Warcraft II Tides Of Darkness Installation Folder";
             text {
                placeholder: "/path/to/warcraft2/folder";
             }
          }
 
-         item { name: "dosbox/path"; type: TEXT;
+         item { name: "dosbox/tod/path"; type: TEXT;
             editable: 1;
-            label: "Path to Warcraft II Binary Within its Installation Folder (mounted as C:\\)";
+            label: "Path to Warcraft II Tides Of Darkness Binary Within its Installation Folder (mounted as C:\\)";
+            text {
+               placeholder: "path\\to\\warcraft2\\binary (from C:\\)";
+            }
+         }
+
+         item { name: "dosbox/bdp/cdrom"; type: TEXT;
+            editable: 1;
+            label: "Path to Warcraft II Beyond The Dark Portal CD-ROM Folder";
+            text {
+               placeholder: "/path/to/warcraft2/cdrom";
+            }
+         }
+
+         item { name: "dosbox/bdp/disk"; type: TEXT;
+            editable: 1;
+            label: "Path to Warcraft II Beyond The Dark Portal Installation Folder";
+            text {
+               placeholder: "/path/to/warcraft2/folder";
+            }
+         }
+
+         item { name: "dosbox/bdp/path"; type: TEXT;
+            editable: 1;
+            label: "Path to Warcraft II Beyond The Dark Portal Binary Within its Installation Folder (mounted as C:\\)";
             text {
                placeholder: "path\\to\\warcraft2\\binary (from C:\\)";
             }

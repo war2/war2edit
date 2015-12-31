@@ -84,9 +84,9 @@ _run_cb(void        *data,
    const char *war2_cdrom, *war2_disk, *war2_path, *dosbox_cmd;
    char cmd[1024];
 
-   war2_cdrom = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/cdrom");
-   war2_disk = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/disk");
-   war2_path = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/path");
+   war2_cdrom = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/cdrom");
+   war2_disk = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/disk");
+   war2_path = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/path");
    dosbox_cmd = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bin");
 
    snprintf(cmd, sizeof(cmd),
