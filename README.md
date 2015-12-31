@@ -21,7 +21,7 @@ TODO - Showstoppers
       Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
       and so efficient, but the smart_move kills it...
 - [X] Minimap window is annoying and suboptimal (let's Evas do the scaling)
-- [ ] Place textures
+- [X] Place textures
 - [ ] Different brush types
 - [ ] Different brush sizes
 - [X] Load a map
