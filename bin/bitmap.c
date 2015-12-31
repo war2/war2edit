@@ -177,6 +177,7 @@ _click_handle(Editor *ed,
              if (ed->start_locations[ed->sel_player].x != -1)
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
+                  editor_unit_unref(ed);
                   minimap_update(ed, lx, ly);
                   // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
                }
@@ -543,6 +544,7 @@ bitmap_unit_del_at(Editor *restrict ed,
             }
           minimap_update(ed, i, j);
        }
+   editor_unit_unref(ed);
 }
 
 void
