@@ -796,7 +796,7 @@ bitmap_tile_calculate(Editor           *ed,
              ok &= bitmap_tile_set(ed, next[k].x, next[k].y,
                                    next[k].tl, next[k].tr,
                                    next[k].bl, next[k].br,
-                                   0xff);
+                                   TILE_RANDOMIZE);
 
              if (next[k].conflict == EINA_FALSE)
                continue;

@@ -33,7 +33,6 @@ static const uint8_t _tiles_conflicts[__TILE_LAST] =
    /*  R */ TILE_GROUND_LIGHT
 };
 
-
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
@@ -183,11 +182,12 @@ tile_calculate(const uint8_t tl,
                const uint8_t seed,
                const Pud_Era era)
 {
-   // FIXME randomize if seed is 0xff
-   const uint16_t seed_mask = (seed == 0xff) ? 0x0001 : (uint16_t)seed & 0x000f;
    uint16_t tile_code;
 
-   tile_code = tile_mask_calculate(tl, tr, bl, br) | seed_mask;
+   tile_code = tile_mask_calculate(tl, tr, bl, br);
+   tile_code |= (seed == TILE_RANDOMIZE)
+      ? pud_random_get(tile_code)
+      : (uint16_t)seed & 0x000f;
    switch (tile_code)
      {
       case 0x0015:

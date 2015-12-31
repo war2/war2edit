@@ -21,7 +21,10 @@ typedef enum
    TILE_GROUND_DARK     = 7,
    TILE_ROCKS           = 8,
 
-   __TILE_LAST
+   __TILE_LAST,
+
+   /* Special value. Has nothing to do with the rest of the enum */
+   TILE_RANDOMIZE       = 0xff
 } Tile;
 
 typedef enum
