@@ -14,8 +14,13 @@
 static void
 _fs_show(Editor *ed)
 {
+   if (inwin_id_is(ed, INWIN_FILE_SELECTOR))
+     inwin_activate(ed);
+   else
+     inwin_set(ed, ed->fs,
+               INWIN_FILE_SELECTOR,
+               NULL, NULL, NULL, NULL);
    evas_object_show(ed->fs);
-   inwin_set(ed, ed->fs, INWIN_FILE_SELECTOR, NULL, NULL, NULL, NULL);
 }
 
 static void
