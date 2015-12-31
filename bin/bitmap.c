@@ -1,7 +1,7 @@
 /*
  * bitmap.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -176,9 +176,6 @@ _click_handle(Editor *ed,
              const int lx = ed->start_locations[ed->sel_player].x;
              const int ly = ed->start_locations[ed->sel_player].y;
 
-             /* Start location did exist: move it. Also refresh
-              * the zone where it was to remove it. */
-             /* FIXME See Cedric's message on E-phab */
              if (ed->start_locations[ed->sel_player].x != -1)
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
@@ -286,9 +283,7 @@ bitmap_cursor_state_evaluate(Editor       *ed,
      {
         /* Handle only flying units: they are the only one
          * that can be placed there */
-        if (!pud_unit_flying_is(ed->sel_unit))
-          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
-        else
+        if (pud_unit_flying_is(ed->sel_unit))
           {
              /* Don't collide with another unit */
              if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_ABOVE))
@@ -296,6 +291,8 @@ bitmap_cursor_state_evaluate(Editor       *ed,
              else
                elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
           }
+        else
+          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
      }
    else /* Ground, water */
      {
