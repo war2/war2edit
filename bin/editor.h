@@ -16,7 +16,7 @@ typedef uint16_t Editor_Sel;
    /* xxxxxxxxxxxxxxSS */
 #define EDITOR_SEL_SPREAD_NORMAL             ((Editor_Sel) (0x00 << 0))
 #define EDITOR_SEL_SPREAD_CIRCLE             ((Editor_Sel) (0x01 << 0))
-#define EDITOR_SEL_SPREAD_RANDOM             ((Editor_Sel) (0x02 << 0))
+#define EDITOR_SEL_SPREAD_SPECIAL            ((Editor_Sel) (0x02 << 0))
 #define EDITOR_SEL_SPREAD_MASK               ((Editor_Sel) (0x03 << 0))
 
    /* xxxxxxxxxxxxRRxx */

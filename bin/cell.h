@@ -29,10 +29,10 @@ struct _Cell
    unsigned int selected_above : 2;
 
    /* Top Left, Top Right, Bottom Left, Bottom Right */
-   unsigned int tile_tl : 4;
-   unsigned int tile_tr : 4;
-   unsigned int tile_bl : 4;
-   unsigned int tile_br : 4;
+   uint8_t tile_tl;
+   uint8_t tile_tr;
+   uint8_t tile_bl;
+   uint8_t tile_br;
 };
 
 #define CELL_NOT_START_LOCATION 0x0f

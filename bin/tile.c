@@ -182,12 +182,32 @@ tile_calculate(const uint8_t tl,
                const uint8_t seed,
                const Pud_Era era)
 {
-   uint16_t tile_code;
+   uint16_t tile_code, rtile;
 
    tile_code = tile_mask_calculate(tl, tr, bl, br);
-   tile_code |= (seed == TILE_RANDOMIZE)
-      ? pud_random_get(tile_code)
-      : (uint16_t)seed & 0x000f;
+
+   if ((seed & TILE_RANDOMIZE) == TILE_RANDOMIZE)
+     {
+        rtile = pud_random_get(tile_code);
+        if (((tile_code & 0x0f00) == 0x0000) &&
+            ((tile_code & 0x0030) ||
+             (tile_code & 0x0040) ||
+             (tile_code & 0x0050) ||
+             (tile_code & 0x0060)))
+          {
+             if (!(seed & TILE_SPECIAL))
+               rtile = rand() % 3;
+             else
+               {
+                  if (rtile <= 2)
+                    rtile += 0x0004;
+               }
+          }
+     }
+   else
+     rtile = (uint16_t)seed & 0x000f;
+   tile_code |= rtile;
+
    switch (tile_code)
      {
       case 0x0015:
@@ -227,6 +247,8 @@ tile_decompose(uint16_t  tile_code,
                uint8_t  *tr,
                uint8_t  *seed)
 {
+   *seed = tile_code & 0x000f;
+
    if ((tile_code & 0xff00) == 0x0000) /* Solid */
      {
         uint8_t code = TILE_NONE;
@@ -243,11 +265,9 @@ tile_decompose(uint16_t  tile_code,
            default: CRI("Unhandled tile: 0x%x", tile_code); break;
           }
         *bl = code; *br = code; *tl = code; *tr = code;
-        *seed = tile_code & 0x000f;
      }
    else /* Boundry */
      {
-        CRI("IMPLEMENT ME");
      }
 }
 

@@ -23,8 +23,10 @@ typedef enum
 
    __TILE_LAST,
 
+   TILE_SPECIAL         = (1 << 7),
+
    /* Special value. Has nothing to do with the rest of the enum */
-   TILE_RANDOMIZE       = 0xff
+   TILE_RANDOMIZE       = 0x7f
 } Tile;
 
 typedef enum

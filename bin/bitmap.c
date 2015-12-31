@@ -141,15 +141,20 @@ _solid_component_get(const Editor_Sel action,
 static void
 _place_selected_tile(Editor             *ed,
                      const Editor_Sel    action,
+                     const Editor_Sel    spread,
                      const Editor_Sel    tint,
                      const unsigned int  x,
                      const unsigned int  y)
 {
    uint8_t component;
+   uint8_t randomize = TILE_RANDOMIZE;
+
+   if (spread == EDITOR_SEL_SPREAD_SPECIAL)
+     randomize |= TILE_SPECIAL;
 
    component = _solid_component_get(action, tint);
    bitmap_tile_set(ed, x, y, component, component,
-                   component, component, 0x01);
+                   component, component, randomize);
    bitmap_tile_calculate(ed, x, y, NULL);
 }
 
@@ -202,7 +207,9 @@ _click_handle(Editor *ed,
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
-        _place_selected_tile(ed, action, editor_sel_tint_get(ed), x, y);
+        _place_selected_tile(ed, action,
+                             editor_sel_spread_get(ed),
+                             editor_sel_tint_get(ed), x, y);
         bitmap_redraw(ed); // FIXME Bad
      }
 }

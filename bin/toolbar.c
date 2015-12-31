@@ -12,7 +12,7 @@
 /* Shortcuts, to index an array */
 enum
 {
-   SN, SC, SR, /* spreads */
+   SN, SC, SS, /* spreads */
    RS, RM, RB, /* radius */
    TL, TD, /* tints */
    AS, AW, AN, AC, AT, AR, AH, AO /* actions */
@@ -24,7 +24,7 @@ enum
 static const uint16_t _selections[] = {
    [SN] = EDITOR_SEL_SPREAD_NORMAL,
    [SC] = EDITOR_SEL_SPREAD_CIRCLE,
-   [SR] = EDITOR_SEL_SPREAD_RANDOM,
+   [SS] = EDITOR_SEL_SPREAD_SPECIAL,
 
    [RS] = EDITOR_SEL_RADIUS_SMALL,
    [RM] = EDITOR_SEL_RADIUS_MEDIUM,
@@ -93,7 +93,6 @@ _run_cb(void        *data,
             "%s -c \"mount C: %s\" -c \"mount D: %s -t cdrom\" -c \"C:\" -c \"%s\"",
             dosbox_cmd, war2_disk, war2_cdrom, war2_path);
 
-   printf("=> %s\n", cmd);
    exe = ecore_exe_pipe_run(cmd,
                             ECORE_EXE_PIPE_READ_LINE_BUFFERED |
                             ECORE_EXE_PIPE_ERROR_LINE_BUFFERED, ed);
@@ -193,7 +192,7 @@ toolbar_add(Editor      *ed,
    s[1] = SEG_ADD(_seg_changed_cb);
    SEG_IT_ADD(s[1], "efl.png", SN);
    SEG_IT_ADD(s[1], "efl.png", SC);
-   SEG_IT_ADD(s[1], "efl.png", SR);
+   SEG_IT_ADD(s[1], "efl.png", SS);
    _segment_size_autoset(s[1], 3);
 
    /* Radius segment */
