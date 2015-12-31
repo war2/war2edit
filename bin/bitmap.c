@@ -560,7 +560,7 @@ bitmap_unit_del_at(Editor *restrict ed,
                c->spread_y_below = 0;
                c->anchor_below = 0;
                c->selected_below = 0;
-               c->start_location = 0;
+               c->start_location = CELL_NOT_START_LOCATION;
             }
           else
             {
