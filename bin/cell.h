@@ -33,7 +33,6 @@ struct _Cell
    unsigned int tile_tr : 4;
    unsigned int tile_bl : 4;
    unsigned int tile_br : 4;
-   uint8_t seed;
 };
 
 #define CELL_NOT_START_LOCATION 0x0f
