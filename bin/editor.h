@@ -14,33 +14,33 @@ typedef uint16_t Editor_Sel;
 #define EDITOR_SEL_NONE                      ((Editor_Sel) 0)
 
    /* xxxxxxxxxxxxxxSS */
-#define EDITOR_SEL_SPREAD_NORMAL             ((Editor_Sel) (0x00 << 0))
-#define EDITOR_SEL_SPREAD_CIRCLE             ((Editor_Sel) (0x01 << 0))
-#define EDITOR_SEL_SPREAD_SPECIAL            ((Editor_Sel) (0x02 << 0))
+#define EDITOR_SEL_SPREAD_NORMAL             ((Editor_Sel) (0x01 << 0))
+#define EDITOR_SEL_SPREAD_CIRCLE             ((Editor_Sel) (0x02 << 0))
+#define EDITOR_SEL_SPREAD_SPECIAL            ((Editor_Sel) (0x03 << 0))
 #define EDITOR_SEL_SPREAD_MASK               ((Editor_Sel) (0x03 << 0))
 
    /* xxxxxxxxxxxxRRxx */
-#define EDITOR_SEL_RADIUS_SMALL              ((Editor_Sel) (0x00 << 2))
-#define EDITOR_SEL_RADIUS_MEDIUM             ((Editor_Sel) (0x01 << 2))
-#define EDITOR_SEL_RADIUS_BIG                ((Editor_Sel) (0x02 << 2))
+#define EDITOR_SEL_RADIUS_SMALL              ((Editor_Sel) (0x01 << 2))
+#define EDITOR_SEL_RADIUS_MEDIUM             ((Editor_Sel) (0x02 << 2))
+#define EDITOR_SEL_RADIUS_BIG                ((Editor_Sel) (0x03 << 2))
 #define EDITOR_SEL_RADIUS_MASK               ((Editor_Sel) (0x03 << 2))
 
-   /* xxxxxxxxxxxTxxxx */
-#define EDITOR_SEL_TINT_LIGHT                ((Editor_Sel) (0x00 << 4))
-#define EDITOR_SEL_TINT_DARK                 ((Editor_Sel) (0x01 << 4))
-#define EDITOR_SEL_TINT_MASK                 ((Editor_Sel) (0x01 << 4))
+   /* xxxxxxxxxxTTxxxx */
+#define EDITOR_SEL_TINT_LIGHT                ((Editor_Sel) (0x01 << 4))
+#define EDITOR_SEL_TINT_DARK                 ((Editor_Sel) (0x02 << 4))
+#define EDITOR_SEL_TINT_MASK                 ((Editor_Sel) (0x03 << 4))
 
-   /* xxxxxxxAAAAxxxxx */
-#define EDITOR_SEL_ACTION_NONE               ((Editor_Sel) (0x01 << 5))
-#define EDITOR_SEL_ACTION_SELECTION          ((Editor_Sel) (0x02 << 5))
-#define EDITOR_SEL_ACTION_WATER              ((Editor_Sel) (0x03 << 5))
-#define EDITOR_SEL_ACTION_GROUND             ((Editor_Sel) (0x04 << 5))
-#define EDITOR_SEL_ACTION_GRASS              ((Editor_Sel) (0x05 << 5))
-#define EDITOR_SEL_ACTION_TREES              ((Editor_Sel) (0x06 << 5))
-#define EDITOR_SEL_ACTION_ROCKS              ((Editor_Sel) (0x07 << 5))
-#define EDITOR_SEL_ACTION_HUMAN_WALLS        ((Editor_Sel) (0x08 << 5))
-#define EDITOR_SEL_ACTION_ORCS_WALLS         ((Editor_Sel) (0x09 << 5))
-#define EDITOR_SEL_ACTION_MASK               ((Editor_Sel) (0x0f << 5))
+   /* xxxxxxAAAAxxxxxx */
+#define EDITOR_SEL_ACTION_NONE               ((Editor_Sel) (0x01 << 6))
+#define EDITOR_SEL_ACTION_SELECTION          ((Editor_Sel) (0x02 << 6))
+#define EDITOR_SEL_ACTION_WATER              ((Editor_Sel) (0x03 << 6))
+#define EDITOR_SEL_ACTION_GROUND             ((Editor_Sel) (0x04 << 6))
+#define EDITOR_SEL_ACTION_GRASS              ((Editor_Sel) (0x05 << 6))
+#define EDITOR_SEL_ACTION_TREES              ((Editor_Sel) (0x06 << 6))
+#define EDITOR_SEL_ACTION_ROCKS              ((Editor_Sel) (0x07 << 6))
+#define EDITOR_SEL_ACTION_HUMAN_WALLS        ((Editor_Sel) (0x08 << 6))
+#define EDITOR_SEL_ACTION_ORCS_WALLS         ((Editor_Sel) (0x09 << 6))
+#define EDITOR_SEL_ACTION_MASK               ((Editor_Sel) (0x0f << 6))
 
 
 
