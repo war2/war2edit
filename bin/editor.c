@@ -557,7 +557,7 @@ editor_load(Editor * restrict  ed,
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
-   bitmap_redraw(ed);
+   bitmap_redraw(ed, 0, 0, pud->map_w, pud->map_h);
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
 
    return EINA_TRUE;

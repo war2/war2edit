@@ -191,7 +191,9 @@ sel_end(Editor *restrict ed)
    // FIXME Optimize this later. We could just use selections_redraw
    // since selections are always on top, but I call the big fat function
    // for now to collect all calls for later...
-   bitmap_redraw(ed);
+   bitmap_selections_draw(ed, ed->sel.rel1.x, ed->sel.rel1.y,
+                          ed->sel.rel2.x - ed->sel.rel1.x,
+                          ed->sel.rel2.y - ed->sel.rel2.x);
 
    evas_object_hide(ed->sel.obj);
    evas_object_resize(ed->sel.obj, 1, 1);
@@ -225,6 +227,6 @@ sel_del(Editor *restrict ed)
           if ((c->anchor_above) && (c->selected_above == SEL_SET))
             bitmap_unit_del_at(ed, i, j, EINA_FALSE);
        }
-   bitmap_redraw(ed);
+   bitmap_redraw(ed, 0, 0, ed->pud->map_w, ed->pud->map_h); // XXX
 }
 

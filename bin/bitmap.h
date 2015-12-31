@@ -17,7 +17,17 @@ typedef enum
 Eina_Bool bitmap_add(Editor *ed);
 void bitmap_unit_set(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
 
-void bitmap_redraw(Editor *restrict ed);
+void bitmap_redraw(Editor *restrict ed,
+                   int              x,
+                   int              y,
+                   unsigned int     w,
+                   unsigned int     h);
+void
+bitmap_selections_draw(Editor *restrict ed,
+                       int              x,
+                       int              y,
+                       unsigned int     w,
+                       unsigned int     h);
 
 void bitmap_unit_draw(Editor *restrict ed,
                       unsigned int x,

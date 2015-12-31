@@ -185,7 +185,7 @@ _click_handle(Editor *ed,
                   ed->cells[ly][lx].start_location = CELL_NOT_START_LOCATION;
                   editor_unit_unref(ed);
                   minimap_update(ed, lx, ly);
-                  // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
+                  bitmap_redraw(ed, lx - 1, ly - 1, 3, 3);
                }
 
              ed->start_locations[ed->sel_player].x = x;
@@ -195,7 +195,6 @@ _click_handle(Editor *ed,
         /* Draw the unit, and therefore lock the cursor. */
         orient = sprite_info_random_get();
 
-        // FIXME cast --- change stuff in elm_bitmap
         elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&w), (int*)(&h));
         editor_unit_ref(ed);
         bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
@@ -203,14 +202,14 @@ _click_handle(Editor *ed,
                          editor_alter_defaults_get(ed, ed->sel_unit));
         minimap_render_unit(ed, x, y, ed->sel_unit);
         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
-        bitmap_redraw(ed); // FIXME ZONE!
+        bitmap_redraw(ed, x - 6, y - 6, 12, 12); // XXX Zone is random
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
         _place_selected_tile(ed, action,
                              editor_sel_spread_get(ed),
                              editor_sel_tint_get(ed), x, y);
-        bitmap_redraw(ed); // FIXME Bad
+        bitmap_redraw(ed, x - 6, y - 6, 12, 12); // XXX Zone is random
      }
 }
 
@@ -496,15 +495,24 @@ bitmap_unit_draw(Editor *restrict ed,
 
 /* FIXME Zones */
 void
-bitmap_selections_draw(Editor *restrict ed)
+bitmap_selections_draw(Editor *restrict ed,
+                       int              x,
+                       int              y,
+                       unsigned int     w,
+                       unsigned int     h)
 {
-   const unsigned int map_w = ed->pud->map_w;
-   const unsigned int map_h = ed->pud->map_h;
+   unsigned int x1 = (x < 0) ? 0 : x;
+   unsigned int y1 = (y < 0) ? 0 : y;
+   unsigned int x2 = x1 + w;
+   unsigned int y2 = y1 + h;
    unsigned int i, j;
    Cell *c;
 
-   for (j = 0; j < map_h; ++j)
-     for (i = 0; i < map_w; ++i)
+   if (x2 >= ed->pud->map_w) x2 = ed->pud->map_w - 1;
+   if (y2 >= ed->pud->map_h) y2 = ed->pud->map_h - 1;
+
+   for (j = y1; j < y2; ++j)
+     for (i = x1; i < x2; ++i)
        {
           // TODO Pre-selections
 
@@ -922,33 +930,45 @@ bitmap_add(Editor *ed)
 }
 
 void
-bitmap_redraw(Editor *restrict ed)
+bitmap_redraw(Editor *restrict ed,
+              int              x,
+              int              y,
+              unsigned int     w,
+              unsigned int     h)
 {
-   const unsigned int map_w = ed->pud->map_w;
-   const unsigned int map_h = ed->pud->map_h;
-   unsigned int i, j;
+   int x1 = (x < 0) ? 0 : x;
+   int y1 = (y < 0) ? 0 : y;
+   int x2 = x1 + w;
+   int y2 = y1 + h;
+   int i, j;
 
-   /* FIXME  Sooo innefficient. Introduce zones */
+   if (x2 > (int)ed->pud->map_w) x2 = ed->pud->map_w;
+   if (y2 > (int)ed->pud->map_h) y2 = ed->pud->map_h;
+
+
+   /*
+    * XXX Not great... Simple, Stupid yet
+    */
 
    /* Tiles first (plus start locations) */
-   for (j = 0; j < map_h; ++j)
-     for (i = 0; i < map_w; ++i)
+   for (j = y1; j < y2; ++j)
+     for (i = x1; i < x2; ++i)
        {
           bitmap_tile_draw(ed, i, j);
           bitmap_unit_draw(ed, i, j, BITMAP_UNIT_START_LOCATION);
        }
 
    /* Units below */
-   for (j = map_h - 1; (int) j >= 0; --j)
-     for (i = map_w - 1; (int) i >= 0; --i)
+   for (j = y2 - 1; j >= y1; --j)
+     for (i = x2 - 1; i >= x1; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_BELOW);
 
    /* Units above */
-   for (j = map_h - 1; (int) j >= 0; --j)
-     for (i = map_w - 1; (int) i >= 0; --i)
+   for (j = y2 - 1; j >= y1; --j)
+     for (i = x2 - 1; i >= x1; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
 
    /* (Pre)Selections last */
-   bitmap_selections_draw(ed);
+   bitmap_selections_draw(ed, x1, y1, w, h);
 }
 
