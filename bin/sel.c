@@ -1,7 +1,7 @@
 /*
  * sel.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -188,12 +188,9 @@ sel_end(Editor *restrict ed)
           anchor->selected_above &= (~SEL_MARK);
        }
 
-   // FIXME Optimize this later. We could just use selections_redraw
-   // since selections are always on top, but I call the big fat function
-   // for now to collect all calls for later...
-   bitmap_selections_draw(ed, ed->sel.rel1.x, ed->sel.rel1.y,
-                          ed->sel.rel2.x - ed->sel.rel1.x,
-                          ed->sel.rel2.y - ed->sel.rel2.x);
+   bitmap_selections_draw(ed, ed->sel.rel1.x - 4, ed->sel.rel1.y - 4,
+                          ed->sel.rel2.x - ed->sel.rel1.x + 8,
+                          ed->sel.rel2.y - ed->sel.rel2.x + 8);
 
    evas_object_hide(ed->sel.obj);
    evas_object_resize(ed->sel.obj, 1, 1);
