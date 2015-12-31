@@ -413,7 +413,7 @@ editor_sync(Editor * restrict ed)
    unsigned int x, y, k, i;
    Pud *pud = ed->pud;
    Cell **cells = ed->cells;
-   Cell c;
+   const Cell *c;
    struct _Pud_Unit *u;
    void *tmp;
 
@@ -432,9 +432,9 @@ editor_sync(Editor * restrict ed)
      {
         for (x = 0; x < pud->map_w; ++x)
           {
-             c = cells[y][x];
+             c = &(cells[y][x]);
 
-             if (c.anchor_below)
+             if (c->anchor_below)
                {
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
@@ -445,11 +445,11 @@ editor_sync(Editor * restrict ed)
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
-                  u->type = c.unit_below;
-                  u->owner = c.player_below;
-                  u->alter = c.alter;
+                  u->type = c->unit_below;
+                  u->owner = c->player_below;
+                  u->alter = c->alter;
                }
-             if (c.anchor_above)
+             if (c->anchor_above)
                {
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
@@ -460,11 +460,11 @@ editor_sync(Editor * restrict ed)
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
-                  u->type = c.unit_above;
-                  u->owner = c.player_above;
-                  u->alter = c.alter;
+                  u->type = c->unit_above;
+                  u->owner = c->player_above;
+                  u->alter = c->alter;
                }
-             if (c.start_location != CELL_NOT_START_LOCATION)
+             if (c->start_location != CELL_NOT_START_LOCATION)
                {
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
@@ -475,17 +475,17 @@ editor_sync(Editor * restrict ed)
                   u = &(pud->units[i++]);
                   u->x = x;
                   u->y = y;
-                  if (c.start_location_human == 1)
+                  if (c->start_location_human == 1)
                     u->type = PUD_UNIT_HUMAN_START;
                   else
                     u->type = PUD_UNIT_ORC_START;
-                  u->owner = c.start_location;
+                  u->owner = c->start_location;
                   u->alter = 0;
                }
 
              /* I'm not using pud_tile_set() because I know what I'm doing,
               * and this function if much less performant... */
-             pud->tiles_map[k++] = c.tile;
+             pud->tiles_map[k++] = c->tile;
           }
      }
 
