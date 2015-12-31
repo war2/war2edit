@@ -60,19 +60,12 @@ _done_cb(void        *data,
      }
    else /* Load */
      {
-    // XXX    if (ed->pud)
-    // XXX      {
-    // XXX         // TODO
-    // XXX         CRI("TODO PROMPT FOR SAVE");
-    // XXX         pud_close(ed->pud);
-    // XXX      }
-    // XXX    ed->pud = pud_open(file, PUD_OPEN_MODE_R);
-    // XXX    if (EINA_UNLIKELY(!ed->pud))
-    // XXX      {
-    // XXX         ERR("Failed to open PUD from file \"%s\"", file);
-    // XXX         goto hide_fileselector;
-    // XXX      }
-    // XXX    file_load(ed, ed->pud);
+        if (ed->pud)
+          {
+             // TODO
+             CRI("TODO PROMPT FOR SAVE");
+          }
+        editor_load(ed, file);
      }
 
 hide_fileselector:
