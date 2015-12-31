@@ -14,6 +14,7 @@
 static void
 _fs_show(Editor *ed)
 {
+   evas_object_show(ed->fs);
    inwin_set(ed, ed->fs, INWIN_FILE_SELECTOR, NULL, NULL, NULL, NULL);
 }
 
@@ -21,6 +22,7 @@ static void
 _fs_hide(Editor *ed)
 {
    inwin_dismiss(ed);
+   evas_object_hide(ed->fs);
 }
 
 
