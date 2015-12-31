@@ -177,6 +177,7 @@ _click_handle(Editor *ed,
              if (ed->start_locations[ed->sel_player].x != -1)
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
+                  ed->cells[ly][lx].start_location = CELL_NOT_START_LOCATION;
                   editor_unit_unref(ed);
                   minimap_update(ed, lx, ly);
                   // FIXME bitmap_refresh_zone(ed, lx - 1, ly - 1, 3, 3);
@@ -434,7 +435,7 @@ void
 bitmap_unit_draw(Editor *restrict ed,
                  unsigned int     x,
                  unsigned int     y,
-                 Eina_Bool        unit_below)
+                 Bitmap_Unit      unit_type)
 {
    const Cell *c = &(ed->cells[y][x]);
    unsigned char *sprite;
@@ -445,7 +446,7 @@ bitmap_unit_draw(Editor *restrict ed,
    Pud_Player col;
    unsigned int orient;
 
-   if ((unit_below == EINA_TRUE) && (c->anchor_below == 1))
+   if ((unit_type == BITMAP_UNIT_BELOW) && (c->anchor_below == 1))
      {
         unit = c->unit_below;
         col = c->player_below;
@@ -453,13 +454,24 @@ bitmap_unit_draw(Editor *restrict ed,
         w = c->spread_x_below;
         h = c->spread_y_below;
      }
-   else if (c->anchor_above == 1) // unit_below == FALSE is implied by else
+   else if ((unit_type == BITMAP_UNIT_ABOVE) && (c->anchor_above == 1))
      {
         unit = c->unit_above;
         col = c->player_above;
         orient = c->orient_above;
         w = c->spread_x_above;
         h = c->spread_y_above;
+     }
+   else if ((unit_type == BITMAP_UNIT_START_LOCATION) &&
+            (c->start_location != CELL_NOT_START_LOCATION))
+     {
+        unit = (c->start_location_human)
+           ? PUD_UNIT_HUMAN_START
+           : PUD_UNIT_ORC_START;
+        col = c->start_location;
+        orient = 0;
+        w = 1;
+        h = 1;
      }
 
    /* Don't draw if unit anchor was not found */
@@ -569,6 +581,14 @@ bitmap_unit_set(Editor *restrict ed,
    if (unit == PUD_UNIT_NONE)
      return;
 
+   if (pud_unit_start_location_is(unit))
+     {
+        c = &(ed->cells[y][x]);
+        c->start_location = color;
+        c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
+        goto end;
+     }
+
    flying = pud_unit_flying_is(unit);
    for (spread_y = 0, j = y; j < y + h; ++j, ++spread_y)
      {
@@ -612,15 +632,9 @@ bitmap_unit_set(Editor *restrict ed,
         c->anchor_below = 1;
         c->spread_x_below = w;
         c->spread_y_below = h;
-
-        /* Pud locations never fly! */
-        if (pud_unit_start_location_is(unit))
-          {
-             c->start_location = color;
-             c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
-          }
      }
 
+end:
    minimap_update(ed, x, y);
 }
 
@@ -909,10 +923,13 @@ bitmap_redraw(Editor *restrict ed)
 
    /* FIXME  Sooo innefficient. Introduce zones */
 
-   /* Tiles first */
+   /* Tiles first (plus start locations) */
    for (j = 0; j < map_h; ++j)
      for (i = 0; i < map_w; ++i)
-       bitmap_tile_draw(ed, i, j);
+       {
+          bitmap_tile_draw(ed, i, j);
+          bitmap_unit_draw(ed, i, j, BITMAP_UNIT_START_LOCATION);
+       }
 
    /* Units below */
    for (j = map_h - 1; (int) j >= 0; --j)
