@@ -209,7 +209,6 @@ _click_handle(Editor *ed,
         _place_selected_tile(ed, action,
                              editor_sel_spread_get(ed),
                              editor_sel_tint_get(ed), x, y);
-        bitmap_redraw(ed, x - 6, y - 6, 12, 12); // XXX Zone is random
      }
 }
 
@@ -443,7 +442,8 @@ bitmap_unit_draw(Editor *restrict ed,
                  unsigned int     y,
                  Bitmap_Unit      unit_type)
 {
-   const Cell *c = &(ed->cells[y][x]);
+   Cell **cells = ed->cells;
+   const Cell *c = &(cells[y][x]);
    unsigned char *sprite;
    Eina_Bool flip;
    int at_x, at_y;
@@ -452,16 +452,28 @@ bitmap_unit_draw(Editor *restrict ed,
    Pud_Player col;
    unsigned int orient;
 
-   if ((unit_type == BITMAP_UNIT_BELOW) && (c->anchor_below == 1))
+   if (unit_type == BITMAP_UNIT_BELOW)
      {
+        if (c->anchor_below != 1)
+          {
+             x -= c->spread_x_below;
+             y -= c->spread_y_below;
+             c = &(cells[y][x]);
+          }
         unit = c->unit_below;
         col = c->player_below;
         orient = c->orient_below;
         w = c->spread_x_below;
         h = c->spread_y_below;
      }
-   else if ((unit_type == BITMAP_UNIT_ABOVE) && (c->anchor_above == 1))
+   else if (unit_type == BITMAP_UNIT_ABOVE)
      {
+        if (c->anchor_above != 1)
+          {
+             x -= c->spread_x_above;
+             y -= c->spread_y_above;
+             c = &(cells[y][x]);
+          }
         unit = c->unit_above;
         col = c->player_above;
         orient = c->orient_above;
@@ -836,6 +848,8 @@ bitmap_tile_calculate(Editor           *ed,
              ok &= bitmap_tile_calculate(ed, x, y, &(next[k]));
           }
      }
+
+   bitmap_redraw(ed, x - 1, y - 1, 3, 3);
 
    return ok;
 }
