@@ -245,24 +245,41 @@ _unit_below_cursor_is(const Editor *restrict ed,
    return EINA_FALSE;
 }
 
-static inline Eina_Bool
+static Eina_Bool
+_inclusive_op(Eina_Bool old, Eina_Bool new)
+{
+   return old || new;
+}
+
+static Eina_Bool
+_exclusive_op(Eina_Bool old, Eina_Bool new)
+{
+   return old && new;
+}
+
+static Eina_Bool
 _cells_type_get(Cell         **cells,
                 unsigned int   ox,
                 unsigned int   oy,
                 unsigned int   w,
                 unsigned int   h,
                 Eina_Bool    (*iterator)(const uint8_t, const uint8_t,
-                                         const uint8_t, const uint8_t))
+                                         const uint8_t, const uint8_t),
+                Eina_Bool    (*operator)(Eina_Bool, Eina_Bool))
 {
    unsigned int i, j;
-   Eina_Bool res = EINA_FALSE;
+   Eina_Bool res;
    Cell *c;
+
+   res = (operator == _inclusive_op) ? EINA_FALSE : EINA_TRUE;
 
    for (j = oy; j < oy + h; ++j)
      for (i = ox; i < ox + w; ++i)
        {
           c = &(cells[j][i]);
-          res |= iterator(c->tile_tl, c->tile_tr, c->tile_bl, c->tile_br);
+          res = operator(res,
+                         iterator(c->tile_tl, c->tile_tr,
+                                  c->tile_bl, c->tile_br));
        }
 
    return res;
@@ -277,9 +294,12 @@ bitmap_cursor_state_evaluate(Editor       *ed,
 
    elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
 
-   if (_cells_type_get(ed->cells, x, y, cw, ch, tile_rocks_is) ||
+#define CELLS_TYPE(type_, op_) \
+   _cells_type_get(ed->cells, x, y, cw, ch, type_, op_)
+
+   if (CELLS_TYPE(tile_rocks_is, _inclusive_op) ||
        //TILE_WALL_IS(c) || // FIXME
-       _cells_type_get(ed->cells, x, y, cw, ch, tile_trees_is))
+       CELLS_TYPE(tile_trees_is, _inclusive_op))
      {
         /* Handle only flying units: they are the only one
          * that can be placed there */
@@ -307,7 +327,7 @@ bitmap_cursor_state_evaluate(Editor       *ed,
           }
         else /* marine,ground units */
           {
-             if (_cells_type_get(ed->cells, x, y, cw, ch, tile_water_is)) /* water */
+             if (CELLS_TYPE(tile_water_is, _exclusive_op)) /* water */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
@@ -326,19 +346,30 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                     elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                   else
                     {
-                       if (_cells_type_get(ed->cells, x, y, cw, ch, tile_walkable_is))
+                       if (pud_unit_building_is(ed->sel_unit))
                          {
-                            if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
-                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
-                            else
+                            if (CELLS_TYPE(tile_grass_is, _exclusive_op))
                               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                            else
+                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                          }
                        else
-                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                         {
+                            if (CELLS_TYPE(tile_walkable_is, _exclusive_op))
+                              {
+                                 if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
+                                   elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                                 else
+                                   elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                              }
+                            else
+                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                         }
                     }
                }
           }
      }
+#undef CELLS_TYPE
 }
 
 
