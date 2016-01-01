@@ -188,10 +188,10 @@ tile_mask_calculate(const uint8_t tl,
 
 void
 tile_decompose(uint16_t  tile_code,
-               uint8_t  *bl,
-               uint8_t  *br,
                uint8_t  *tl,
                uint8_t  *tr,
+               uint8_t  *bl,
+               uint8_t  *br,
                uint8_t  *seed);
 
 Eina_Bool

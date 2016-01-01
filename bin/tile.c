@@ -1,7 +1,7 @@
 /*
  * tile.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -241,13 +241,14 @@ tile_calculate(const uint8_t tl,
 
 void
 tile_decompose(uint16_t  tile_code,
-               uint8_t  *bl,
-               uint8_t  *br,
                uint8_t  *tl,
                uint8_t  *tr,
+               uint8_t  *bl,
+               uint8_t  *br,
                uint8_t  *seed)
 {
-   *seed = tile_code & 0x000f;
+   /* Seed is common to all tiles */
+   *seed = (uint8_t)(tile_code & 0x000f);
 
    if ((tile_code & 0xff00) == 0x0000) /* Solid */
      {
@@ -257,17 +258,81 @@ tile_decompose(uint16_t  tile_code,
            case 0x0010: code = TILE_WATER_LIGHT; break;
            case 0x0020: code = TILE_WATER_DARK; break;
            case 0x0030: code = TILE_GROUND_LIGHT; break;
-           case 0x0040: code = TILE_GROUND_LIGHT; break;
+           case 0x0040: code = TILE_GROUND_DARK; break;
            case 0x0050: code = TILE_GRASS_LIGHT; break;
-           case 0x0060: code = TILE_GRASS_LIGHT; break;
+           case 0x0060: code = TILE_GRASS_DARK; break;
            case 0x0070: code = TILE_TREES; break;
            case 0x0080: code = TILE_ROCKS; break;
-           default: CRI("Unhandled tile: 0x%x", tile_code); break;
+           default: CRI("Unhandled tile: 0x%x", tile_code); return;
           }
         *bl = code; *br = code; *tl = code; *tr = code;
      }
    else /* Boundry */
      {
+        uint8_t pair[2];
+        uint16_t master = (tile_code & 0x0f00);
+        uint16_t spread = (tile_code & 0x00f0);
+
+        switch (master)
+          {
+             // TODO WALLS
+           case 0x0700:
+             pair[1] = TILE_TREES;        pair[0] = TILE_GRASS_LIGHT; break;
+           case 0x0600:
+             pair[1] = TILE_GRASS_DARK;   pair[0] = TILE_GRASS_LIGHT; break;
+           case 0x0500:
+             pair[1] = TILE_GROUND_LIGHT; pair[0] = TILE_GRASS_LIGHT; break;
+           case 0x0400:
+             pair[1] = TILE_ROCKS;        pair[0] = TILE_GROUND_LIGHT; break;
+           case 0x0300:
+             pair[1] = TILE_GROUND_DARK;  pair[0] = TILE_GROUND_LIGHT; break;
+           case 0x0200:
+             pair[1] = TILE_WATER_LIGHT;  pair[0] = TILE_GROUND_LIGHT; break;
+           case 0x0100:
+             pair[1] = TILE_WATER_DARK;   pair[0] = TILE_WATER_LIGHT; break;
+
+           default:
+             CRI("Invalid tile 0x%04x (unhandled master 0x%04x)",
+                 tile_code, master);
+             return;
+          }
+
+        switch (spread)
+          {
+           case 0x0000:
+              *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[0]; break;
+           case 0x00d0:
+              *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[1]; break;
+           case 0x0010:
+              *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
+           case 0x00c0:
+              *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
+           case 0x0020:
+              *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
+           case 0x00b0:
+              *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
+           case 0x0030:
+              *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
+           case 0x00a0:
+              *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
+           case 0x0040:
+              *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
+           case 0x0090:
+              *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
+           case 0x0070:
+              *tl = pair[0]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
+           case 0x0060:
+              *tl = pair[1]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
+           case 0x0080:
+              *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
+           case 0x0050:
+              *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
+
+           default:
+              CRI("Invalid tile 0x%04x (unhandled spread 0x%04x)",
+                  tile_code, spread);
+              return;
+          }
      }
 }
 
