@@ -487,7 +487,13 @@ editor_sync(Editor * restrict ed)
 
              /* I'm not using pud_tile_set() because I know what I'm doing,
               * and this function if much less performant... */
-             pud->tiles_map[k++] = c->tile;
+             pud->tiles_map[k] = c->tile;
+
+             /* Determine action and movement map */
+             pud->action_map[k] = TILE_ACTION_GET(c);
+             pud->movement_map[k] = TILE_MOVEMENT_GET(c);
+
+             k++;
           }
      }
 

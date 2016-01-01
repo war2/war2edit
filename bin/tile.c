@@ -301,3 +301,50 @@ tile_conflict_resolve_get(const uint8_t t)
    return _tiles_conflicts[t];
 }
 
+uint16_t
+tile_action_get(const uint8_t tl,
+                const uint8_t tr,
+                const uint8_t bl,
+                const uint8_t br)
+{
+   uint16_t action;
+
+   if (tile_water_is(tl, tr, bl, br)) /* water */
+     action = 0x0000;
+   else if (tile_rocks_is(tl, tr, bl, br)) /* forest */
+     action = 0xfffd;
+   else if (tile_trees_is(tl, tr, bl, br)) /* mountains */
+     action = 0xfffe;
+   // wall, island
+   else /* land */
+     action = 0x4000;
+
+   return action;
+}
+
+uint16_t
+tile_movement_get(const uint8_t tl,
+                  const uint8_t tr,
+                  const uint8_t bl,
+                  const uint8_t br)
+{
+   uint16_t mov;
+
+   if (tile_water_is(tl, tr, bl, br))             /* water */
+     mov = 0x0040;
+   else if ((tile_trees_is(tl, tr, bl, br)) ||    /* forest */
+            (tile_rocks_is(tl, tr, bl, br)))      /* mountains */
+     mov = 0x0081;
+   else if (tile_coast_is(tl, tr, bl, br))        /* coast */
+     mov = 0x0002;
+   else if (tile_dirt_is(tl, tr, bl, br))         /* dirt */
+     mov = 0x0011;
+   else if (tile_coast_corner_is(tl, tr, bl, br)) /* coast (corner) */
+     mov = 0x0002;
+   else                                           /* land */
+     mov = 0x0001;
+   // TODO WALLS
+
+   return mov;
+}
+

@@ -76,8 +76,10 @@ tile_water_is(const uint8_t tl,
               const uint8_t bl,
               const uint8_t br)
 {
-   return (tile_solid_is(tl, tr, bl, br) &&
-           ((tl == TILE_WATER_LIGHT) || (tl == TILE_WATER_DARK)));
+   return ((tl == TILE_WATER_LIGHT) || (tl == TILE_WATER_DARK) ||
+           (tr == TILE_WATER_LIGHT) || (tr == TILE_WATER_DARK) ||
+           (bl == TILE_WATER_LIGHT) || (bl == TILE_WATER_DARK) ||
+           (br == TILE_WATER_LIGHT) || (br == TILE_WATER_DARK));
 }
 
 static inline Eina_Bool
@@ -99,6 +101,32 @@ tile_ground_is(const uint8_t tl,
 {
    return (tile_solid_is(tl, tr, bl, br) &&
            ((tl == TILE_GROUND_LIGHT) || (tl == TILE_GROUND_DARK)));
+}
+
+static inline Eina_Bool
+tile_dirt_is(const uint8_t tl,
+             const uint8_t tr,
+             const uint8_t bl,
+             const uint8_t br)
+{
+   return ((tl == TILE_GROUND_LIGHT) || (tl == TILE_GROUND_DARK) ||
+           (tr == TILE_GROUND_LIGHT) || (tr == TILE_GROUND_DARK) ||
+           (bl == TILE_GROUND_LIGHT) || (bl == TILE_GROUND_DARK) ||
+           (br == TILE_GROUND_LIGHT) || (br == TILE_GROUND_DARK));
+}
+
+static inline Eina_Bool
+tile_coast_corner_is(const uint8_t tl,
+                     const uint8_t tr,
+                     const uint8_t bl,
+                     const uint8_t br)
+{
+   unsigned int count = 0;
+   if (tl == TILE_WATER_LIGHT) ++count;
+   if (tr == TILE_WATER_LIGHT) ++count;
+   if (bl == TILE_WATER_LIGHT) ++count;
+   if (br == TILE_WATER_LIGHT) ++count;
+   return (count == 1);
 }
 
 static inline Eina_Bool
@@ -200,6 +228,24 @@ uint8_t tile_conflict_resolve_get(const uint8_t t);
 #define TILE_WALKABLE_IS(cptr) \
    tile_walkable_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
 
+
+uint16_t
+tile_action_get(const uint8_t tl,
+                const uint8_t tr,
+                const uint8_t bl,
+                const uint8_t br);
+
+#define TILE_ACTION_GET(cptr) \
+   tile_action_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+
+uint16_t
+tile_movement_get(const uint8_t tl,
+                  const uint8_t tr,
+                  const uint8_t bl,
+                  const uint8_t br);
+
+#define TILE_MOVEMENT_GET(cptr) \
+   tile_movement_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
 
 //static inline Eina_Bool
 //tile_wall_is(unsigned int tile)
