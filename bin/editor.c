@@ -381,6 +381,7 @@ editor_save(Editor * restrict ed,
              CRI("Failed to strdup(\"%s\")", pud->filename);
              goto panic;
           }
+        elm_win_title_set(ed->win, file);
      }
 
    /* Write the PUD to disk */
@@ -391,6 +392,7 @@ editor_save(Editor * restrict ed,
         return EINA_FALSE;
      }
 
+   INF("Map has been saved to \"%s\"", pud->filename);
    return EINA_TRUE;
 
 panic:
