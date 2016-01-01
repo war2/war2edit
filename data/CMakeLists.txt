@@ -32,6 +32,7 @@ install(
    FILES
    ${CMAKE_CURRENT_SOURCE_DIR}/images/efl.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/brush_big.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/brush_medium.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/brush_small.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/dark.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/efl.png

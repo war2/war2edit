@@ -198,7 +198,7 @@ toolbar_add(Editor      *ed,
    /* Radius segment */
    s[2] = SEG_ADD(_seg_changed_cb);
    SEG_IT_ADD(s[2], "brush_small.png", RS);
-   SEG_IT_ADD(s[2], "efl.png", RM);
+   SEG_IT_ADD(s[2], "brush_medium.png", RM);
    SEG_IT_ADD(s[2], "brush_big.png", RB);
    _segment_size_autoset(s[2], 3);
 

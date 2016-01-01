@@ -3,16 +3,10 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100px"
 	 height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-<g id="Calque_1">
-	<polygon fill="#C69C6D" stroke="#C69C6D" stroke-width="0.2578" stroke-miterlimit="10" points="-8.833,5.833 -8.833,5.833 
-		-9.167,5.833 -9.167,5.833 -9.167,5.833 -9.167,5.833 -8.833,5.833 -8.833,5.833 	"/>
-</g>
 <g id="Calque_4">
 </g>
-<g id="Calque_6">
-</g>
 <g id="Calque_5">
-	<rect x="10.325" y="8.833" fill="#29ABE2" stroke="#000000" stroke-miterlimit="10" width="81.167" height="81.166"/>
+	<rect x="10.325" y="8.833" fill="#FFFFFF" stroke="#000000" stroke-miterlimit="10" width="81.167" height="81.166"/>
 	<polygon fill="#FFFF00" stroke="#000000" stroke-width="1.5445" stroke-miterlimit="10" points="47.556,30.403 54.273,10.952 
 		57.512,31.274 73.055,17.787 65.698,37.007 85.902,33.098 69.921,46.063 89.373,52.781 69.051,56.018 82.536,71.562 63.318,64.205 
 		67.227,84.41 54.26,68.428 47.544,87.881 44.306,67.557 28.762,81.044 36.119,61.825 15.914,65.734 31.896,52.768 12.443,46.051 
