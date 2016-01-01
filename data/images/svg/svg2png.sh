@@ -22,19 +22,7 @@ inkscape_export() {
       "$file"
 }
 
-FILES="
-brush_small.svg
-dark.svg
-grass.svg
-ground.svg
-human_walls.svg
-light.svg
-orc_walls.svg
-rocks.svg
-selection.svg
-trees.svg
-water.svg
-"
+FILES="$(ls -1 *.svg)"
 
 for f in $FILES; do
    inkscape_export "$f"
