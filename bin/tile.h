@@ -81,6 +81,17 @@ tile_water_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
+tile_coast_is(const uint8_t tl,
+              const uint8_t tr,
+              const uint8_t bl,
+              const uint8_t br)
+{
+   return ((!tile_solid_is(tl, tr, bl, br)) &&
+           (((tl == TILE_WATER_LIGHT) || (tr == TILE_WATER_LIGHT)) ||
+            ((bl == TILE_WATER_LIGHT) || (br == TILE_WATER_LIGHT))));
+}
+
+static inline Eina_Bool
 tile_ground_is(const uint8_t tl,
                const uint8_t tr,
                const uint8_t bl,
@@ -129,7 +140,8 @@ tile_walkable_is(const uint8_t tl,
    return (//!tile_wall_is(tl, tr, bl, br) &&
            !tile_trees_is(tl, tr, bl, br) &&
            !tile_rocks_is(tl, tr, bl, br) &&
-           !tile_water_is(tl, tr, bl, br));
+           !tile_water_is(tl, tr, bl, br) &&
+           !tile_coast_is(tl, tr, bl, br));
 }
 
 uint16_t
