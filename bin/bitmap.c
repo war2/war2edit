@@ -326,10 +326,15 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                     elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                   else
                     {
-                       if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
-                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                       if (_cells_type_get(ed->cells, x, y, cw, ch, tile_walkable_is))
+                         {
+                            if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
+                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                            else
+                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                         }
                        else
-                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
                     }
                }
           }
