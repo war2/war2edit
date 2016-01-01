@@ -3,13 +3,24 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100px"
 	 height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-<g id="Calque_2">
-	<rect fill="#1B1464" stroke="#1B1464" stroke-miterlimit="10" width="100" height="100"/>
+<g id="Calque_4">
+	<g id="Calque_2">
+		
+			<rect x="10.608" y="9.634" fill="#1B1464" stroke="#1B1464" stroke-width="0.8099" stroke-miterlimit="10" width="80.991" height="80.992"/>
+	</g>
+	<g id="Calque_5_1_">
+		<rect x="20.518" y="19.223" fill="none" width="61.173" height="61.175"/>
+		<path fill="#FFFFFF" stroke="#000000" stroke-width="0.8099" stroke-miterlimit="10" d="M42.453,50.195
+			c0-13.79,9.049-25.461,21.531-29.411c-2.939-0.929-6.066-1.435-9.314-1.435c-17.036,0-30.845,13.81-30.845,30.846
+			c0,17.035,13.81,30.843,30.845,30.843c3.248,0,6.375-0.503,9.314-1.433C51.502,75.654,42.453,63.982,42.453,50.195z"/>
+	</g>
 </g>
-<g id="Calque_5">
-	<rect x="21.125" y="11.761" fill="none" width="75.529" height="75.53"/>
-	<path fill="#FFFFFF" stroke="#000000" stroke-miterlimit="10" d="M48.208,50.001c0-17.025,11.172-31.437,26.583-36.313
-		c-3.629-1.148-7.49-1.771-11.5-1.771c-21.032,0-38.083,17.05-38.083,38.084c0,21.033,17.051,38.083,38.083,38.083
-		c4.01,0,7.871-0.623,11.5-1.771C59.38,81.436,48.208,67.023,48.208,50.001z"/>
+<g id="Calque_5" display="none">
+	
+		<rect x="10.325" y="8.833" display="inline" fill="#29ABE2" stroke="#000000" stroke-miterlimit="10" width="81.167" height="81.166"/>
+	<polygon display="inline" fill="#FFFF00" stroke="#000000" stroke-width="1.5445" stroke-miterlimit="10" points="47.556,30.403 
+		54.273,10.952 57.512,31.274 73.055,17.787 65.698,37.007 85.902,33.098 69.921,46.063 89.373,52.781 69.051,56.018 82.536,71.562 
+		63.318,64.205 67.227,84.41 54.26,68.428 47.544,87.881 44.306,67.557 28.762,81.044 36.119,61.825 15.914,65.734 31.896,52.768 
+		12.443,46.051 32.767,42.814 19.279,27.269 38.499,34.626 34.591,14.422 	"/>
 </g>
 </svg>
