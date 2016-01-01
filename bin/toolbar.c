@@ -190,9 +190,9 @@ toolbar_add(Editor      *ed,
 
    /* Spread segmen,t */
    s[1] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[1], "efl.png", SN);
-   SEG_IT_ADD(s[1], "efl.png", SC);
-   SEG_IT_ADD(s[1], "efl.png", SS);
+   SEG_IT_ADD(s[1], "sel_squared.png", SN);
+   SEG_IT_ADD(s[1], "sel_circular.png", SC);
+   SEG_IT_ADD(s[1], "sel_sparkle.png", SS);
    _segment_size_autoset(s[1], 3);
 
    /* Radius segment */
