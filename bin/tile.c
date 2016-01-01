@@ -113,7 +113,7 @@ tile_mask_calculate(const uint8_t tl,
                }
              else if (TILE_HAS(TILE_GRASS_DARK))
                {
-                  tile = 0x0600 | LOW_MASK(TILE_GROUND_DARK);
+                  tile = 0x0600 | LOW_MASK(TILE_GRASS_DARK);
                }
              else if (TILE_HAS(TILE_GROUND_LIGHT))
                {
