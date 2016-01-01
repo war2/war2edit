@@ -348,7 +348,8 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                     {
                        if (pud_unit_building_is(ed->sel_unit))
                          {
-                            if (CELLS_TYPE(tile_grass_is, _exclusive_op))
+                            if (CELLS_TYPE(tile_grass_is, _exclusive_op) &&
+                                (!_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW)))
                               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
                             else
                               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
