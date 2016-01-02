@@ -15,8 +15,8 @@ struct _Cell
    unsigned int unit_above : 7;
    unsigned int orient_below : 3; /* 8 values */
    unsigned int orient_above : 3; /* 8 values */
-   unsigned int player_below : 3; /* 8 values */
-   unsigned int player_above : 3; /* 8 values */
+   unsigned int player_below : 4;
+   unsigned int player_above : 4;
    unsigned int spread_x_below : 3; /* 0-4 */
    unsigned int spread_y_below : 3; /* 0-4 */
    unsigned int spread_x_above : 3; /* 0-4 */
