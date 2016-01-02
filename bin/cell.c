@@ -1,7 +1,7 @@
 /*
  * cell.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"

@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -12,7 +12,7 @@ static const Ecore_Getopt _options =
    "war2edit",
    "%prog [options] [PUD file(s)]",
    "0.1",
-   "2014-2015 © Jean Guyomarc'h",
+   "2014-2016 © Jean Guyomarc'h",
    "MIT",
    "A modest clone of Warcraft II World Map Editor",
    EINA_TRUE,
