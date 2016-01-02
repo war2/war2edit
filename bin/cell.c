@@ -59,7 +59,9 @@ cell_dump(Cell *cell,
    fprintf(
       stream,
       "{\n"
-      "    alter...............: %u\n"
+      "    alter (below).......: %u\n"
+      "    alter (above).......: %u\n"
+      "    alter (start loc)...: %u\n"
       "    tile................: 0x%04x\n"
       "    unit_below..........: 0x%02x\n"
       "    unit_above..........: 0x%02x\n"
@@ -78,7 +80,9 @@ cell_dump(Cell *cell,
       "    selected_below......: %u\n"
       "    selected_above......: %u\n"
       "}\n",
-      cell->alter,
+      cell->alter_below,
+      cell->alter_above,
+      cell->alter_start_location,
       cell->tile,
       cell->unit_below,
       cell->unit_above,

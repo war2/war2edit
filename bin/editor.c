@@ -210,10 +210,6 @@ editor_new(const char *pud_file,
         /* No start location */
         ed->start_locations[i].x = -1;
         ed->start_locations[i].y = -1;
-
-        /* Set initial races */
-        if (i % 2 == 0) ed->sides[i] = PUD_SIDE_HUMAN;
-        else ed->sides[i] = PUD_SIDE_ORC;
      }
 
    /* Create window and set callbacks */
@@ -343,19 +339,8 @@ editor_save(Editor * restrict ed,
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
    Eina_Bool chk;
-   unsigned int x;
+   Pud_Error err;
    Pud *pud = ed->pud; /* Save indirections... */
-
-   // XXX owner ?
-   for (x = 0; x < 8; x++)
-     {
-        if (ed->start_locations[x].x >= 0)
-          pud->starting_points++;
-        pud->side.players[x] = ed->sides[x];
-     }
-   /* FIXME This is by default. Needs to be implemented */
-   pud->human_players = 1;
-   pud->computer_players = 1;
 
    /* Sync the hot changes to the Pud structure */
    if (EINA_UNLIKELY(!editor_sync(ed)))
@@ -365,9 +350,10 @@ editor_save(Editor * restrict ed,
      }
 
    /* Verify it is ok */
-   if (!pud_check(pud))
+   err = pud_check(pud);
+   if (err != PUD_ERROR_NONE)
      {
-        CRI("Pud is not valid.");
+        CRI("Pud is not valid. Error: %i", err);
         return EINA_FALSE;
      }
 
@@ -449,7 +435,7 @@ editor_sync(Editor * restrict ed)
                   u->y = y;
                   u->type = c->unit_below;
                   u->owner = c->player_below;
-                  u->alter = c->alter;
+                  u->alter = c->alter_below;
                }
              if (c->anchor_above)
                {
@@ -464,7 +450,7 @@ editor_sync(Editor * restrict ed)
                   u->y = y;
                   u->type = c->unit_above;
                   u->owner = c->player_above;
-                  u->alter = c->alter;
+                  u->alter = c->alter_above;
                }
              if (c->start_location != CELL_NOT_START_LOCATION)
                {
@@ -482,7 +468,7 @@ editor_sync(Editor * restrict ed)
                   else
                     u->type = PUD_UNIT_ORC_START;
                   u->owner = c->start_location;
-                  u->alter = 0;
+                  u->alter = c->alter_start_location;
                }
 
              /* I'm not using pud_tile_set() because I know what I'm doing,

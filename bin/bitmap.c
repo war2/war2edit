@@ -648,6 +648,7 @@ bitmap_unit_set(Editor *restrict ed,
         c = &(ed->cells[y][x]);
         c->start_location = color;
         c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
+        c->alter_start_location = !!alter;
         goto end;
      }
 
@@ -668,6 +669,7 @@ bitmap_unit_set(Editor *restrict ed,
                   c->anchor_above = 0;
                   c->spread_x_above = spread_x;
                   c->spread_y_above = spread_y;
+                  c->alter_above = alter;
                }
              else
                {
@@ -677,8 +679,8 @@ bitmap_unit_set(Editor *restrict ed,
                   c->anchor_below = 0;
                   c->spread_x_below = spread_x;
                   c->spread_y_below = spread_y;
+                  c->alter_below = alter;
                }
-             c->alter = alter;
           }
      }
 

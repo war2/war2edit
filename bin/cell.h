@@ -9,7 +9,7 @@
 
 struct _Cell
 {
-   uint16_t     alter;
+   uint16_t     alter_below;
    unsigned int tile : 12;
    unsigned int unit_below : 7;
    unsigned int unit_above : 7;
@@ -23,6 +23,8 @@ struct _Cell
    unsigned int spread_y_above : 3; /* 0-4 */
    unsigned int anchor_below : 1;
    unsigned int anchor_above : 1;
+   unsigned int alter_above : 1;
+   unsigned int alter_start_location : 1;
    unsigned int start_location : 4;
    unsigned int start_location_human : 1;
    unsigned int selected_below : 2;
