@@ -455,10 +455,7 @@ _sel_update_cb(void        *data,
 
    if (sel_active_is(ed))
      {
-        eo_do(
-           ed->scroller,
-           elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
-        );
+        elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
         sel_update(ed, ev->cur.canvas.x - ed->sel.x,
                    ev->cur.canvas.y - ed->sel.y);
      }
@@ -954,14 +951,11 @@ bitmap_add(Editor *ed)
    obj = elm_bitmap_init_add(ed->win, 32, 32, ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
 
-   eo_do(
-      obj,
-      evas_obj_size_hint_align_set(0.0, 0.0),
-      evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, EVAS_HINT_EXPAND),
-      elm_obj_bitmap_resizable_set(EINA_FALSE),
-      elm_obj_bitmap_cursor_visibility_set(EINA_FALSE),
-      elm_obj_bitmap_draw_func_set(_bitmap_draw_func)
-   );
+   evas_object_size_hint_align_set(obj, 0.0, 0.0);
+   evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_bitmap_resizable_set(obj, EINA_FALSE);
+   elm_bitmap_cursor_visibility_set(obj, EINA_FALSE);
+   elm_bitmap_draw_func_set(obj, _bitmap_draw_func);
    evas_object_smart_callback_add(obj, "bitmap,mouse,down", _mouse_down_cb, ed);
    evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
    evas_object_smart_callback_add(obj, "mouse,down", _sel_start_cb, ed);

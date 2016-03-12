@@ -102,9 +102,9 @@ _radio_add(Editor          *ed,
    Elm_Object_Item *eoi;
 
    o = elm_radio_add(ed->menu);
-   eo_do(o, elm_obj_radio_state_value_set(object));
+   elm_radio_state_value_set(o, object);
    if (group != NULL)
-     eo_do(o, elm_obj_radio_group_add(group));
+     elm_radio_group_add(o, group);
 
    if (label) elm_object_text_set(o, label);
    if (parent)
@@ -266,11 +266,8 @@ _radio_units_changed_cb(void        *data,
    DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit));
 
    sprite_tile_size_get(ed->sel_unit, &w, &h);
-   eo_do(
-      ed->bitmap,
-      elm_obj_bitmap_cursor_size_set(w, h),
-      elm_obj_bitmap_cursor_visibility_set(EINA_TRUE)
-   );
+   elm_bitmap_cursor_size_set(ed->bitmap, w, h);
+   elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_TRUE);
    toolbar_actions_segment_unselect(ed);
    editor_sel_action_set(ed, 0);
 }
@@ -827,7 +824,7 @@ _bind_cb(void        *data,
    uint8_t *val;
    Eina_Stringshare *text;
 
-   eo_do(evt, text = elm_wdg_item_part_text_get("default"));
+   text = elm_wdg_item_part_text_get(evt, "default");
 
    val = eina_hash_find(_values, text);
    if (EINA_UNLIKELY(!val))
@@ -1036,18 +1033,16 @@ menu_player_properties_new(Editor      *ed,
  *============================================================================*/
 
 static Eina_Bool
-_validator_cb(void                       *data,
-              Eo                         *obj,
-              const Eo_Event_Description *desc,
-              void                       *info)
+_validator_cb(void           *data,
+              const Eo_Event *desc)
 {
    Eina_Bool status;
    Validator *val = data;
-   Elm_Validate_Content *vc = info;
+   Elm_Validate_Content *vc = desc->event_info;
    unsigned long int numeric;
    const char *str;
 
-   status = elm_validator_regexp_helper(val->re, obj, desc, info);
+   status = elm_validator_regexp_helper(val->re, desc);
    if (status == EO_CALLBACK_CONTINUE)
      {
         status = EO_CALLBACK_STOP;
@@ -1118,8 +1113,7 @@ _pack_range_entry(Evas_Object  *table,
    val->prescalor.operation = operation;
    val->prescalor.inverse = inverse;
 
-   eo_do(o, eo_event_callback_add(ELM_ENTRY_EVENT_VALIDATE,
-                                  _validator_cb, val));
+   eo_event_callback_add(o, ELM_ENTRY_EVENT_VALIDATE, _validator_cb, val);
 
    switch (val->bind.type)
      {

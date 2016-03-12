@@ -267,11 +267,8 @@ minimap_view_move(Editor *restrict ed,
 
    if (clicked)
      {
-        eo_do(
-           ed->scroller,
-           elm_interface_scrollable_content_region_get(NULL, NULL, &srw, &srh)
-        );
-
+        elm_interface_scrollable_content_region_get(ed->scroller,
+                                                    NULL, NULL, &srw, &srh);
         elm_bitmap_cell_size_get(ed->bitmap, &cx, &cy);
         bx = x * cx;
         by = y * cy;

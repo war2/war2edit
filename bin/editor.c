@@ -155,24 +155,18 @@ editor_error(Editor     *ed,
    e = elm_label_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(e, end);
    elm_object_text_set(e, msg);
-   eo_do(
-      e,
-      evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, EVAS_HINT_EXPAND),
-      evas_obj_size_hint_align_set(EVAS_HINT_FILL, EVAS_HINT_FILL)
-   );
+   evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
    /* Box to content the UI */
    box = elm_box_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(box, end);
-   eo_do(
-      box,
-      evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, EVAS_HINT_EXPAND),
-      evas_obj_size_hint_align_set(EVAS_HINT_FILL, EVAS_HINT_FILL),
-      elm_obj_box_horizontal_set(EINA_FALSE),
-      elm_obj_box_homogeneous_set(EINA_FALSE),
-      elm_obj_box_pack_start(e),
-      elm_obj_box_pack_end(o)
-   );
+   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(box, EINA_FALSE);
+   elm_box_homogeneous_set(box, EINA_FALSE);
+   elm_box_pack_start(box, e);
+   elm_box_pack_end(box, o);
 
    inwin_set(ed, box, INWIN_EDITOR_ERROR, "Ok", NULL, NULL, NULL);
    evas_object_show(box);
@@ -243,15 +237,12 @@ editor_new(const char *pud_file,
    /* Toolbar */
    box = elm_box_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(box, err_win_del);
-   eo_do(
-      box,
-      evas_obj_size_hint_weight_set(EVAS_HINT_EXPAND, 0.0),
-      evas_obj_size_hint_align_set(0.0, EVAS_HINT_FILL);
-      elm_obj_box_align_set(0.0, EVAS_HINT_FILL);
-      elm_obj_box_horizontal_set(EINA_TRUE),
-      elm_obj_box_homogeneous_set(EINA_FALSE),
-      efl_gfx_visible_set(EINA_TRUE)
-   );
+   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(box, 0.0, EVAS_HINT_FILL);
+   elm_box_align_set(box, 0.0, EVAS_HINT_FILL);
+   elm_box_horizontal_set(box, EINA_TRUE);
+   elm_box_homogeneous_set(box, EINA_FALSE);
+   evas_object_show(box);
    elm_box_pack_end(o, box);
    toolbar_add(ed, box);
 
@@ -627,10 +618,7 @@ editor_view_update(Editor *restrict ed)
    int cell_w = 0, cell_h = 0;
    float wf, hf;
 
-   eo_do(
-      ed->scroller,
-      elm_interface_scrollable_content_region_get(&rx, &ry, &rw, &rh)
-   );
+   elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
    elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
    /* Happens mostly at init time, when UI is unstable */
    if (EINA_UNLIKELY((cell_w == 0) || (cell_h == 0)))
