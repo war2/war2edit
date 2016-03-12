@@ -53,6 +53,12 @@ bitmap_tile_set(Editor * restrict ed,
                 uint8_t           br,
                 uint8_t           seed);
 
+Eina_Bool
+bitmap_full_tile_set(Editor *restrict ed,
+                     int              x,
+                     int              y,
+                     uint16_t         tile);
+
 void
 bitmap_cursor_state_evaluate(Editor       *ed,
                              unsigned int  x,

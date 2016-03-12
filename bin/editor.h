@@ -39,7 +39,7 @@ typedef uint16_t Editor_Sel;
 #define EDITOR_SEL_ACTION_TREES              ((Editor_Sel) (0x06 << 6))
 #define EDITOR_SEL_ACTION_ROCKS              ((Editor_Sel) (0x07 << 6))
 #define EDITOR_SEL_ACTION_HUMAN_WALLS        ((Editor_Sel) (0x08 << 6))
-#define EDITOR_SEL_ACTION_ORCS_WALLS         ((Editor_Sel) (0x09 << 6))
+#define EDITOR_SEL_ACTION_ORC_WALLS          ((Editor_Sel) (0x09 << 6))
 #define EDITOR_SEL_ACTION_MASK               ((Editor_Sel) (0x0f << 6))
 
 

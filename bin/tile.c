@@ -8,16 +8,18 @@
 
 static const uint8_t _tiles_compatible[__TILE_LAST][__TILE_LAST] =
 {
-   /*             F   GL  CL  WL  WD  GD  CD  R */
-   /*    */ {  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-   /*  F */ {  0,  1,  1,  0,  0,  0,  0,  0,  0 },
-   /* GL */ {  0,  1,  1,  1,  0,  0,  1,  0,  0 },
-   /* CL */ {  0,  0,  1,  1,  1,  0,  0,  1,  1 },
-   /* WL */ {  0,  0,  0,  1,  1,  1,  0,  0,  0 },
-   /* WD */ {  0,  0,  0,  0,  1,  1,  0,  0,  0 },
-   /* GD */ {  0,  0,  1,  0,  0,  0,  1,  0,  0 },
-   /* CD */ {  0,  0,  0,  1,  0,  0,  0,  1,  0 },
-   /*  R */ {  0,  0,  0,  1,  0,  0,  0,  0,  1 }
+   /*             F   GL  CL  WL  WD  GD  CD  R   HW  OW*/
+   /*    */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+   /*  F */ {  0,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0 },
+   /* GL */ {  0,  1,  1,  1,  0,  0,  1,  0,  0,  1,  1 },
+   /* CL */ {  0,  0,  1,  1,  1,  0,  0,  1,  1,  0,  0 },
+   /* WL */ {  0,  0,  0,  1,  1,  1,  0,  0,  0,  0,  0 },
+   /* WD */ {  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0 },
+   /* GD */ {  0,  0,  1,  0,  0,  0,  1,  0,  0,  1,  1 },
+   /* CD */ {  0,  0,  0,  1,  0,  0,  0,  1,  0,  0,  0 },
+   /*  R */ {  0,  0,  0,  1,  0,  0,  0,  0,  1,  0,  0 },
+   /* HW */ {  0,  0,  1,  0,  0,  0,  1,  0,  0,  1,  1 },
+   /* OW */ {  0,  0,  1,  0,  0,  0,  1,  0,  0,  1,  1 }
 };
 
 static const uint8_t _tiles_conflicts[__TILE_LAST] =
@@ -30,7 +32,9 @@ static const uint8_t _tiles_conflicts[__TILE_LAST] =
    /* WD */ TILE_WATER_LIGHT,
    /* GD */ TILE_GRASS_LIGHT,
    /* CD */ TILE_GROUND_LIGHT,
-   /*  R */ TILE_GROUND_LIGHT
+   /*  R */ TILE_GROUND_LIGHT,
+   /* HW */ TILE_GRASS_LIGHT,
+   /* OW */ TILE_GRASS_LIGHT
 };
 
 /*============================================================================*
@@ -59,7 +63,7 @@ _tile_boundry_low_mask_get(const uint8_t tl,
 
    if (tl == reference) mask |= 0x0001; /* 0001 */
    if (tr == reference) mask |= 0x0002; /* 0010 */
-   if (bl == reference) mask |= 0x0005; /* 0100 */
+   if (bl == reference) mask |= 0x0004; /* 0100 */
    if (br == reference) mask |= 0x0008; /* 1000 */
 
    if (reference != first_type)
@@ -87,7 +91,7 @@ tile_mask_calculate(const uint8_t tl,
 
    if (tile_solid_is(tl, tr, bl, br))
      {
-        switch (tl) /* tl == tr == bl == br */
+        switch (tl & 0x0f) /* tl == tr == bl == br */
           {
            case TILE_WATER_LIGHT:  tile = 0x0010; break;
            case TILE_WATER_DARK:   tile = 0x0020; break;
@@ -97,6 +101,14 @@ tile_mask_calculate(const uint8_t tl,
            case TILE_GRASS_DARK:   tile = 0x0060; break;
            case TILE_TREES:        tile = 0x0070; break;
            case TILE_ROCKS:        tile = 0x0080; break;
+
+           case TILE_HUMAN_WALL:
+             tile = (tl & TILE_WALL_OPEN) ? 0x00b0 : 0x0090;
+             break;
+
+           case TILE_ORC_WALL:
+             tile = (tl & TILE_WALL_OPEN) ? 0x00c0 : 0x00a0;
+             break;
 
            default:
               CRI("Unhandled solid tile %x", tl);
@@ -157,6 +169,10 @@ tile_mask_calculate(const uint8_t tl,
                   goto fail;
                }
           }
+        else if (TILE_HAS(TILE_HUMAN_WALL))//|| TILE_HAS(TILE_ORC_WALL))
+          {
+             tile = 0x0900 | LOW_MASK(TILE_HUMAN_WALL);
+          }
         else
           {
              CRI("Uncovered case");
@@ -189,6 +205,7 @@ tile_calculate(const uint8_t tl,
    if ((seed & TILE_RANDOMIZE) == TILE_RANDOMIZE)
      {
         rtile = pud_random_get(tile_code);
+        /* Don't randomize special tiles */
         if (((tile_code & 0x0f00) == 0x0000) &&
             ((tile_code & 0x0030) ||
              (tile_code & 0x0040) ||
@@ -239,6 +256,19 @@ tile_calculate(const uint8_t tl,
    return tile_code;
 }
 
+static inline void
+_walls_fill(uint8_t       walls[4],
+            const uint8_t tl,
+            const uint8_t tr,
+            const uint8_t br,
+            const uint8_t bl)
+{
+   walls[0] = tl;
+   walls[1] = tr;
+   walls[2] = br;
+   walls[3] = bl;
+}
+
 void
 tile_decompose(uint16_t  tile_code,
                uint8_t  *tl,
@@ -247,6 +277,10 @@ tile_decompose(uint16_t  tile_code,
                uint8_t  *br,
                uint8_t  *seed)
 {
+   /*
+    * FIXME Algo here is sh*t.
+    */
+
    /* Seed is common to all tiles */
    *seed = (uint8_t)(tile_code & 0x000f);
 
@@ -263,19 +297,26 @@ tile_decompose(uint16_t  tile_code,
            case 0x0060: code = TILE_GRASS_DARK; break;
            case 0x0070: code = TILE_TREES; break;
            case 0x0080: code = TILE_ROCKS; break;
+           case 0x0090: code = TILE_HUMAN_WALL | TILE_WALL_CLOSED; break;
+           case 0x00b0: code = TILE_HUMAN_WALL | TILE_WALL_OPEN; break;
+           case 0x00a0: code = TILE_ORC_WALL | TILE_WALL_CLOSED; break;
+           case 0x00c0: code = TILE_ORC_WALL | TILE_WALL_OPEN; break;
            default: CRI("Unhandled tile: 0x%x", tile_code); return;
           }
         *bl = code; *br = code; *tl = code; *tr = code;
      }
    else /* Boundry */
      {
-        uint8_t pair[2];
+        uint8_t pair[2], walls[4];
         uint16_t master = (tile_code & 0x0f00);
         uint16_t spread = (tile_code & 0x00f0);
 
         switch (master)
           {
-             // TODO WALLS
+           case 0x0900:
+              pair[1] = TILE_ORC_WALL;    pair[0] = TILE_ORC_WALL; break;
+           case 0x0800:
+              pair[1] = TILE_HUMAN_WALL;  pair[0] = TILE_HUMAN_WALL; break;
            case 0x0700:
              pair[1] = TILE_TREES;        pair[0] = TILE_GRASS_LIGHT; break;
            case 0x0600:
@@ -297,49 +338,142 @@ tile_decompose(uint16_t  tile_code,
              return;
           }
 
-        switch (spread)
+        if ((pair[0] == TILE_ORC_WALL) || (pair[0] == TILE_HUMAN_WALL))
           {
-           case 0x0000:
-              *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[0]; break;
-           case 0x00d0:
-              *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[1]; break;
-           case 0x0010:
-              *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
-           case 0x00c0:
-              *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
-           case 0x0020:
-              *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
-           case 0x00b0:
-              *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
-           case 0x0030:
-              *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
-           case 0x00a0:
-              *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
-           case 0x0040:
-              *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
-           case 0x0090:
-              *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
-           case 0x0070:
-              *tl = pair[0]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
-           case 0x0060:
-              *tl = pair[1]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
-           case 0x0080:
-              *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
-           case 0x0050:
-              *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
+             switch (spread)
+               {
+                  /* For walls, all blocks are rotated:
+                   *   TL
+                   * BL  TR
+                   *   BR   */
+                case 0x0000:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
+                   break;
+                case 0x00d0:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
+                   break;
+                case 0x0010:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
+                   break;
+                case 0x00c0:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
+                   break;
+                case 0x0020:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
+                   break;
+                case 0x00b0:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
+                   break;
+                case 0x0030:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
+                   break;
+                case 0x00a0:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
+                   break;
+                case 0x0040:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
+                   break;
+                case 0x0090:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
+                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
+                   break;
+                case 0x0070:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
+                   break;
+                case 0x0060:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
+                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
+                   break;
+                case 0x0080:
+                   _walls_fill(walls,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
+                   break;
+                case 0x0050:
+                   _walls_fill(walls,
+                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
+                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
+                   break;
 
-           default:
-              CRI("Invalid tile 0x%04x (unhandled spread 0x%04x)",
-                  tile_code, spread);
-              return;
+                default:
+                   CRI("Invalid tile 0x%04x (unhandled spread 0x%04x)",
+                       tile_code, spread);
+                   return;
+               }
+          }
+        else
+          {
+             switch (spread)
+               {
+                  /* TL  TR
+                   * BL  BR */
+                case 0x0000:
+                   *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[0]; break;
+                case 0x00d0:
+                   *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[1]; break;
+                case 0x0010:
+                   *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
+                case 0x00c0:
+                   *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
+                case 0x0020:
+                   *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[0]; break;
+                case 0x00b0:
+                   *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[1]; break;
+                case 0x0030:
+                   *tl = pair[0]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
+                case 0x00a0:
+                   *tl = pair[1]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
+                case 0x0040:
+                   *tl = pair[1]; *tr = pair[0]; *bl = pair[1]; *br = pair[0]; break;
+                case 0x0090:
+                   *tl = pair[0]; *tr = pair[1]; *bl = pair[0]; *br = pair[1]; break;
+                case 0x0070:
+                   *tl = pair[0]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
+                case 0x0060:
+                   *tl = pair[1]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
+                case 0x0080:
+                   *tl = pair[1]; *tr = pair[0]; *bl = pair[0]; *br = pair[1]; break;
+                case 0x0050:
+                   *tl = pair[0]; *tr = pair[1]; *bl = pair[1]; *br = pair[0]; break;
+
+                default:
+                   CRI("Invalid tile 0x%04x (unhandled spread 0x%04x)",
+                       tile_code, spread);
+                   return;
+               }
           }
      }
 }
 
 Eina_Bool
-tile_fragments_compatible_are(const uint8_t t1,
-                              const uint8_t t2)
+tile_fragments_compatible_are(uint8_t t1,
+                              uint8_t t2)
 {
+   t1 &= 0x0f;
+   t2 &= 0x0f;
+
    EINA_SAFETY_ON_FALSE_RETURN_VAL((t1 < __TILE_LAST) &&
                                    (t2 < __TILE_LAST),
                                    EINA_FALSE);
@@ -363,7 +497,7 @@ uint8_t
 tile_conflict_resolve_get(const uint8_t t)
 {
    EINA_SAFETY_ON_FALSE_RETURN_VAL(t < __TILE_LAST,  TILE_NONE);
-   return _tiles_conflicts[t];
+   return _tiles_conflicts[t & 0x0f];
 }
 
 uint16_t
@@ -380,7 +514,9 @@ tile_action_get(const uint8_t tl,
      action = 0xfffd;
    else if (tile_trees_is(tl, tr, bl, br)) /* mountains */
      action = 0xfffe;
-   // wall, island
+   else if (tile_wall_is(tl, tr, bl, br)) /* walls */
+     action = 0xfffb;
+   // FIXME island
    else /* land */
      action = 0x4000;
 
@@ -406,9 +542,10 @@ tile_movement_get(const uint8_t tl,
      mov = 0x0011;
    else if (tile_coast_corner_is(tl, tr, bl, br)) /* coast (corner) */
      mov = 0x0002;
+   else if (tile_wall_is(tl, tr, bl, br))         /* wall */
+     mov = 0x008d;
    else                                           /* land */
      mov = 0x0001;
-   // TODO WALLS
 
    return mov;
 }

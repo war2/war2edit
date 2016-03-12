@@ -130,6 +130,14 @@ _solid_component_get(const Editor_Sel action,
          component = TILE_ROCKS;
          break;
 
+      case EDITOR_SEL_ACTION_HUMAN_WALLS:
+         component = TILE_HUMAN_WALL;
+         break;
+
+      case EDITOR_SEL_ACTION_ORC_WALLS:
+         component = TILE_ORC_WALL;
+         break;
+
       default:
          CRI("Unhandled action %x", action);
          break;
@@ -298,7 +306,7 @@ bitmap_cursor_state_evaluate(Editor       *ed,
    _cells_type_get(ed->cells, x, y, cw, ch, type_, op_)
 
    if (CELLS_TYPE(tile_rocks_is, _inclusive_op) ||
-       //TILE_WALL_IS(c) || // FIXME
+       CELLS_TYPE(tile_wall_is, _inclusive_op) ||
        CELLS_TYPE(tile_trees_is, _inclusive_op))
      {
         /* Handle only flying units: they are the only one
@@ -887,16 +895,11 @@ bitmap_tile_calculate(Editor           *ed,
    return ok;
 }
 
-
 Eina_Bool
-bitmap_tile_set(Editor * restrict ed,
-                int               x,
-                int               y,
-                uint8_t           tl,
-                uint8_t           tr,
-                uint8_t           bl,
-                uint8_t           br,
-                uint8_t           seed)
+bitmap_full_tile_set(Editor *restrict ed,
+                     int              x,
+                     int              y,
+                     uint16_t         tile)
 {
    /* Safety checks */
    EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
@@ -927,18 +930,36 @@ bitmap_tile_set(Editor * restrict ed,
           bitmap_unit_del_at(ed, x, y, EINA_TRUE);
      }
 
+   c->tile = tile;
+   minimap_update(ed, x, y);
+
+   return EINA_TRUE;
+}
+
+Eina_Bool
+bitmap_tile_set(Editor * restrict ed,
+                int               x,
+                int               y,
+                uint8_t           tl,
+                uint8_t           tr,
+                uint8_t           bl,
+                uint8_t           br,
+                uint8_t           seed)
+{
+   Cell *c = &(ed->cells[y][x]);
+   uint16_t tile;
+
    /* Set tile internals */
    if (tl != TILE_NONE) c->tile_tl = tl;
    if (tr != TILE_NONE) c->tile_tr = tr;
    if (bl != TILE_NONE) c->tile_bl = bl;
    if (br != TILE_NONE) c->tile_br = br;
 
-   c->tile = tile_calculate(c->tile_tl, c->tile_tr,
-                            c->tile_bl, c->tile_br,
-                            seed, ed->pud->era);
+   tile = tile_calculate(c->tile_tl, c->tile_tr,
+                         c->tile_bl, c->tile_br,
+                         seed, ed->pud->era);
 
-   minimap_update(ed, x, y);
-   return EINA_TRUE;
+   return bitmap_full_tile_set(ed, x, y, tile);
 }
 
 Eina_Bool

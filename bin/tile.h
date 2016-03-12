@@ -20,9 +20,13 @@ typedef enum
    TILE_GRASS_DARK      = 6,
    TILE_GROUND_DARK     = 7,
    TILE_ROCKS           = 8,
+   TILE_HUMAN_WALL      = 9,
+   TILE_ORC_WALL        = 10,
 
    __TILE_LAST,
 
+   TILE_WALL_OPEN       = (1 << 5),
+   TILE_WALL_CLOSED     = (1 << 6),
    TILE_SPECIAL         = (1 << 7),
 
    /* Special value. Has nothing to do with the rest of the enum */
@@ -160,12 +164,22 @@ tile_rocks_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
+tile_wall_is(const uint8_t tl,
+             const uint8_t tr EINA_UNUSED,
+             const uint8_t bl EINA_UNUSED,
+             const uint8_t br EINA_UNUSED)
+{
+   /* Wall tiles always contain 4 walls */
+   return ((tl & 0x10) || (tl & 0x20));
+}
+
+static inline Eina_Bool
 tile_walkable_is(const uint8_t tl,
                  const uint8_t tr,
                  const uint8_t bl,
                  const uint8_t br)
 {
-   return (//!tile_wall_is(tl, tr, bl, br) &&
+   return (!tile_wall_is(tl, tr, bl, br) &&
            !tile_trees_is(tl, tr, bl, br) &&
            !tile_rocks_is(tl, tr, bl, br) &&
            !tile_water_is(tl, tr, bl, br) &&
@@ -195,8 +209,8 @@ tile_decompose(uint16_t  tile_code,
                uint8_t  *seed);
 
 Eina_Bool
-tile_fragments_compatible_are(const uint8_t t1,
-                              const uint8_t t2);
+tile_fragments_compatible_are(uint8_t t1,
+                              uint8_t t2);
 
 Eina_Bool
 tile_compatible_is(const uint8_t tl,
@@ -228,6 +242,9 @@ uint8_t tile_conflict_resolve_get(const uint8_t t);
 #define TILE_WALKABLE_IS(cptr) \
    tile_walkable_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
 
+#define TILE_WALL_IS(cptr) \
+   tile_wall_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+
 
 uint16_t
 tile_action_get(const uint8_t tl,
@@ -246,18 +263,6 @@ tile_movement_get(const uint8_t tl,
 
 #define TILE_MOVEMENT_GET(cptr) \
    tile_movement_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
-
-//static inline Eina_Bool
-//tile_wall_is(unsigned int tile)
-//{
-//   const uint16_t solid = tile & 0x00f0;
-//   const uint16_t boundry = tile & 0x0f00;
-//   return ((solid == 0x00a0) ||
-//           (solid == 0x00c0) ||
-//           (boundry == 0x0900) ||
-//           (boundry == 0x0800));
-//}
-
 
 #endif /* ! _TILE_H_ */
 
