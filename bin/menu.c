@@ -1038,7 +1038,7 @@ _validator_cb(void           *data,
 {
    Eina_Bool status;
    Validator *val = data;
-   Elm_Validate_Content *vc = desc->event_info;
+   Elm_Validate_Content *vc = desc->info;
    unsigned long int numeric;
    const char *str;
 

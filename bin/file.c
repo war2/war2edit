@@ -92,8 +92,8 @@ file_selector_add(Editor *ed)
    elm_interface_fileselector_expandable_set(obj, EINA_TRUE);
    elm_interface_fileselector_mode_set(obj, ELM_FILESELECTOR_LIST);
    elm_obj_fileselector_buttons_ok_cancel_set(obj, EINA_TRUE);
-   evas_obj_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_obj_size_hint_align_set(obj, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(obj, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(obj, "done", _done_cb, ed);
 
    ed->fs = obj;
