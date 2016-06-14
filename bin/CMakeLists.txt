@@ -2,8 +2,7 @@ add_definitions(-DPACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\")
 add_definitions(-DPACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\")
 add_definitions(-DPACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\")
 
-set(
-   WAR2EDIT_SRC
+add_executable(war2edit
    main.c
    editor.c
    log.c
@@ -22,7 +21,6 @@ set(
    prefs.c
    ipc.c
    undo.c
-
    str.h
    editor.h
    log.h
@@ -41,10 +39,8 @@ set(
    prefs.h
    ipc.h
    undo.h
-
    war2edit.h
 )
-add_executable(war2edit ${WAR2EDIT_SRC})
 
 include_directories(
    SYSTEM
@@ -79,4 +75,3 @@ install(
    TARGETS war2edit
    RUNTIME DESTINATION bin
 )
-
