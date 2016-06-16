@@ -53,4 +53,4 @@ install(
 )
 
 add_subdirectory(prefs)
-
+add_subdirectory(themes)

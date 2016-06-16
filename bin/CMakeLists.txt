@@ -1,6 +1,7 @@
 add_definitions(-DPACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\")
 add_definitions(-DPACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\")
 add_definitions(-DPACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\")
+add_definitions(-DBUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\")
 
 add_executable(war2edit
    main.c
@@ -50,9 +51,9 @@ include_directories(
    ${ECORE_INCLUDE_DIRS}
    ${ECORE_FILE_INCLUDE_DIRS}
    ${ELEMENTARY_INCLUDE_DIRS}
-   ${ELM_BITMAP_INCLUDE_DIRS}
    ${LIBPUD_INCLUDE_DIRS}
    ${LIBWAR2_INCLUDE_DIRS}
+   ${CAIRO_INCLUDE_DIRS}
 )
 
 target_link_libraries(war2edit
@@ -62,13 +63,14 @@ target_link_libraries(war2edit
    ${ECORE_LIBRARIES}
    ${ECORE_FILE_LIBRARIES}
    ${ELEMENTARY_LIBRARIES}
-   ${ELM_BITMAP_LIBRARIES}
    ${LIBPUD_LIBRARIES}
    ${LIBWAR2_LIBRARIES}
+   ${CAIRO_LIBRARIES}
 )
 add_dependencies(
    war2edit
    prefs
+   themes
 )
 
 install(

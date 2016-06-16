@@ -130,6 +130,7 @@ editor_free(Editor *ed)
    eina_array_free(ed->orc_menus);
    eina_array_free(ed->human_menus);
    undo_del(ed);
+   free(ed->edje_file);
    free(ed);
 }
 
@@ -188,12 +189,26 @@ editor_new(const char *pud_file,
    char title[512];
    Evas_Object *o, *box;
    Eina_Bool open_pud = EINA_FALSE;
-   int i;
+   char path[PATH_MAX];
+   const char theme[] = "default";
+   int i, len;
 
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
    ed->xdebug = xdebug;
+
+   /* Get theme */
+   if (main_in_tree_is())
+     len = snprintf(path, sizeof(path), "%s/themes/%s.edj", BUILD_DATA_DIR, theme);
+   else
+     {
+        len = snprintf(path, sizeof(path),
+                       "%s/war2edit/themes/%s.edj", PACKAGE_DATA_DIR, theme);
+     }
+   path[sizeof(path) - 1] = '\0';
+   ed->edje_file = strndup(path, len);
+   EINA_SAFETY_ON_NULL_GOTO(ed->edje_file, err_free);
 
    // FIXME cleanup on error + set max size
    ed->orc_menus = eina_array_new(4);
@@ -520,8 +535,14 @@ editor_load(Editor * restrict  ed,
    texture_tileset_open(pud->era);
    sprite_buildings_open(pud->era);
 
-   if (!ed->bitmap)
-     bitmap_add(ed);
+   if (!ed->bitmap.img)
+     {
+        if (EINA_UNLIKELY(!bitmap_add(ed)))
+          {
+             CRI("Failed to create bitmap");
+             return EINA_FALSE;
+          }
+     }
 
    minimap_add(ed);
 
@@ -619,7 +640,7 @@ editor_view_update(Editor *restrict ed)
    float wf, hf;
 
    elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
-   elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
+   bitmap_cell_size_get(ed, &cell_w, &cell_h);
    /* Happens mostly at init time, when UI is unstable */
    if (EINA_UNLIKELY((cell_w == 0) || (cell_h == 0)))
      return;
@@ -662,4 +683,3 @@ editor_focused_get(void)
 {
    return _focused;
 }
-

@@ -16,4 +16,3 @@ install(
    FILES ${CONFIG_FILES}
    DESTINATION share/${CMAKE_PROJECT_NAME}/prefs
 )
-

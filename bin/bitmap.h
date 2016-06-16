@@ -64,11 +64,51 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                              unsigned int  x,
                              unsigned int  y);
 
+void
+bitmap_coords_to_cells(const Editor *ed,
+                       int           x,
+                       int           y,
+                       int          *cx,
+                       int          *cy);
+
+void
+bitmap_cells_to_coords(const Editor *ed,
+                       int           cx,
+                       int           cy,
+                       int          *x,
+                       int          *y);
+
 Eina_Bool
 bitmap_tile_calculate(Editor           *ed,
                       int               px,
                       int               py,
                       Tile_Propagation *prop);
+
+void
+bitmap_cell_size_get(const Editor *ed,
+                     int          *w,
+                     int          *h);
+
+void
+bitmap_cursor_size_set(Editor *ed,
+                       int     cw,
+                       int     ch);
+
+void
+bitmap_cursor_size_get(const Editor *ed,
+                       int          *w,
+                       int          *h);
+
+Eina_Bool
+bitmap_cursor_enabled_get(const Editor *ed);
+
+void
+bitmap_cursor_enabled_set(Editor     *ed,
+                          Eina_Bool  enabled);
+
+void bitmap_cursor_move(Editor *ed, int cx, int cy);
+
+void bitmap_cursor_visibility_set(Editor *ed, Eina_Bool visible);
 
 #endif /* ! _BITMAP_H_ */
 

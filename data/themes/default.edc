@@ -1,0 +1,39 @@
+/*
+ * default.edc
+ *
+ * Copyright (c) 2016 Jean Guyomarc'h
+ */
+
+collections {
+   group { "war2edit/cursor";
+      images {
+         image: "frame.png" COMP;
+      }
+      parts {
+         image { "cursor"; nomouse;
+            desc { "default";
+               image {
+                  normal: "frame.png";
+                  border: 3 3 3 3;
+               }
+               min: 1 1;
+               color: 255 255 255 255;
+            }
+            desc { state: "disabled";
+               inherit: "default" 0.0;
+               color: 255 0 0 255;
+            }
+         }
+      }
+      programs {
+         program { signal: "cursor,disabled"; source: "*";
+            action: STATE_SET "invalid" 0.0;
+            target: "cursor";
+         }
+         program { signal: "cursor,enabled"; source: "*";
+            action: STATE_SET "default" 0.0;
+            target: "cursor";
+         }
+      }
+   }
+}

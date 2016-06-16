@@ -269,7 +269,7 @@ minimap_view_move(Editor *restrict ed,
      {
         elm_interface_scrollable_content_region_get(ed->scroller,
                                                     NULL, NULL, &srw, &srh);
-        elm_bitmap_cell_size_get(ed->bitmap, &cx, &cy);
+        bitmap_cell_size_get(ed, &cx, &cy);
         bx = x * cx;
         by = y * cy;
         elm_scroller_region_bring_in(ed->scroller, bx, by, srw, srh);

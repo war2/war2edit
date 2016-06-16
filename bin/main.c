@@ -7,6 +7,8 @@
 #include "war2edit.h"
 #include <Ecore_Getopt.h>
 
+static Eina_Bool _in_tree = EINA_FALSE;
+
 static const Ecore_Getopt _options =
 {
    "war2edit",
@@ -63,6 +65,7 @@ elm_main(int    argc,
    };
    const Module *mod_ptr;
    const Module *mod_end = &(_modules[EINA_C_ARRAY_LENGTH(_modules)]);
+   const char *env;
 
    args = ecore_getopt_parse(&_options, values, argc, argv);
    if (args < 0)
@@ -77,6 +80,10 @@ elm_main(int    argc,
         ret = EXIT_SUCCESS;
         goto end;
      }
+
+   /* Are we running in tree? */
+   env = getenv("WAR2EDIT_IN_TREE");
+   _in_tree = (env) ? !!atoi(env) : EINA_FALSE;
 
    elm_policy_set(ELM_POLICY_QUIT, ELM_POLICY_QUIT_LAST_WINDOW_CLOSED);
    elm_language_set("");
@@ -127,3 +134,8 @@ end:
 }
 ELM_MAIN()
 
+Eina_Bool
+main_in_tree_is(void)
+{
+   return _in_tree;
+}

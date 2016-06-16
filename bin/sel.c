@@ -92,7 +92,7 @@ sel_update(Editor *restrict ed,
    /* Get positions */
    elm_interface_scrollable_content_region_get(ed->scroller, &sx, &sy, NULL, NULL);
    evas_object_geometry_get(ed->scroller, &rx, &ry, NULL, NULL);
-   elm_bitmap_cell_size_get(ed->bitmap, &cell_w, &cell_h);
+   bitmap_cell_size_get(ed, &cell_w, &cell_h);
 
    /* Cache */
    relx = x - rx + sx;

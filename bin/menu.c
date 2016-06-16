@@ -266,8 +266,8 @@ _radio_units_changed_cb(void        *data,
    DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit));
 
    sprite_tile_size_get(ed->sel_unit, &w, &h);
-   elm_bitmap_cursor_size_set(ed->bitmap, w, h);
-   elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_TRUE);
+   bitmap_cursor_size_set(ed, (int)w, (int)h);
+   bitmap_cursor_visibility_set(ed, EINA_TRUE);
    toolbar_actions_segment_unselect(ed);
    editor_sel_action_set(ed, 0);
 }

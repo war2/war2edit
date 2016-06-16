@@ -1,7 +1,7 @@
 /*
  * war2edit.h
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #ifndef _WAR2EDIT_H_
@@ -12,11 +12,32 @@
 
 #include <pud.h>
 #include <war2.h>
+#include <cairo.h>
 #include <Elementary.h>
-#include <Elm_Bitmap.h>
 
 typedef struct _Cell Cell;
 typedef struct _Editor Editor;
+
+typedef struct
+{
+   Evas_Object *clip;
+   Evas_Image *img;
+   cairo_surface_t *surf;
+   cairo_t *cr;
+
+   int x_off;
+   int y_off;
+
+   int cell_w;
+   int cell_h;
+
+   Edje_Object *cursor;
+   int cx, cy, cw, ch;
+   Eina_Bool cursor_enabled;
+} Bitmap;
+
+
+Eina_Bool main_in_tree_is(void);
 
 #include "str.h"
 #include "prefs.h"

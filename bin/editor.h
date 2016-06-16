@@ -58,7 +58,6 @@ struct _Editor
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
    Evas_Object  *fs; /* File selector */
-   Evas_Object  *bitmap;
    Evas_Object  *menu_swamp_radio;
    Evas_Object  *menu_map_radio_group;
 
@@ -70,6 +69,9 @@ struct _Editor
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
    Evas_Object  *runner;
+   char *edje_file;
+
+   Bitmap  bitmap;
 
    // XXX Should minimap be shared for all instances??
    struct {

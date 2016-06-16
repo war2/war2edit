@@ -62,11 +62,11 @@ _seg_changed_cb(void        *data,
 
    editor_tb_sel_set(ed, sel);
    if (editor_sel_action_get(ed) == EDITOR_SEL_ACTION_SELECTION)
-     elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_FALSE);
+     bitmap_cursor_visibility_set(ed, EINA_FALSE);
    else
      {
-        elm_bitmap_cursor_visibility_set(ed->bitmap, EINA_TRUE);
-        elm_bitmap_cursor_size_set(ed->bitmap, 1, 1);
+        bitmap_cursor_visibility_set(ed, EINA_TRUE);
+        bitmap_cursor_size_set(ed, 1, 1);
      }
 
    // TODO Reset stuff

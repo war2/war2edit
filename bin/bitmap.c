@@ -19,61 +19,6 @@ typedef struct {
  *                                 Private API                                *
  *============================================================================*/
 
-static void
-_bitmap_draw_func(void                 *data,
-                  Evas_Object          *obj  EINA_UNUSED,
-                  Elm_Bitmap_Draw_Info *info)
-{
-   Draw_Data *d = data;
-   const int bmp_w = info->bitmap_w * 4;
-   int img_y, bmp_y, img_x, bmp_x, k;
-   int img_w, at_x;
-   unsigned char *restrict bmp = info->pixels;
-   unsigned char bgr[4];
-   int bmp_x_start;
-   int bmp_x_step;
-
-   img_w = info->source_w * 4;
-   at_x = info->at_x * 4;
-
-   /* XXX Use OpenMP there??? */
-   /* Always used when there is full alpha */
-   for (img_y = 0, bmp_y = info->at_y;
-        (img_y < info->source_h) && (bmp_y < info->bitmap_h);
-        ++img_y, ++bmp_y)
-     {
-        /* Calculate the horizontal mirroring  */
-        if (d->hflip)
-          {
-             bmp_x_start = at_x + img_w;
-             bmp_x_step = -4;
-          }
-        else
-          {
-             bmp_x_start = at_x;
-             bmp_x_step = 4;
-          }
-
-        for (img_x = 0, bmp_x = bmp_x_start;
-             (img_x < img_w) && (bmp_x < bmp_w);
-             img_x += 4, bmp_x += bmp_x_step)
-          {
-             k = img_x + (img_y * img_w);
-             memcpy(&(bgr[0]), &(info->source[k]), 4);
-             if (d->colorize != -1)
-               {
-                  war2_sprites_color_convert(d->colorize,
-                                             bgr[2], bgr[1], bgr[0],
-                                             &(bgr[2]), &(bgr[1]), &(bgr[0]));
-               }
-             if (bgr[3] != 0)
-               {
-                  memcpy(&(bmp[bmp_x + bmp_y * bmp_w]), &(bgr[0]), 4);
-               }
-          }
-     }
-}
-
 static inline void
 _draw(Editor *ed,
       unsigned char *restrict img,
@@ -90,7 +35,7 @@ _draw(Editor *ed,
    draw_data.hflip = hflip;
    draw_data.colorize = colorize;
 
-   elm_bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
+   //bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 }
 
 static uint8_t
@@ -172,9 +117,9 @@ _click_handle(Editor *ed,
               int     y)
 {
    Sprite_Info orient;
-   unsigned int w, h;
+   int w, h;
 
-   if (!elm_bitmap_cursor_enabled_get(ed->bitmap)) return;
+   if (!bitmap_cursor_enabled_get(ed)) return;
 
    const Editor_Sel action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
@@ -200,13 +145,13 @@ _click_handle(Editor *ed,
         /* Draw the unit, and therefore lock the cursor. */
         orient = sprite_info_random_get();
 
-        elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&w), (int*)(&h));
+        bitmap_cursor_size_get(ed, &w, &h);
         editor_unit_ref(ed);
         bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
                          orient, x, y, w, h,
                          editor_alter_defaults_get(ed, ed->sel_unit));
         minimap_render_unit(ed, x, y, ed->sel_unit);
-        elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+        bitmap_cursor_enabled_set(ed, EINA_FALSE);
         bitmap_redraw(ed, x - 6, y - 6, 12, 12); // XXX Zone is random
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
@@ -298,9 +243,9 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                              unsigned int  x,
                              unsigned int  y)
 {
-   unsigned int cw, ch;
+   int cw, ch;
 
-   elm_bitmap_cursor_size_get(ed->bitmap, (int*)(&cw), (int*)&ch); // FIXME cast
+   bitmap_cursor_size_get(ed, &cw, &ch);
 
 #define CELLS_TYPE(type_, op_) \
    _cells_type_get(ed->cells, x, y, cw, ch, type_, op_)
@@ -315,12 +260,12 @@ bitmap_cursor_state_evaluate(Editor       *ed,
           {
              /* Don't collide with another unit */
              if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_ABOVE))
-               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+               bitmap_cursor_enabled_set(ed, EINA_FALSE);
              else
-               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+               bitmap_cursor_enabled_set(ed, EINA_TRUE);
           }
         else
-          elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+          bitmap_cursor_enabled_set(ed, EINA_FALSE);
      }
    else /* Ground, water */
      {
@@ -329,9 +274,9 @@ bitmap_cursor_state_evaluate(Editor       *ed,
           {
              /* Don't collide with another unit */
              if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_ABOVE))
-               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+               bitmap_cursor_enabled_set(ed, EINA_FALSE);
              else
-               elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+               bitmap_cursor_enabled_set(ed, EINA_TRUE);
           }
         else /* marine,ground units */
           {
@@ -341,38 +286,38 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                     {
                        /* Don't collide with another unit */
                        if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
-                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                         bitmap_cursor_enabled_set(ed, EINA_FALSE);
                        else
-                         elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                         bitmap_cursor_enabled_set(ed, EINA_TRUE);
                     }
                   else
-                    elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                    bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
              else /* ground */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
-                    elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                    bitmap_cursor_enabled_set(ed, EINA_FALSE);
                   else
                     {
                        if (pud_unit_building_is(ed->sel_unit))
                          {
                             if (CELLS_TYPE(tile_grass_is, _exclusive_op) &&
                                 (!_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW)))
-                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                              bitmap_cursor_enabled_set(ed, EINA_TRUE);
                             else
-                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                              bitmap_cursor_enabled_set(ed, EINA_FALSE);
                          }
                        else
                          {
                             if (CELLS_TYPE(tile_walkable_is, _exclusive_op))
                               {
                                  if (_unit_below_cursor_is(ed, x, y, cw, ch, UNIT_BELOW))
-                                   elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                                   bitmap_cursor_enabled_set(ed, EINA_FALSE);
                                  else
-                                   elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_TRUE);
+                                   bitmap_cursor_enabled_set(ed, EINA_TRUE);
                               }
                             else
-                              elm_bitmap_cursor_enabled_set(ed->bitmap, EINA_FALSE);
+                              bitmap_cursor_enabled_set(ed, EINA_FALSE);
                          }
                     }
                }
@@ -381,32 +326,75 @@ bitmap_cursor_state_evaluate(Editor       *ed,
 #undef CELLS_TYPE
 }
 
+static void
+_bitmap_autoresize(Editor *ed)
+{
+   int x, y, w, h;
+   unsigned char *pixels;
+
+   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
+   evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
+
+   /* Dealloc surfaces */
+   if (ed->bitmap.surf)
+     {
+        cairo_destroy(ed->bitmap.cr);
+        cairo_surface_destroy(ed->bitmap.surf);
+     }
+
+   /* Re-assign surfaces */
+   ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+   ed->bitmap.cr = cairo_create(ed->bitmap.surf);
+   pixels = cairo_image_surface_get_data(ed->bitmap.surf);
+   evas_object_move(ed->bitmap.img, x, y);
+   evas_object_resize(ed->bitmap.img, w, h);
+   evas_object_image_size_set(ed->bitmap.img, w, h);
+   evas_object_image_data_set(ed->bitmap.img, pixels);
+   cairo_surface_flush(ed->bitmap.surf);
+   evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
+}
+
+static void
+_bitmap_resize_cb(void        *data,
+                  Evas        *e    EINA_UNUSED,
+                  Evas_Object *obj  EINA_UNUSED,
+                  void        *info EINA_UNUSED)
+{
+   _bitmap_autoresize(data);
+}
 
 /*============================================================================*
  *                                   Events                                   *
  *============================================================================*/
 
 static void
-_hovered_cb(void        *data,
-            Evas_Object *bmp  EINA_UNUSED,
-            void        *info)
+_mouse_move_cb(void        *data,
+               Evas_Object *bmp  EINA_UNUSED,
+               void        *info)
 {
    Editor *ed = data;
-   Elm_Bitmap_Event_Hovered *ev = info;
+   Evas_Event_Mouse_Move *ev = info;
 
-   /* Disabled by elm_bitmap: don't even bother to set the cursor status */
-   if (!elm_bitmap_cursor_enabled_get(ed->bitmap))
-     return;
+   /* Handle selection */
+   if (sel_active_is(ed))
+     {
+        int rx, ry, rw, rh;
+        elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
+        sel_update(ed, ev->cur.canvas.x - ed->sel.x,
+                   ev->cur.canvas.y - ed->sel.y);
+     }
 
-   /* If we are playing with tiles, algorithm below is pointless */
-   if (ed->sel_unit == PUD_UNIT_NONE)
-     goto end;
+   if (bitmap_cursor_enabled_get(ed))
+     {
+        int cx, cy;
+        bitmap_coords_to_cells(ed, ev->canvas.x, ev->canvas.y, &cx, &cy);
 
-   bitmap_cursor_state_evaluate(ed, ev->cell_x, ev->cell_y);
+        if (ed->sel_unit != PUD_UNIT_NONE)
+          bitmap_cursor_state_evaluate(ed, cx, cy);
 
-end:
-   if (ev->mouse.buttons & 1)
-     _click_handle(ed, ev->cell_x, ev->cell_y);
+        if (ev->buttons & 1)
+          _click_handle(ed, cx, cy);
+     }
 }
 
 static void
@@ -414,61 +402,38 @@ _mouse_down_cb(void        *data,
                Evas_Object *bmp  EINA_UNUSED,
                void        *info)
 {
-   Elm_Bitmap_Event_Mouse_Down *ev = info;
-   Editor *ed = data;
-
-   if (ed->xdebug)
-     {
-        Cell *c = &(ed->cells[ev->cell_y][ev->cell_x]);
-        fprintf(stdout, "[%u,%u] =", ev->cell_x, ev->cell_y);
-        cell_dump(c, stdout);
-     }
-   _click_handle(ed, ev->cell_x, ev->cell_y);
-}
-
-static void
-_sel_start_cb(void        *data,
-              Evas_Object *obj  EINA_UNUSED,
-              void        *info)
-{
+  // bitmap_Event_Mouse_Down *ev = info;
    Editor *ed = data;
    Evas_Event_Mouse_Down *ev = info;
 
-   if (editor_sel_action_get(ed) != EDITOR_SEL_ACTION_SELECTION)
-     return;
-   if (!sel_active_is(ed))
-     sel_start(ed, ev->canvas.x, ev->canvas.y,
-               evas_key_modifier_is_set(ev->modifiers, "Shift"));
+   if (ed->xdebug)
+     {
+     //   Cell *c = &(ed->cells[ev->cell_y][ev->cell_x]);
+      //  fprintf(stdout, "[%u,%u] =", ev->cell_x, ev->cell_y);
+    //    cell_dump(c, stdout);
+     }
+
+   /* Handle selection */
+   if ((editor_sel_action_get(ed) != EDITOR_SEL_ACTION_SELECTION) &&
+       (!sel_active_is(ed)))
+     {
+        sel_start(ed, ev->canvas.x, ev->canvas.y,
+                  evas_key_modifier_is_set(ev->modifiers, "Shift"));
+     }
+   //_click_handle(ed, ev->cell_x, ev->cell_y);
 }
 
+
 static void
-_sel_end_cb(void        *data,
-            Evas_Object *obj  EINA_UNUSED,
-            void        *info EINA_UNUSED)
+_mouse_up_cb(void        *data,
+             Evas_Object *obj  EINA_UNUSED,
+             void        *info EINA_UNUSED)
 {
    Editor *ed = data;
 
    if (sel_active_is(ed))
      sel_end(ed);
 }
-
-static void
-_sel_update_cb(void        *data,
-               Evas_Object *obj  EINA_UNUSED,
-               void        *info)
-{
-   Editor *ed = data;
-   Evas_Event_Mouse_Move *ev = info;
-   int rx, ry, rw, rh;
-
-   if (sel_active_is(ed))
-     {
-        elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
-        sel_update(ed, ev->cur.canvas.x - ed->sel.x,
-                   ev->cur.canvas.y - ed->sel.y);
-     }
-}
-
 
 
 /*============================================================================*
@@ -967,32 +932,168 @@ bitmap_add(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
-   Evas_Object *obj;
+   Evas *const e = evas_object_evas_get(ed->win);
+   int w, h;
+   Eo *o;
+   Eina_Bool chk;
+   const char group[] = "war2edit/cursor";
 
-   obj = elm_bitmap_init_add(ed->win, 32, 32, ed->pud->map_w, ed->pud->map_h);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(obj, EINA_FALSE);
+   /* The scroller*/
+   evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_RESIZE,
+                                  _bitmap_resize_cb, ed);
 
-   evas_object_size_hint_align_set(obj, 0.0, 0.0);
-   evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_bitmap_resizable_set(obj, EINA_FALSE);
-   elm_bitmap_cursor_visibility_set(obj, EINA_FALSE);
-   elm_bitmap_draw_func_set(obj, _bitmap_draw_func);
-   evas_object_smart_callback_add(obj, "bitmap,mouse,down", _mouse_down_cb, ed);
-   evas_object_smart_callback_add(obj, "bitmap,mouse,hovered", _hovered_cb, ed);
-   evas_object_smart_callback_add(obj, "mouse,down", _sel_start_cb, ed);
-   evas_object_smart_callback_add(obj, "mouse,move", _sel_update_cb, ed);
-   evas_object_smart_callback_add(obj, "mouse,up", _sel_end_cb, ed);
+   /* Set dimensions */
+   ed->bitmap.x_off = 0;
+   ed->bitmap.y_off = 0;
+   ed->bitmap.cell_w = 32;
+   ed->bitmap.cell_h = 32;
+   w = ed->bitmap.cell_w * ed->pud->map_w;
+   h = ed->bitmap.cell_h * ed->pud->map_h;
 
-   ed->bitmap = obj;
+   /* Clip */
+   o = ed->bitmap.clip = evas_object_rectangle_add(e);
+   evas_object_resize(o, w, h);
+   evas_object_color_set(o, 0, 0, 0, 0);
+   evas_object_show(o);
+   elm_object_content_set(ed->scroller, o);
+
+   /* Cursor */
+   o = ed->bitmap.cursor = edje_object_add(e);
+   evas_object_pass_events_set(o, EINA_TRUE);
+   evas_object_propagate_events_set(o, EINA_FALSE);
+   chk = edje_object_file_set(o, ed->edje_file, group);
+   if (EINA_UNLIKELY(!chk))
+     {
+        ERR("Failed to set edje with file %s, group %s", ed->edje_file, group);
+        /* FIXME dealloc */
+        return EINA_FALSE;
+     }
+
+
+   /* Bitmap image */
+   o = ed->bitmap.img = evas_object_image_filled_add(e);
+   evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_show(o);
+
+   evas_object_smart_callback_add(o, "mouse,down", _mouse_down_cb, ed);
+   evas_object_smart_callback_add(o, "mouse,move", _mouse_move_cb, ed);
+   evas_object_smart_callback_add(o, "mouse,up", _mouse_up_cb, ed);
+
+   _bitmap_autoresize(ed);
+   bitmap_cursor_size_set(ed, 1, 1);
+   bitmap_cursor_move(ed, 0, 0);
+   bitmap_cursor_visibility_set(ed, EINA_TRUE);
+
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
-
-   elm_object_content_set(ed->scroller, ed->bitmap);
-   evas_object_show(ed->bitmap);
 
    sel_add(ed);
 
    return EINA_TRUE;
+}
+
+void
+bitmap_cell_size_get(const Editor *ed,
+                     int          *w,
+                     int          *h)
+{
+   if (w) *w = ed->bitmap.cell_w;
+   if (h) *h = ed->bitmap.cell_h;
+}
+
+void
+bitmap_cursor_size_set(Editor *ed,
+                       int     cw,
+                       int     ch)
+{
+   if ((ed->bitmap.cw == cw) && (ed->bitmap.ch == ch)) return;
+   ed->bitmap.cw = cw;
+   ed->bitmap.ch = ch;
+   evas_object_resize(ed->bitmap.cursor,
+                      cw * ed->bitmap.cell_w,
+                      ch * ed->bitmap.cell_h);
+}
+
+void
+bitmap_cursor_size_get(const Editor *ed,
+                       int          *w,
+                       int          *h)
+{
+   if (w) *w = ed->bitmap.cw;
+   if (w) *w = ed->bitmap.ch;
+}
+
+Eina_Bool
+bitmap_cursor_enabled_get(const Editor *ed)
+{
+   return ed->bitmap.cursor_enabled;
+}
+
+void
+bitmap_cursor_enabled_set(Editor     *ed,
+                          Eina_Bool  enabled)
+{
+   enabled = !!enabled;
+
+   if (ed->bitmap.cursor_enabled == enabled) return;
+   ed->bitmap.cursor_enabled = enabled;
+   edje_object_signal_emit(ed->bitmap.cursor, (enabled == EINA_TRUE)
+                           ? "cursor,enabled"
+                           : "cursor,disabled", "war2edit");
+}
+
+void
+bitmap_cursor_visibility_set(Editor    *ed,
+                             Eina_Bool  visible)
+{
+   if (visible)
+     evas_object_show(ed->bitmap.cursor);
+   else
+     evas_object_hide(ed->bitmap.cursor);
+}
+
+void
+bitmap_cursor_move(Editor *ed,
+                   int     cx,
+                   int     cy)
+{
+   int x, y;
+
+   if ((ed->bitmap.cx == cx) && (ed->bitmap.cy == cy)) return;
+
+   bitmap_cells_to_coords(ed, cx, cy, &x, &y);
+   evas_object_move(ed, x, y);
+
+   ed->bitmap.cx = cx;
+   ed->bitmap.cy = cy;
+}
+
+void
+bitmap_coords_to_cells(const Editor *ed,
+                       int           x,
+                       int           y,
+                       int          *cx,
+                       int          *cy)
+{
+   int ox, oy;
+
+   evas_object_geometry_get(
+}
+
+void
+bitmap_cells_to_coords(const Editor *ed,
+                       int           cx,
+                       int           cy,
+                       int          *x,
+                       int          *y)
+{
+   int ox, oy;
+
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
+   if (x) *x = ox + (ed->bitmap.cell_w * cx) + ed->bitmap.x_off;
+   if (y) *y = oy + (ed->bitmap.cell_h * cy) + ed->bitmap.y_off;
 }
 
 void
@@ -1037,4 +1138,3 @@ bitmap_redraw(Editor *restrict ed,
    /* (Pre)Selections last */
    bitmap_selections_draw(ed, x1, y1, w, h);
 }
-
