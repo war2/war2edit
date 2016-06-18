@@ -500,7 +500,7 @@ _mouse_down_cb(void        *data,
      }
 
    /* Handle selection */
-   if ((editor_sel_action_get(ed) != EDITOR_SEL_ACTION_SELECTION) &&
+   if ((editor_sel_action_get(ed) == EDITOR_SEL_ACTION_SELECTION) &&
        (!sel_active_is(ed)))
      {
         sel_start(ed, ev->canvas.x, ev->canvas.y,
