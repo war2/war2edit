@@ -36,7 +36,7 @@ check_compiler_warnings(
     #-Wpacked
     #-Wpacked-bitfield-compat
     #-Wpadded
-    #-Wredundant-decls
+    -Wredundant-decls
     -Winline
     -Winvalid-pch
     -Woverlength-strings
