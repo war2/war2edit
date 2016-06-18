@@ -5,7 +5,6 @@ project(war2edit
 
 include(CheckCCompilerFlag)
 include(cmake/check_compiler_warnings.cmake)
-include(CPack)
 
 check_compiler_warnings(
     -Wall
