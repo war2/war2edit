@@ -7,11 +7,6 @@
 #ifndef _WAR2EDIT_H_
 #define _WAR2EDIT_H_
 
-// FIXME Cmake
-#define EFL_BETA_API_SUPPORT
-#define EFL_EO_API_SUPPORT
-
-
 #include <pud.h>
 #include <war2.h>
 #if 0
