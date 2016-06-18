@@ -19,8 +19,8 @@ collections {
                min: 1 1;
                color: 255 255 255 255;
             }
-            desc { state: "disabled";
-               inherit: "default" 0.0;
+            desc { state: "invalid";
+               inherit: "default";
                color: 255 0 0 255;
             }
          }
