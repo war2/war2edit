@@ -23,7 +23,7 @@ _draw(Editor        *ed,
       Eina_Bool      hflip,
       int            colorize)
 {
-   const int bmp_w = ed->bitmap.max_w * 4;
+   int bmp_w, bmp_h;
    int img_y, bmp_y, img_x, bmp_x, k;
    unsigned char *bmp;
    unsigned char bgr[4];
@@ -35,10 +35,12 @@ _draw(Editor        *ed,
 #else
    bmp = ed->bitmap.pixels;
 #endif
-   //bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 
    img_w *= 4;
    at_x *= 4;
+
+   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &bmp_w, &bmp_h);
+   bmp_w *= 4;
 
    /*
     * FIXME
@@ -52,9 +54,8 @@ _draw(Editor        *ed,
     * FIXME
     */
 
-   /* Always used when there is full alpha */
    for (img_y = 0, bmp_y = at_y;
-        (img_y < img_h) && (bmp_y < ed->bitmap.max_h);
+        (img_y < img_h) && (bmp_y < bmp_h);
         ++img_y, ++bmp_y)
      {
         /* FIXME This is a loop invariant, right. Why is this here? */
@@ -410,7 +411,6 @@ _bitmap_autoresize(Editor *ed)
    pixels = cairo_image_surface_get_data(ed->bitmap.surf);
 #endif
 
-   /* FIXME WTF????? */
    evas_object_move(ed->bitmap.img, x, y);
    evas_object_move(ed->bitmap.clip, x, y);
 
@@ -422,10 +422,10 @@ _bitmap_autoresize(Editor *ed)
      }
    ed->bitmap.pixels = pixels;
 
-   evas_object_resize(ed->bitmap.img, w, h);
-   evas_object_resize(ed->bitmap.clip, w, h);
    evas_object_image_size_set(ed->bitmap.img, w, h);
    evas_object_image_data_set(ed->bitmap.img, pixels);
+   evas_object_resize(ed->bitmap.img, w, h);
+   evas_object_resize(ed->bitmap.clip, w, h);
 #if 0
    cairo_surface_flush(ed->bitmap.surf);
 #endif
@@ -1218,6 +1218,7 @@ bitmap_refresh(Editor               *ed,
 
    bitmap_visible_zone_cells_get(ed, &area);
    DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
+
    if (zone)
      {
         DBG("Intersection with zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(zone));
@@ -1269,4 +1270,6 @@ bitmap_visible_zone_cells_get(const Editor   *ed,
 
    bitmap_coords_to_cells(ed, x, y, &(zone->x), &(zone->y));
    bitmap_coords_to_cells(ed, x + w, y + h, &(zone->w), &(zone->h));
+   zone->w++;
+   zone->h++;
 }
