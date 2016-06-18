@@ -1215,10 +1215,14 @@ bitmap_refresh(Editor               *ed,
    Eina_Rectangle area;
    int x2, y2;
    int i, j;
+   int x, y, w, h;
 
    bitmap_visible_zone_cells_get(ed, &area);
    DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
 
+   /*
+    * If no zone is provided, we will use the whole visible bitmap
+    */
    if (zone)
      {
         DBG("Intersection with zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(zone));
@@ -1258,6 +1262,12 @@ bitmap_refresh(Editor               *ed,
 
    /* (Pre)Selections last */
    bitmap_selections_draw(ed, area.x, area.y, area.w, area.h);
+
+
+   bitmap_cells_to_coords(ed, area.x, area.y, &x, &y);
+   bitmap_cells_to_coords(ed, area.x + area.w, area.y + area.h, &w, &h);
+   DBG("Evas update: %ix%i - %ix%i", x, y, w, h);
+   evas_object_image_data_update_add(ed->bitmap.img, x, y, w, h);
 }
 
 void
