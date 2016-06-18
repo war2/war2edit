@@ -21,6 +21,7 @@ typedef struct _Editor Editor;
 typedef struct
 {
    Evas_Object *clip;
+   Evas_Object *shallow;
    Evas_Image *img;
    cairo_surface_t *surf;
    cairo_t *cr;
@@ -30,6 +31,8 @@ typedef struct
 
    int cell_w;
    int cell_h;
+   int max_w;
+   int max_h;
 
    Edje_Object *cursor;
    int cx, cy, cw, ch;

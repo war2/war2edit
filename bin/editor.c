@@ -511,6 +511,8 @@ editor_load(Editor * restrict  ed,
    uint16_t tile;
    uint8_t bl, br, tl, tr, seed;
 
+   printf("%s(%s)\n", __func__, file);
+
    if (file)
      {
         if (ed->pud) pud_close(ed->pud);
@@ -563,7 +565,7 @@ editor_load(Editor * restrict  ed,
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
-   bitmap_redraw(ed, 0, 0, pud->map_w, pud->map_h);
+//   bitmap_refresh(ed, NULL);
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
 
    return EINA_TRUE;

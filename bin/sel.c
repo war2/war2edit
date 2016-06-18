@@ -57,8 +57,7 @@ sel_start(Editor *restrict ed,
                c->selected_below = 0;
             }
         ed->sel.selections = 0;
-        // FIXME bad
-        bitmap_redraw(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
+        bitmap_refresh(ed, NULL); // FIXME BAD
      }
    ed->sel.active = EINA_TRUE;
    ed->sel.inclusive = inclusive;
@@ -188,8 +187,7 @@ sel_end(Editor *restrict ed)
           anchor->selected_above &= (~SEL_MARK);
        }
 
-   // FIXME bad
-   bitmap_redraw(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
+   bitmap_refresh(ed, NULL); // FIXME BAD
 
    evas_object_hide(ed->sel.obj);
    evas_object_resize(ed->sel.obj, 1, 1);
@@ -223,6 +221,6 @@ sel_del(Editor *restrict ed)
           if ((c->anchor_above) && (c->selected_above == SEL_SET))
             bitmap_unit_del_at(ed, i, j, EINA_FALSE);
        }
-   bitmap_redraw(ed, 0, 0, ed->pud->map_w, ed->pud->map_h); // XXX
+   bitmap_refresh(ed, NULL); // FIXME BAD
 }
 

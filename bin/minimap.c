@@ -55,7 +55,7 @@ minimap_add(Editor *ed)
    win = ed->minimap.win = elm_win_util_standard_add("Minimap", "Minimap");
    evas_object_smart_callback_add(win, "delete,request",
                                   _minimap_win_close_cb, ed);
-   evas_object_show(win);
+ //  evas_object_show(win); // FIXME
 
    o = ed->minimap.map = evas_object_image_filled_add(evas_object_evas_get(win));
    evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);

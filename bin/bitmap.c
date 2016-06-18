@@ -9,33 +9,82 @@
 #define UNIT_BELOW (1 << 0)
 #define UNIT_ABOVE (1 << 1)
 
-typedef struct {
-   Editor    *ed;
-   int        colorize;
-   Eina_Bool  hflip;
-} Draw_Data;
-
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
 
-static inline void
-_draw(Editor *ed,
-      unsigned char *restrict img,
-      int                     at_x,
-      int                     at_y,
-      int                     img_w,
-      int                     img_h,
-      Eina_Bool               hflip,
-      int                     colorize)
+static void
+_draw(Editor        *ed,
+      unsigned char *img,
+      int            at_x,
+      int            at_y,
+      int            img_w,
+      int            img_h,
+      Eina_Bool      hflip,
+      int            colorize)
 {
-   Draw_Data draw_data;
-
-   draw_data.ed = ed;
-   draw_data.hflip = hflip;
-   draw_data.colorize = colorize;
+   const int bmp_w = ed->bitmap.max_w * 4;
+   int img_y, bmp_y, img_x, bmp_x, k;
+   unsigned char *bmp = cairo_image_surface_get_data(ed->bitmap.surf);
+   unsigned char bgr[4];
+   int bmp_x_start;
+   int bmp_x_step;
 
    //bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
+
+   img_w *= 4;
+   at_x *= 4;
+
+   /*
+    * FIXME
+    *
+    * Ideally, we should not make manual rendering like we do now...
+    * We should Cairo handle all that, use GL behind the scenes,
+    * and it is likely to be much faster.
+    *
+    * This is legacy from my elm_bitmap. I'll change it some day...
+    *
+    * FIXME
+    */
+
+   /* Always used when there is full alpha */
+   for (img_y = 0, bmp_y = at_y;
+        (img_y < img_h) && (bmp_y < ed->bitmap.max_h);
+        ++img_y, ++bmp_y)
+     {
+        /* FIXME This is a loop invariant, right. Why is this here? */
+        /* Calculate the horizontal mirroring  */
+        if (hflip)
+          {
+             bmp_x_start = at_x + img_w;
+             bmp_x_step = -4;
+          }
+        else
+          {
+             bmp_x_start = at_x;
+             bmp_x_step = 4;
+          }
+
+        for (img_x = 0, bmp_x = bmp_x_start;
+             (img_x < img_w) && (bmp_x < bmp_w);
+             img_x += 4, bmp_x += bmp_x_step)
+          {
+             k = img_x + (img_y * img_w);
+             memcpy(&(bgr[0]), &(img[k]), 4);
+             if (colorize != -1)
+               {
+                  war2_sprites_color_convert(colorize,
+                                             bgr[2], bgr[1], bgr[0],
+                                             &(bgr[2]), &(bgr[1]), &(bgr[0]));
+               }
+             if (bgr[3] != 0)
+               {
+                  memcpy(&(bmp[bmp_x + bmp_y * bmp_w]), &(bgr[0]), 4);
+               }
+          }
+     }
+
+   printf("DRAW\n");
 }
 
 static uint8_t
@@ -118,6 +167,7 @@ _click_handle(Editor *ed,
 {
    Sprite_Info orient;
    int w, h;
+   Eina_Rectangle zone;
 
    if (!bitmap_cursor_enabled_get(ed)) return;
 
@@ -135,7 +185,8 @@ _click_handle(Editor *ed,
                   ed->cells[ly][lx].start_location = CELL_NOT_START_LOCATION;
                   editor_unit_unref(ed);
                   minimap_update(ed, lx, ly);
-                  bitmap_redraw(ed, lx - 1, ly - 1, 3, 3);
+                  EINA_RECTANGLE_SET(&zone, lx - 1, ly - 1, 3, 3);
+                  bitmap_refresh(ed, &zone);
                }
 
              ed->start_locations[ed->sel_player].x = x;
@@ -152,7 +203,8 @@ _click_handle(Editor *ed,
                          editor_alter_defaults_get(ed, ed->sel_unit));
         minimap_render_unit(ed, x, y, ed->sel_unit);
         bitmap_cursor_enabled_set(ed, EINA_FALSE);
-        bitmap_redraw(ed, x - 6, y - 6, 12, 12); // XXX Zone is random
+        EINA_RECTANGLE_SET(&zone, x - 6, y - 6, 12, 12); // XXX Zone is random
+        bitmap_refresh(ed, &zone);
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
@@ -332,22 +384,30 @@ _bitmap_autoresize(Editor *ed)
    int x, y, w, h;
    unsigned char *pixels;
 
-   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
    evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
+   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
 
-   /* Dealloc surfaces */
+   if (w > ed->bitmap.max_w) w = ed->bitmap.max_w;
+   if (h > ed->bitmap.max_h) h = ed->bitmap.max_h;
+
+   /* FIXME Can we resize a cairo surface????
+    * For now, all I've found is to make another surface...
+    * pretty bad....
+    */
    if (ed->bitmap.surf)
      {
         cairo_destroy(ed->bitmap.cr);
         cairo_surface_destroy(ed->bitmap.surf);
      }
 
-   /* Re-assign surfaces */
+   /* Re-assign surfaces and resize image proxy */
    ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
    ed->bitmap.cr = cairo_create(ed->bitmap.surf);
    pixels = cairo_image_surface_get_data(ed->bitmap.surf);
    evas_object_move(ed->bitmap.img, x, y);
+   evas_object_move(ed->bitmap.clip, x, y);
    evas_object_resize(ed->bitmap.img, w, h);
+   evas_object_resize(ed->bitmap.clip, w, h);
    evas_object_image_size_set(ed->bitmap.img, w, h);
    evas_object_image_data_set(ed->bitmap.img, pixels);
    cairo_surface_flush(ed->bitmap.surf);
@@ -363,6 +423,7 @@ _bitmap_resize_cb(void        *data,
    _bitmap_autoresize(data);
 }
 
+
 /*============================================================================*
  *                                   Events                                   *
  *============================================================================*/
@@ -374,6 +435,11 @@ _mouse_move_cb(void        *data,
 {
    Editor *ed = data;
    Evas_Event_Mouse_Move *ev = info;
+   int cx, cy;
+
+   bitmap_coords_to_cells(ed, ev->cur.canvas.x, ev->cur.canvas.y, &cx, &cy);
+
+   bitmap_cursor_move(ed, cx, cy);
 
    /* Handle selection */
    if (sel_active_is(ed))
@@ -384,14 +450,11 @@ _mouse_move_cb(void        *data,
                    ev->cur.canvas.y - ed->sel.y);
      }
 
+   if (ed->sel_unit != PUD_UNIT_NONE)
+     bitmap_cursor_state_evaluate(ed, cx, cy);
+
    if (bitmap_cursor_enabled_get(ed))
      {
-        int cx, cy;
-        bitmap_coords_to_cells(ed, ev->canvas.x, ev->canvas.y, &cx, &cy);
-
-        if (ed->sel_unit != PUD_UNIT_NONE)
-          bitmap_cursor_state_evaluate(ed, cx, cy);
-
         if (ev->buttons & 1)
           _click_handle(ed, cx, cy);
      }
@@ -402,15 +465,17 @@ _mouse_down_cb(void        *data,
                Evas_Object *bmp  EINA_UNUSED,
                void        *info)
 {
-  // bitmap_Event_Mouse_Down *ev = info;
    Editor *ed = data;
    Evas_Event_Mouse_Down *ev = info;
+   int cx, cy;
+
+   bitmap_coords_to_cells(ed, ev->canvas.x, ev->canvas.y, &cx, &cy);
 
    if (ed->xdebug)
      {
-     //   Cell *c = &(ed->cells[ev->cell_y][ev->cell_x]);
-      //  fprintf(stdout, "[%u,%u] =", ev->cell_x, ev->cell_y);
-    //    cell_dump(c, stdout);
+        Cell *c = &(ed->cells[cy][cx]);
+        fprintf(stdout, "[%u,%u] =", cx, cy);
+        cell_dump(c, stdout);
      }
 
    /* Handle selection */
@@ -420,9 +485,8 @@ _mouse_down_cb(void        *data,
         sel_start(ed, ev->canvas.x, ev->canvas.y,
                   evas_key_modifier_is_set(ev->modifiers, "Shift"));
      }
-   //_click_handle(ed, ev->cell_x, ev->cell_y);
+   _click_handle(ed, cx, cy);
 }
-
 
 static void
 _mouse_up_cb(void        *data,
@@ -725,6 +789,7 @@ bitmap_tile_calculate(Editor           *ed,
    const int y = (prop) ? prop->y : py;
    unsigned int k;
    uint8_t imposed;
+   Eina_Rectangle zone;
 
 #define _TILE_RESOLVE(T, SUB, X, Y) \
    next[T].SUB = _conflit_solve(imposed, cells[Y][X].tile_ ## SUB, \
@@ -855,7 +920,8 @@ bitmap_tile_calculate(Editor           *ed,
           }
      }
 
-   bitmap_redraw(ed, x - 1, y - 1, 3, 3);
+   EINA_RECTANGLE_SET(&zone, x - 1, y - 1, 3, 3);
+   bitmap_refresh(ed, &zone);
 
    return ok;
 }
@@ -933,10 +999,11 @@ bitmap_add(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
    Evas *const e = evas_object_evas_get(ed->win);
-   int w, h;
    Eo *o;
    Eina_Bool chk;
    const char group[] = "war2edit/cursor";
+
+   DBG("Adding bitmap");
 
    /* The scroller*/
    evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_RESIZE,
@@ -947,15 +1014,42 @@ bitmap_add(Editor *ed)
    ed->bitmap.y_off = 0;
    ed->bitmap.cell_w = 32;
    ed->bitmap.cell_h = 32;
-   w = ed->bitmap.cell_w * ed->pud->map_w;
-   h = ed->bitmap.cell_h * ed->pud->map_h;
+   ed->bitmap.cx = -1;
+   ed->bitmap.cy = -1;
+   ed->bitmap.max_w = ed->bitmap.cell_w * ed->pud->map_w;
+   ed->bitmap.max_h = ed->bitmap.cell_h * ed->pud->map_h;
 
-   /* Clip */
-   o = ed->bitmap.clip = evas_object_rectangle_add(e);
-   evas_object_resize(o, w, h);
+   /* Shallow */
+   o = ed->bitmap.shallow = evas_object_rectangle_add(e);
+   evas_object_size_hint_align_set(o, 0.0, 0.0);
+   evas_object_size_hint_weight_set(o, 0.0, 0.0);
+   evas_object_resize(o, ed->bitmap.max_w, ed->bitmap.max_h);
+   evas_object_size_hint_min_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
+   evas_object_size_hint_max_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
    evas_object_color_set(o, 0, 0, 0, 0);
-   evas_object_show(o);
+   evas_object_hide(o);
    elm_object_content_set(ed->scroller, o);
+
+   /* Bitmap image */
+   o = ed->bitmap.img = evas_object_image_filled_add(e);
+   evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
+   evas_object_size_hint_align_set(o, 0.0, 0.0);
+   evas_object_size_hint_weight_set(o, 0.0, 0.0);
+   evas_object_smart_member_add(o, ed->scroller);
+   evas_object_smart_callback_add(o, "mouse,down", _mouse_down_cb, ed);
+   evas_object_smart_callback_add(o, "mouse,move", _mouse_move_cb, ed);
+   evas_object_smart_callback_add(o, "mouse,up", _mouse_up_cb, ed);
+   evas_object_propagate_events_set(o, EINA_FALSE);
+   evas_object_pass_events_set(o, EINA_FALSE);
+   evas_object_show(o);
+
+   /* Clip - to avoid the cursor overlapping with the scroller */
+   o = ed->bitmap.clip = evas_object_rectangle_add(e);
+   evas_object_size_hint_align_set(o, 0.0, 0.0);
+   evas_object_size_hint_weight_set(o, 0.0, 0.0);
+   evas_object_color_set(o, 255, 255, 255, 255);
+   evas_object_pass_events_set(o, EINA_TRUE);
+   evas_object_show(o);
 
    /* Cursor */
    o = ed->bitmap.cursor = edje_object_add(e);
@@ -968,23 +1062,13 @@ bitmap_add(Editor *ed)
         /* FIXME dealloc */
         return EINA_FALSE;
      }
-
-
-   /* Bitmap image */
-   o = ed->bitmap.img = evas_object_image_filled_add(e);
-   evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_show(o);
-
-   evas_object_smart_callback_add(o, "mouse,down", _mouse_down_cb, ed);
-   evas_object_smart_callback_add(o, "mouse,move", _mouse_move_cb, ed);
-   evas_object_smart_callback_add(o, "mouse,up", _mouse_up_cb, ed);
+   evas_object_clip_set(o, ed->bitmap.clip);
 
    _bitmap_autoresize(ed);
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
    bitmap_cursor_visibility_set(ed, EINA_TRUE);
+   bitmap_cursor_enabled_set(ed, EINA_TRUE);
 
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
@@ -1008,12 +1092,11 @@ bitmap_cursor_size_set(Editor *ed,
                        int     cw,
                        int     ch)
 {
-   if ((ed->bitmap.cw == cw) && (ed->bitmap.ch == ch)) return;
-   ed->bitmap.cw = cw;
-   ed->bitmap.ch = ch;
    evas_object_resize(ed->bitmap.cursor,
                       cw * ed->bitmap.cell_w,
                       ch * ed->bitmap.cell_h);
+   ed->bitmap.cw = cw;
+   ed->bitmap.ch = ch;
 }
 
 void
@@ -1022,7 +1105,7 @@ bitmap_cursor_size_get(const Editor *ed,
                        int          *h)
 {
    if (w) *w = ed->bitmap.cw;
-   if (w) *w = ed->bitmap.ch;
+   if (h) *h = ed->bitmap.ch;
 }
 
 Eina_Bool
@@ -1064,7 +1147,7 @@ bitmap_cursor_move(Editor *ed,
    if ((ed->bitmap.cx == cx) && (ed->bitmap.cy == cy)) return;
 
    bitmap_cells_to_coords(ed, cx, cy, &x, &y);
-   evas_object_move(ed, x, y);
+   evas_object_move(ed->bitmap.cursor, x, y);
 
    ed->bitmap.cx = cx;
    ed->bitmap.cy = cy;
@@ -1079,7 +1162,9 @@ bitmap_coords_to_cells(const Editor *ed,
 {
    int ox, oy;
 
-   evas_object_geometry_get(
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
+   if (cx) *cx = (x - ox - ed->bitmap.x_off) / ed->bitmap.cell_w;
+   if (cy) *cy = (y - oy - ed->bitmap.y_off) / ed->bitmap.cell_h;
 }
 
 void
@@ -1097,44 +1182,64 @@ bitmap_cells_to_coords(const Editor *ed,
 }
 
 void
-bitmap_redraw(Editor *restrict ed,
-              int              x,
-              int              y,
-              unsigned int     w,
-              unsigned int     h)
+bitmap_refresh(Editor               *ed,
+               const Eina_Rectangle *zone)
 {
-   int x1 = (x < 0) ? 0 : x;
-   int y1 = (y < 0) ? 0 : y;
-   int x2 = x1 + w;
-   int y2 = y1 + h;
+   Eina_Rectangle area;
+   int x2, y2;
    int i, j;
 
-   if (x2 > (int)ed->pud->map_w) x2 = ed->pud->map_w;
-   if (y2 > (int)ed->pud->map_h) y2 = ed->pud->map_h;
+   bitmap_visible_zone_cells_get(ed, &area);
+   DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
+   if (zone)
+     {
+        DBG("Intersection with zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(zone));
+        if (!eina_rectangle_intersection(&area, zone))
+          {
+             WRN("Attempted to refresh a zone that is not visible.");
+             return;
+          }
+     }
+   DBG("Refreshing zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
 
+   /* Pre-calculate loop invariants */
+   x2 = area.x + area.w;
+   y2 = area.y + area.h;
 
    /*
     * XXX Not great... Simple, Stupid yet
     */
 
    /* Tiles first (plus start locations) */
-   for (j = y1; j < y2; ++j)
-     for (i = x1; i < x2; ++i)
+   for (j = area.y; j < y2; ++j)
+     for (i = area.x; i < x2; ++i)
        {
           bitmap_tile_draw(ed, i, j);
           bitmap_unit_draw(ed, i, j, BITMAP_UNIT_START_LOCATION);
        }
 
    /* Units below */
-   for (j = y2 - 1; j >= y1; --j)
-     for (i = x2 - 1; i >= x1; --i)
+   for (j = y2 - 1; j >= area.y; --j)
+     for (i = x2 - 1; i >= area.x; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_BELOW);
 
    /* Units above */
-   for (j = y2 - 1; j >= y1; --j)
-     for (i = x2 - 1; i >= x1; --i)
+   for (j = y2 - 1; j >= area.y; --j)
+     for (i = x2 - 1; i >= area.x; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
 
    /* (Pre)Selections last */
-   bitmap_selections_draw(ed, x1, y1, w, h);
+   bitmap_selections_draw(ed, area.x, area.y, area.w, area.h);
+}
+
+void
+bitmap_visible_zone_cells_get(const Editor   *ed,
+                              Eina_Rectangle *zone)
+{
+   int x, y, w, h;
+
+   evas_object_geometry_get(ed->bitmap.img, &x, &y, &w, &h);
+
+   bitmap_coords_to_cells(ed, x, y, &(zone->x), &(zone->y));
+   bitmap_coords_to_cells(ed, x + w, y + h, &(zone->w), &(zone->h));
 }
