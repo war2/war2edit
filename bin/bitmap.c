@@ -474,6 +474,13 @@ _mouse_move_cb(void        *data,
    if (ed->sel_unit != PUD_UNIT_NONE)
      bitmap_cursor_state_evaluate(ed, cx, cy);
 
+   /* Out of bounds? */
+   if ((ed->bitmap.cx + ed->bitmap.cw > (int)ed->pud->map_w) ||
+       (ed->bitmap.cy + ed->bitmap.ch > (int)ed->pud->map_h))
+     bitmap_cursor_enabled_set(ed, EINA_FALSE);
+   else
+     bitmap_cursor_enabled_set(ed, EINA_TRUE);
+
    if (bitmap_cursor_enabled_get(ed))
      {
         if (ev->buttons & 1)
