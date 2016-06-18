@@ -42,21 +42,21 @@ static const uint8_t _tiles_conflicts[__TILE_LAST] =
  *============================================================================*/
 
 static inline EINA_CONST Eina_Bool
-_tile_has_type(const uint8_t tl,
-               const uint8_t tr,
-               const uint8_t bl,
-               const uint8_t br,
-               const uint8_t type)
+_tile_has_type(uint8_t tl,
+               uint8_t tr,
+               uint8_t bl,
+               uint8_t br,
+               uint8_t type)
 {
    return ((tl == type) || (tr == type) || (bl == type) || (br == type));
 }
 
 static EINA_CONST uint16_t
-_tile_boundry_low_mask_get(const uint8_t tl,
-                           const uint8_t tr,
-                           const uint8_t bl,
-                           const uint8_t br,
-                           const uint8_t first_type)
+_tile_boundry_low_mask_get(uint8_t tl,
+                           uint8_t tr,
+                           uint8_t bl,
+                           uint8_t br,
+                           uint8_t first_type)
 {
    uint16_t mask = 0x0000;
    const uint16_t reference = tl;
@@ -78,10 +78,10 @@ _tile_boundry_low_mask_get(const uint8_t tl,
  *============================================================================*/
 
 uint16_t
-tile_mask_calculate(const uint8_t tl,
-                    const uint8_t tr,
-                    const uint8_t bl,
-                    const uint8_t br)
+tile_mask_calculate(uint8_t tl,
+                    uint8_t tr,
+                    uint8_t bl,
+                    uint8_t br)
 {
    /* Helpers */
 #define TILE_HAS(type) _tile_has_type(tl, tr, bl, br, type)
@@ -191,12 +191,12 @@ fail:
 }
 
 uint16_t
-tile_calculate(const uint8_t tl,
-               const uint8_t tr,
-               const uint8_t bl,
-               const uint8_t br,
-               const uint8_t seed,
-               const Pud_Era era)
+tile_calculate(uint8_t tl,
+               uint8_t tr,
+               uint8_t bl,
+               uint8_t br,
+               uint8_t seed,
+               Pud_Era era)
 {
    uint16_t tile_code, rtile;
 
@@ -257,11 +257,11 @@ tile_calculate(const uint8_t tl,
 }
 
 static inline void
-_walls_fill(uint8_t       walls[4],
-            const uint8_t tl,
-            const uint8_t tr,
-            const uint8_t br,
-            const uint8_t bl)
+_walls_fill(uint8_t walls[4],
+            uint8_t tl,
+            uint8_t tr,
+            uint8_t br,
+            uint8_t bl)
 {
    walls[0] = tl;
    walls[1] = tr;
@@ -482,10 +482,10 @@ tile_fragments_compatible_are(uint8_t t1,
 }
 
 Eina_Bool
-tile_compatible_is(const uint8_t tl,
-                   const uint8_t tr,
-                   const uint8_t bl,
-                   const uint8_t br)
+tile_compatible_is(uint8_t tl,
+                   uint8_t tr,
+                   uint8_t bl,
+                   uint8_t br)
 {
    return (tile_fragments_compatible_are(tl, tr) &&
            tile_fragments_compatible_are(tl, bl) &&
@@ -494,17 +494,17 @@ tile_compatible_is(const uint8_t tl,
 }
 
 uint8_t
-tile_conflict_resolve_get(const uint8_t t)
+tile_conflict_resolve_get(uint8_t t)
 {
    EINA_SAFETY_ON_FALSE_RETURN_VAL(t < __TILE_LAST,  TILE_NONE);
    return _tiles_conflicts[t & 0x0f];
 }
 
 uint16_t
-tile_action_get(const uint8_t tl,
-                const uint8_t tr,
-                const uint8_t bl,
-                const uint8_t br)
+tile_action_get(uint8_t tl,
+                uint8_t tr,
+                uint8_t bl,
+                uint8_t br)
 {
    uint16_t action;
 
@@ -524,10 +524,10 @@ tile_action_get(const uint8_t tl,
 }
 
 uint16_t
-tile_movement_get(const uint8_t tl,
-                  const uint8_t tr,
-                  const uint8_t bl,
-                  const uint8_t br)
+tile_movement_get(uint8_t tl,
+                  uint8_t tr,
+                  uint8_t bl,
+                  uint8_t br)
 {
    uint16_t mov;
 
@@ -549,4 +549,3 @@ tile_movement_get(const uint8_t tl,
 
    return mov;
 }
-

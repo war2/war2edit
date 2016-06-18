@@ -153,9 +153,9 @@ minimap_del(Editor *ed)
 }
 
 Eina_Bool
-minimap_update(Editor *restrict ed,
-               unsigned int     x,
-               unsigned int     y)
+minimap_update(Editor       *ed,
+               unsigned int  x,
+               unsigned int  y)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    EINA_SAFETY_ON_TRUE_RETURN_VAL((x >= ed->pud->map_w) ||
@@ -222,11 +222,11 @@ minimap_update(Editor *restrict ed,
 }
 
 void
-minimap_render(const Editor *restrict ed,
-               unsigned int           x,
-               unsigned int           y,
-               unsigned int           w,
-               unsigned int           h)
+minimap_render(const Editor *ed,
+               unsigned int  x,
+               unsigned int  y,
+               unsigned int  w,
+               unsigned int  h)
 {
    evas_object_image_data_update_add(ed->minimap.map, x, y,
                                      w * ed->minimap.w,
@@ -234,20 +234,20 @@ minimap_render(const Editor *restrict ed,
 }
 
 void
-minimap_render_unit(const Editor *restrict ed,
-                    unsigned int           x,
-                    unsigned int           y,
-                    Pud_Unit               u)
+minimap_render_unit(const Editor *ed,
+                    unsigned int  x,
+                    unsigned int  y,
+                    Pud_Unit      u)
 {
    minimap_render(ed, x, y, ed->pud->unit_data[u].size_w,
                   ed->pud->unit_data[u].size_h);
 }
 
 void
-minimap_view_move(Editor *restrict ed,
-                  int              x,
-                  int              y,
-                  Eina_Bool        clicked)
+minimap_view_move(Editor    *ed,
+                  int         x,
+                  int         y,
+                  Eina_Bool   clicked)
 {
    int bx, by, rw = 0, rh = 0, srw, srh, cx, cy;
 
@@ -277,11 +277,10 @@ minimap_view_move(Editor *restrict ed,
 }
 
 void
-minimap_view_resize(Editor *restrict ed,
-                    unsigned int     w,
-                    unsigned int     h)
+minimap_view_resize(Editor       *ed,
+                    unsigned int  w,
+                    unsigned int  h)
 {
    evas_object_resize(ed->minimap.rect,
                       w * ed->minimap.ratio, h * ed->minimap.ratio);
 }
-

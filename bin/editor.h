@@ -114,7 +114,7 @@ struct _Editor
 
 
 static inline void
-editor_sel_spread_set(Editor *restrict ed,
+editor_sel_spread_set(Editor * ed,
                       Editor_Sel       sel)
 {
    ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_SPREAD_MASK);
@@ -122,7 +122,7 @@ editor_sel_spread_set(Editor *restrict ed,
 }
 
 static inline void
-editor_sel_tint_set(Editor *restrict ed,
+editor_sel_tint_set(Editor * ed,
                     Editor_Sel       sel)
 {
    ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_TINT_MASK);
@@ -130,7 +130,7 @@ editor_sel_tint_set(Editor *restrict ed,
 }
 
 static inline void
-editor_sel_radius_set(Editor *restrict ed,
+editor_sel_radius_set(Editor * ed,
                       Editor_Sel       sel)
 {
    ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_RADIUS_MASK);
@@ -138,7 +138,7 @@ editor_sel_radius_set(Editor *restrict ed,
 }
 
 static inline void
-editor_sel_action_set(Editor *restrict ed,
+editor_sel_action_set(Editor * ed,
                       Editor_Sel       sel)
 {
    ed->tb_sel &= (Editor_Sel)(~EDITOR_SEL_ACTION_MASK);
@@ -146,25 +146,25 @@ editor_sel_action_set(Editor *restrict ed,
 }
 
 static inline Editor_Sel
-editor_sel_spread_get(const Editor *restrict ed)
+editor_sel_spread_get(const Editor * ed)
 {
    return ed->tb_sel & EDITOR_SEL_SPREAD_MASK;
 }
 
 static inline Editor_Sel
-editor_sel_tint_get(const Editor *restrict ed)
+editor_sel_tint_get(const Editor * ed)
 {
    return ed->tb_sel & EDITOR_SEL_TINT_MASK;
 }
 
 static inline Editor_Sel
-editor_sel_radius_get(const Editor *restrict ed)
+editor_sel_radius_get(const Editor * ed)
 {
    return ed->tb_sel & EDITOR_SEL_RADIUS_MASK;
 }
 
 static inline Editor_Sel
-editor_sel_action_get(const Editor *restrict ed)
+editor_sel_action_get(const Editor * ed)
 {
    return ed->tb_sel & EDITOR_SEL_ACTION_MASK;
 }
@@ -174,24 +174,24 @@ void editor_shutdown(void);
 
 void editor_free(Editor *ed);
 Editor *editor_new(const char *pud_file, Eina_Bool xdebug);
-Eina_Bool editor_load(Editor * restrict ed, const char *file);
-Eina_Bool editor_save(Editor * restrict ed, const char *file);
+Eina_Bool editor_load(Editor *ed, const char *file);
+Eina_Bool editor_save(Editor *ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
-unsigned char *editor_texture_tile_access(const Editor * restrict ed, unsigned int x, unsigned int y);
-void editor_name_set(Editor * restrict ed, const char *name);
-Eina_Bool editor_unit_ref(Editor * restrict ed);
-Eina_Bool editor_unit_unref(Editor * restrict ed);
+unsigned char *editor_texture_tile_access(const Editor *ed, unsigned int x, unsigned int y);
+void editor_name_set(Editor *ed, const char *name);
+Eina_Bool editor_unit_ref(Editor *ed);
+Eina_Bool editor_unit_unref(Editor *ed);
 uint16_t
-editor_alter_defaults_get(const Editor * restrict ed,
+editor_alter_defaults_get(const Editor *ed,
                           const Pud_Unit          unit);
-Eina_Bool editor_sync(Editor * restrict ed);
-void editor_view_update(Editor *restrict ed);
+Eina_Bool editor_sync(Editor *ed);
+void editor_view_update(Editor *ed);
 
 void
-editor_tb_sel_set(Editor *restrict ed,
+editor_tb_sel_set(Editor *ed,
                   Editor_Sel       sel);
 
-void editor_handle_delete(Editor *restrict ed);
+void editor_handle_delete(Editor *ed);
 
 Editor *editor_focused_get(void);
 

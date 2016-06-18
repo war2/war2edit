@@ -66,19 +66,19 @@ typedef struct
 } Tile_Propagation;
 
 static inline Eina_Bool
-tile_solid_is(const uint8_t tl,
-              const uint8_t tr,
-              const uint8_t bl,
-              const uint8_t br)
+tile_solid_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return ((tl == tr) && (tl == bl) && (tl == br));
 }
 
 static inline Eina_Bool
-tile_water_is(const uint8_t tl,
-              const uint8_t tr,
-              const uint8_t bl,
-              const uint8_t br)
+tile_water_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return ((tl == TILE_WATER_LIGHT) || (tl == TILE_WATER_DARK) ||
            (tr == TILE_WATER_LIGHT) || (tr == TILE_WATER_DARK) ||
@@ -87,10 +87,10 @@ tile_water_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
-tile_coast_is(const uint8_t tl,
-              const uint8_t tr,
-              const uint8_t bl,
-              const uint8_t br)
+tile_coast_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return ((!tile_solid_is(tl, tr, bl, br)) &&
            (((tl == TILE_WATER_LIGHT) || (tr == TILE_WATER_LIGHT)) ||
@@ -98,20 +98,20 @@ tile_coast_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
-tile_ground_is(const uint8_t tl,
-               const uint8_t tr,
-               const uint8_t bl,
-               const uint8_t br)
+tile_ground_is(uint8_t tl,
+               uint8_t tr,
+               uint8_t bl,
+               uint8_t br)
 {
    return (tile_solid_is(tl, tr, bl, br) &&
            ((tl == TILE_GROUND_LIGHT) || (tl == TILE_GROUND_DARK)));
 }
 
 static inline Eina_Bool
-tile_dirt_is(const uint8_t tl,
-             const uint8_t tr,
-             const uint8_t bl,
-             const uint8_t br)
+tile_dirt_is(uint8_t tl,
+             uint8_t tr,
+             uint8_t bl,
+             uint8_t br)
 {
    return ((tl == TILE_GROUND_LIGHT) || (tl == TILE_GROUND_DARK) ||
            (tr == TILE_GROUND_LIGHT) || (tr == TILE_GROUND_DARK) ||
@@ -120,10 +120,10 @@ tile_dirt_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
-tile_coast_corner_is(const uint8_t tl,
-                     const uint8_t tr,
-                     const uint8_t bl,
-                     const uint8_t br)
+tile_coast_corner_is(uint8_t tl,
+                     uint8_t tr,
+                     uint8_t bl,
+                     uint8_t br)
 {
    unsigned int count = 0;
    if (tl == TILE_WATER_LIGHT) ++count;
@@ -134,50 +134,50 @@ tile_coast_corner_is(const uint8_t tl,
 }
 
 static inline Eina_Bool
-tile_grass_is(const uint8_t tl,
-              const uint8_t tr,
-              const uint8_t bl,
-              const uint8_t br)
+tile_grass_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return (tile_solid_is(tl, tr, bl, br) &&
            ((tl == TILE_GRASS_LIGHT) || (tl == TILE_GRASS_DARK)));
 }
 
 static inline Eina_Bool
-tile_trees_is(const uint8_t tl,
-             const uint8_t tr,
-             const uint8_t bl,
-             const uint8_t br)
+tile_trees_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return ((tl == TILE_TREES) || (tr == TILE_TREES) ||
            (bl == TILE_TREES) || (br == TILE_TREES));
 }
 
 static inline Eina_Bool
-tile_rocks_is(const uint8_t tl,
-             const uint8_t tr,
-             const uint8_t bl,
-             const uint8_t br)
+tile_rocks_is(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
 {
    return ((tl == TILE_ROCKS) || (tr == TILE_ROCKS) ||
            (bl == TILE_ROCKS) || (br == TILE_ROCKS));
 }
 
 static inline Eina_Bool
-tile_wall_is(const uint8_t tl,
-             const uint8_t tr EINA_UNUSED,
-             const uint8_t bl EINA_UNUSED,
-             const uint8_t br EINA_UNUSED)
+tile_wall_is(uint8_t tl,
+             uint8_t tr EINA_UNUSED,
+             uint8_t bl EINA_UNUSED,
+             uint8_t br EINA_UNUSED)
 {
    /* Wall tiles always contain 4 walls */
    return ((tl & 0x10) || (tl & 0x20));
 }
 
 static inline Eina_Bool
-tile_walkable_is(const uint8_t tl,
-                 const uint8_t tr,
-                 const uint8_t bl,
-                 const uint8_t br)
+tile_walkable_is(uint8_t tl,
+                 uint8_t tr,
+                 uint8_t bl,
+                 uint8_t br)
 {
    return (!tile_wall_is(tl, tr, bl, br) &&
            !tile_trees_is(tl, tr, bl, br) &&
@@ -187,18 +187,18 @@ tile_walkable_is(const uint8_t tl,
 }
 
 uint16_t
-tile_calculate(const uint8_t tl,
-               const uint8_t tr,
-               const uint8_t bl,
-               const uint8_t br,
-               const uint8_t seed,
-               const Pud_Era era);
+tile_calculate(uint8_t tl,
+               uint8_t tr,
+               uint8_t bl,
+               uint8_t br,
+               uint8_t seed,
+               Pud_Era era);
 
 uint16_t
-tile_mask_calculate(const uint8_t tl,
-                    const uint8_t tr,
-                    const uint8_t bl,
-                    const uint8_t br);
+tile_mask_calculate(uint8_t tl,
+                    uint8_t tr,
+                    uint8_t bl,
+                    uint8_t br);
 
 void
 tile_decompose(uint16_t  tile_code,
@@ -213,12 +213,12 @@ tile_fragments_compatible_are(uint8_t t1,
                               uint8_t t2);
 
 Eina_Bool
-tile_compatible_is(const uint8_t tl,
-                   const uint8_t tr,
-                   const uint8_t bl,
-                   const uint8_t br);
+tile_compatible_is(uint8_t tl,
+                   uint8_t tr,
+                   uint8_t bl,
+                   uint8_t br);
 
-uint8_t tile_conflict_resolve_get(const uint8_t t);
+uint8_t tile_conflict_resolve_get(uint8_t t);
 
 /* Helpers */
 #define TILE_SOLID_IS(cptr) \
@@ -247,19 +247,19 @@ uint8_t tile_conflict_resolve_get(const uint8_t t);
 
 
 uint16_t
-tile_action_get(const uint8_t tl,
-                const uint8_t tr,
-                const uint8_t bl,
-                const uint8_t br);
+tile_action_get(uint8_t tl,
+                uint8_t tr,
+                uint8_t bl,
+                uint8_t br);
 
 #define TILE_ACTION_GET(cptr) \
    tile_action_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
 
 uint16_t
-tile_movement_get(const uint8_t tl,
-                  const uint8_t tr,
-                  const uint8_t bl,
-                  const uint8_t br);
+tile_movement_get(uint8_t tl,
+                  uint8_t tr,
+                  uint8_t bl,
+                  uint8_t br);
 
 #define TILE_MOVEMENT_GET(cptr) \
    tile_movement_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)

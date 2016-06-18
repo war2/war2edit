@@ -92,8 +92,8 @@ _draw(Editor        *ed,
 }
 
 static uint8_t
-_solid_component_get(const Editor_Sel action,
-                     const Editor_Sel tint)
+_solid_component_get(Editor_Sel action,
+                     Editor_Sel tint)
 {
    uint8_t component = TILE_NONE;
 
@@ -145,12 +145,12 @@ _solid_component_get(const Editor_Sel action,
 }
 
 static void
-_place_selected_tile(Editor             *ed,
-                     const Editor_Sel    action,
-                     const Editor_Sel    spread,
-                     const Editor_Sel    tint,
-                     const unsigned int  x,
-                     const unsigned int  y)
+_place_selected_tile(Editor           *ed,
+                     const Editor_Sel  action,
+                     const Editor_Sel  spread,
+                     const Editor_Sel  tint,
+                     unsigned int      x,
+                     unsigned int      y)
 {
    uint8_t component;
    uint8_t randomize = TILE_RANDOMIZE;
@@ -219,12 +219,12 @@ _click_handle(Editor *ed,
 }
 
 static Eina_Bool
-_unit_below_cursor_is(const Editor *restrict ed,
-                      int                    x,
-                      int                    y,
-                      unsigned int           cw,
-                      unsigned int           ch,
-                      unsigned char          types)
+_unit_below_cursor_is(const Editor  *ed,
+                      int            x,
+                      int            y,
+                      unsigned int   cw,
+                      unsigned int   ch,
+                      unsigned char  types)
 {
    unsigned int i, j;
    const Cell *c;
@@ -526,10 +526,10 @@ _mouse_up_cb(void        *data,
  *============================================================================*/
 
 void
-bitmap_unit_draw(Editor *restrict ed,
-                 unsigned int     x,
-                 unsigned int     y,
-                 Bitmap_Unit      unit_type)
+bitmap_unit_draw(Editor       *ed,
+                 unsigned int  x,
+                 unsigned int  y,
+                 Bitmap_Unit   unit_type)
 {
    Cell **cells = ed->cells;
    const Cell *c = &(cells[y][x]);
@@ -595,11 +595,11 @@ bitmap_unit_draw(Editor *restrict ed,
 }
 
 void
-bitmap_selections_draw(Editor *restrict ed,
-                       int              x,
-                       int              y,
-                       unsigned int     w,
-                       unsigned int     h)
+bitmap_selections_draw(Editor       *ed,
+                       int           x,
+                       int           y,
+                       unsigned int  w,
+                       unsigned int  h)
 {
    unsigned int x1 = (x < 0) ? 0 : x;
    unsigned int y1 = (y < 0) ? 0 : y;
@@ -639,10 +639,10 @@ bitmap_selections_draw(Editor *restrict ed,
 }
 
 void
-bitmap_unit_del_at(Editor *restrict ed,
-                   unsigned int     x,
-                   unsigned int     y,
-                   Eina_Bool        below)
+bitmap_unit_del_at(Editor       *ed,
+                   unsigned int  x,
+                   unsigned int  y,
+                   Eina_Bool     below)
 {
    Cell *c, *anchor;
    unsigned int rx, ry, sx, sy, i, j;
@@ -677,15 +677,15 @@ bitmap_unit_del_at(Editor *restrict ed,
 }
 
 void
-bitmap_unit_set(Editor *restrict ed,
-                Pud_Unit         unit,
-                Pud_Player       color,
-                unsigned int     orient,
-                unsigned int     x,
-                unsigned int     y,
-                unsigned int     w,
-                unsigned int     h,
-                uint16_t         alter)
+bitmap_unit_set(Editor       *ed,
+                Pud_Unit      unit,
+                Pud_Player    color,
+                unsigned int  orient,
+                unsigned int  x,
+                unsigned int  y,
+                unsigned int  w,
+                unsigned int  h,
+                uint16_t      alter)
 {
    unsigned int i, j;
    unsigned int spread_x, spread_y;
@@ -758,9 +758,9 @@ end:
 }
 
 void
-bitmap_tile_draw(Editor *restrict ed,
-                 unsigned int     x,
-                 unsigned int     y)
+bitmap_tile_draw(Editor       *ed,
+                 unsigned int  x,
+                 unsigned int  y)
 {
    unsigned char *tex;
 
@@ -953,10 +953,10 @@ bitmap_tile_calculate(Editor           *ed,
 }
 
 Eina_Bool
-bitmap_full_tile_set(Editor *restrict ed,
-                     int              x,
-                     int              y,
-                     uint16_t         tile)
+bitmap_full_tile_set(Editor   *ed,
+                     int       x,
+                     int       y,
+                     uint16_t  tile)
 {
    /* Safety checks */
    EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
@@ -994,14 +994,14 @@ bitmap_full_tile_set(Editor *restrict ed,
 }
 
 Eina_Bool
-bitmap_tile_set(Editor * restrict ed,
-                int               x,
-                int               y,
-                uint8_t           tl,
-                uint8_t           tr,
-                uint8_t           bl,
-                uint8_t           br,
-                uint8_t           seed)
+bitmap_tile_set(Editor  *ed,
+                int      x,
+                int      y,
+                uint8_t  tl,
+                uint8_t  tr,
+                uint8_t  bl,
+                uint8_t  br,
+                uint8_t  seed)
 {
    Cell *c = &(ed->cells[y][x]);
    uint16_t tile;

@@ -15,7 +15,7 @@ typedef enum
 } Bitmap_Unit;
 
 Eina_Bool bitmap_add(Editor *ed);
-void bitmap_unit_set(Editor *restrict ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
+void bitmap_unit_set(Editor * ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
 
 void bitmap_refresh(Editor *ed,
                     const Eina_Rectangle *zone);
@@ -25,28 +25,28 @@ bitmap_visible_zone_cells_get(const Editor   *ed,
                               Eina_Rectangle *zone);
 
 void
-bitmap_selections_draw(Editor *restrict ed,
+bitmap_selections_draw(Editor * ed,
                        int              x,
                        int              y,
                        unsigned int     w,
                        unsigned int     h);
 
-void bitmap_unit_draw(Editor *restrict ed,
+void bitmap_unit_draw(Editor * ed,
                       unsigned int x,
                       unsigned int y,
                       Bitmap_Unit unit_type);
 
-void bitmap_tile_draw(Editor *restrict ed,
+void bitmap_tile_draw(Editor * ed,
                       unsigned int x,
                       unsigned int y);
 void
-bitmap_unit_del_at(Editor *restrict ed,
+bitmap_unit_del_at(Editor * ed,
                    unsigned int     x,
                    unsigned int     y,
                    Eina_Bool        below);
 
 Eina_Bool
-bitmap_tile_set(Editor * restrict ed,
+bitmap_tile_set(Editor *  ed,
                 int               x,
                 int               y,
                 uint8_t           tl,
@@ -56,7 +56,7 @@ bitmap_tile_set(Editor * restrict ed,
                 uint8_t           seed);
 
 Eina_Bool
-bitmap_full_tile_set(Editor *restrict ed,
+bitmap_full_tile_set(Editor * ed,
                      int              x,
                      int              y,
                      uint16_t         tile);

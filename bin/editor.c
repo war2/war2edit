@@ -338,8 +338,8 @@ err_ret:
 }
 
 Eina_Bool
-editor_save(Editor * restrict ed,
-            const char *      file)
+editor_save(Editor     *ed,
+            const char *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
@@ -392,7 +392,7 @@ panic:
 }
 
 Eina_Bool
-editor_sync(Editor * restrict ed)
+editor_sync(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->pud, EINA_FALSE);
@@ -500,8 +500,8 @@ editor_sync(Editor * restrict ed)
 }
 
 Eina_Bool
-editor_load(Editor * restrict  ed,
-            const char        *file)
+editor_load(Editor     *ed,
+            const char *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
@@ -572,7 +572,7 @@ editor_load(Editor * restrict  ed,
 }
 
 Eina_Bool
-editor_unit_ref(Editor * restrict ed)
+editor_unit_ref(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    if (EINA_UNLIKELY(ed->pud->units_count >= UINT16_MAX))
@@ -583,7 +583,7 @@ editor_unit_ref(Editor * restrict ed)
 }
 
 Eina_Bool
-editor_unit_unref(Editor * restrict ed)
+editor_unit_unref(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    if (ed->pud->units_count <= 0)
@@ -594,9 +594,9 @@ editor_unit_unref(Editor * restrict ed)
 }
 
 unsigned char *
-editor_texture_tile_access(const Editor * restrict ed,
-                           unsigned int            x,
-                           unsigned int            y)
+editor_texture_tile_access(const Editor *ed,
+                           unsigned int  x,
+                           unsigned int  y)
 {
    unsigned int key;
 
@@ -605,8 +605,8 @@ editor_texture_tile_access(const Editor * restrict ed,
 }
 
 void
-editor_name_set(Editor * restrict  ed,
-                const char        *name)
+editor_name_set(Editor     *ed,
+                const char *name)
 {
    EINA_SAFETY_ON_NULL_RETURN(ed);
    EINA_SAFETY_ON_NULL_RETURN(name);
@@ -615,8 +615,8 @@ editor_name_set(Editor * restrict  ed,
 }
 
 uint16_t
-editor_alter_defaults_get(const Editor * restrict ed,
-                          const Pud_Unit          unit)
+editor_alter_defaults_get(const Editor   *ed,
+                          const Pud_Unit  unit)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, 0x00);
 
@@ -634,7 +634,7 @@ editor_alter_defaults_get(const Editor * restrict ed,
 }
 
 void
-editor_view_update(Editor *restrict ed)
+editor_view_update(Editor *ed)
 {
    int rx, ry, rw, rh;
    int cx, cy, cw, ch;
@@ -660,8 +660,8 @@ editor_view_update(Editor *restrict ed)
 }
 
 void
-editor_tb_sel_set(Editor *restrict ed,
-                  Editor_Sel       sel)
+editor_tb_sel_set(Editor     *ed,
+                  Editor_Sel  sel)
 {
    if (sel & EDITOR_SEL_ACTION_MASK)
      editor_sel_action_set(ed, sel);
@@ -674,7 +674,7 @@ editor_tb_sel_set(Editor *restrict ed,
 }
 
 void
-editor_handle_delete(Editor *restrict ed)
+editor_handle_delete(Editor *ed)
 {
    if (!sel_empty_is(ed))
      sel_del(ed);

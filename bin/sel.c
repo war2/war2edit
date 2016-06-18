@@ -21,7 +21,7 @@ enum {
 };
 
 Evas_Object *
-sel_add(Editor *restrict ed)
+sel_add(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, NULL);
 
@@ -39,10 +39,10 @@ sel_add(Editor *restrict ed)
 }
 
 void
-sel_start(Editor *restrict ed,
-          const int        x,
-          const int        y,
-          Eina_Bool        inclusive)
+sel_start(Editor    *ed,
+          const int  x,
+          const int  y,
+          Eina_Bool  inclusive)
 {
    unsigned int i, j;
    Cell *c;
@@ -68,9 +68,9 @@ sel_start(Editor *restrict ed,
 }
 
 void
-sel_update(Editor *restrict ed,
-           int              w,
-           int              h)
+sel_update(Editor *ed,
+           int     w,
+           int     h)
 {
    int x = ed->sel.x;
    int y = ed->sel.y;
@@ -118,7 +118,7 @@ sel_update(Editor *restrict ed,
 }
 
 void
-sel_end(Editor *restrict ed)
+sel_end(Editor *ed)
 {
    unsigned int i, j;
    Cell *anchor;
@@ -195,19 +195,19 @@ sel_end(Editor *restrict ed)
 }
 
 Eina_Bool
-sel_active_is(const Editor *restrict ed)
+sel_active_is(const Editor *ed)
 {
    return ed->sel.active;
 }
 
 Eina_Bool
-sel_empty_is(const Editor *restrict ed)
+sel_empty_is(const Editor *ed)
 {
    return (ed->sel.selections == 0);
 }
 
 void
-sel_del(Editor *restrict ed)
+sel_del(Editor *ed)
 {
    unsigned int i, j;
    Cell *c;
@@ -223,4 +223,3 @@ sel_del(Editor *restrict ed)
        }
    bitmap_refresh(ed, NULL); // FIXME BAD
 }
-
