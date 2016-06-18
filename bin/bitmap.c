@@ -83,8 +83,6 @@ _draw(Editor        *ed,
                }
           }
      }
-
-   printf("DRAW\n");
 }
 
 static uint8_t
@@ -412,6 +410,8 @@ _bitmap_autoresize(Editor *ed)
    evas_object_image_data_set(ed->bitmap.img, pixels);
    cairo_surface_flush(ed->bitmap.surf);
    evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
+
+   bitmap_refresh(ed, NULL);
 }
 
 static void
@@ -1064,7 +1064,6 @@ bitmap_add(Editor *ed)
      }
    evas_object_clip_set(o, ed->bitmap.clip);
 
-   _bitmap_autoresize(ed);
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
    bitmap_cursor_visibility_set(ed, EINA_TRUE);
@@ -1074,6 +1073,8 @@ bitmap_add(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
    sel_add(ed);
+
+   _bitmap_autoresize(ed);
 
    return EINA_TRUE;
 }
