@@ -54,23 +54,22 @@ _draw(Editor        *ed,
     * FIXME
     */
 
+   /* Calculate the horizontal mirroring  */
+   if (hflip)
+     {
+        bmp_x_start = at_x + img_w;
+        bmp_x_step = -4;
+     }
+   else
+     {
+        bmp_x_start = at_x;
+        bmp_x_step = 4;
+     }
+
    for (img_y = 0, bmp_y = at_y;
         (img_y < img_h) && (bmp_y < bmp_h);
         ++img_y, ++bmp_y)
      {
-        /* FIXME This is a loop invariant, right. Why is this here? */
-        /* Calculate the horizontal mirroring  */
-        if (hflip)
-          {
-             bmp_x_start = at_x + img_w;
-             bmp_x_step = -4;
-          }
-        else
-          {
-             bmp_x_start = at_x;
-             bmp_x_step = 4;
-          }
-
         for (img_x = 0, bmp_x = bmp_x_start;
              (img_x < img_w) && (bmp_x < bmp_w);
              img_x += 4, bmp_x += bmp_x_step)
