@@ -60,7 +60,7 @@ pkg_check_modules(EVAS evas>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(ECORE ecore>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(ECORE_FILE ecore-file>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(ELEMENTARY elementary>=${ELM_VERSION} REQUIRED)
-pkg_check_modules(CAIRO cairo REQUIRED)
+#pkg_check_modules(CAIRO cairo REQUIRED)
 pkg_check_modules(LIBPUD pud REQUIRED)
 pkg_check_modules(LIBWAR2 war2 REQUIRED)
 

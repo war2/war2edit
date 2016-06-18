@@ -25,11 +25,16 @@ _draw(Editor        *ed,
 {
    const int bmp_w = ed->bitmap.max_w * 4;
    int img_y, bmp_y, img_x, bmp_x, k;
-   unsigned char *bmp = cairo_image_surface_get_data(ed->bitmap.surf);
+   unsigned char *bmp;
    unsigned char bgr[4];
    int bmp_x_start;
    int bmp_x_step;
 
+#if 0
+   bmp = cairo_image_surface_get_data(ed->bitmap.surf);
+#else
+   bmp = ed->bitmap.pixels;
+#endif
    //bitmap_abs_draw(ed->bitmap, &draw_data, img, img_w, img_h, at_x, at_y);
 
    img_w *= 4;
@@ -388,6 +393,7 @@ _bitmap_autoresize(Editor *ed)
    if (w > ed->bitmap.max_w) w = ed->bitmap.max_w;
    if (h > ed->bitmap.max_h) h = ed->bitmap.max_h;
 
+#if 0
    /* FIXME Can we resize a cairo surface????
     * For now, all I've found is to make another surface...
     * pretty bad....
@@ -402,14 +408,29 @@ _bitmap_autoresize(Editor *ed)
    ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
    ed->bitmap.cr = cairo_create(ed->bitmap.surf);
    pixels = cairo_image_surface_get_data(ed->bitmap.surf);
+#endif
+
+   /* FIXME WTF????? */
    evas_object_move(ed->bitmap.img, x, y);
    evas_object_move(ed->bitmap.clip, x, y);
+
+   pixels = realloc(ed->bitmap.pixels, w * h * 4 * sizeof(uint8_t));
+   if (EINA_UNLIKELY(!pixels))
+     {
+        CRI("Failed to realloc pixels map. Aborting resize");
+        return;
+     }
+   ed->bitmap.pixels = pixels;
+
    evas_object_resize(ed->bitmap.img, w, h);
    evas_object_resize(ed->bitmap.clip, w, h);
    evas_object_image_size_set(ed->bitmap.img, w, h);
    evas_object_image_data_set(ed->bitmap.img, pixels);
+#if 0
    cairo_surface_flush(ed->bitmap.surf);
-   evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
+#endif
+
+   //evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
 
    bitmap_refresh(ed, NULL);
 }
@@ -744,7 +765,12 @@ bitmap_tile_draw(Editor *restrict ed,
    unsigned char *tex;
 
    tex = texture_get(ed->cells[y][x].tile, ed->pud->era);
-   if (EINA_UNLIKELY(!tex)) return;
+   if (EINA_UNLIKELY(!tex))
+     {
+        ERR("Failed to access texture at index %u,%u, era %s",
+            x, y, pud_era2str(ed->pud->era));
+        return;
+     }
 
    _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
          TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);

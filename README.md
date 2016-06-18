@@ -19,7 +19,7 @@ TODO - Showstoppers
 
 - [X] Redo completly the graphical part. Elm_Bitmap is waayyy to heavy and inefficient.
       Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
-      and so efficient, but the smart_move kills it... [solved by Cairo]
+      and so efficient, but the smart_move kills it...
 - [X] Minimap window is annoying and suboptimal (let's Evas do the scaling)
 - [X] Place textures
 - [ ] Different brush types
@@ -33,6 +33,12 @@ TODO - Showstoppers
 - [X] Selection mode to select units
 - [X] Delete a unit
 - [ ] Undo/Redo
+
+
+Improvements
+============
+
+- [ ] Use a dedicated graphics library to draw. Cairo?
 
 Contributors
 ============

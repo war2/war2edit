@@ -7,12 +7,16 @@
 #ifndef _WAR2EDIT_H_
 #define _WAR2EDIT_H_
 
+// FIXME Cmake
 #define EFL_BETA_API_SUPPORT
 #define EFL_EO_API_SUPPORT
 
+
 #include <pud.h>
 #include <war2.h>
+#if 0
 #include <cairo.h>
+#endif
 #include <Elementary.h>
 
 typedef struct _Cell Cell;
@@ -23,8 +27,11 @@ typedef struct
    Evas_Object *clip;
    Evas_Object *shallow;
    Evas_Image *img;
+
+#if 0
    cairo_surface_t *surf;
    cairo_t *cr;
+#endif
 
    int x_off;
    int y_off;
@@ -33,6 +40,8 @@ typedef struct
    int cell_h;
    int max_w;
    int max_h;
+
+   unsigned char *pixels;
 
    Edje_Object *cursor;
    int cx, cy, cw, ch;
