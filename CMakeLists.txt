@@ -47,8 +47,6 @@ add_definitions(${COMPILER_WARNINGS})
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
 set(PROJECT_URL "http://www.jeanguyomarch.com/war2edit.php")
 
-set(CMAKE_COLOR_MAKEFILE   ON)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MACOSX_RPATH OFF)
 
 find_package(PkgConfig)
