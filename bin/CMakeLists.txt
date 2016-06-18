@@ -73,6 +73,8 @@ add_dependencies(
    themes
 )
 
+set_property(TARGET war2edit PROPERTY C_STANDARD 99)
+
 install(
    TARGETS war2edit
    RUNTIME DESTINATION bin

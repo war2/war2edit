@@ -45,7 +45,6 @@ check_compiler_warnings(
     -Wcast-align
 )
 add_definitions(${COMPILER_WARNINGS})
-add_definitions(-std=gnu11)
 add_definitions(-DEO_BETA_API)
 add_definitions(-D_BSD_SOURCE)
 add_definitions(-D_DEFAULT_SOURCE)
