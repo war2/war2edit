@@ -1,7 +1,7 @@
-add_definitions(-DPACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\")
-add_definitions(-DPACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\")
-add_definitions(-DPACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\")
-add_definitions(-DBUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\")
+#add_definitions(-DPACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\")
+#add_definitions(-DPACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\")
+#add_definitions(-DPACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\")
+#add_definitions(-DBUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\")
 
 add_executable(war2edit
    main.c
@@ -74,6 +74,16 @@ add_dependencies(
 )
 
 set_property(TARGET war2edit PROPERTY C_STANDARD 99)
+
+target_compile_definitions(war2edit
+   PRIVATE PACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\"
+   PRIVATE PACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\"
+   PRIVATE PACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\"
+   PRIVATE BUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\"
+   PRIVATE EO_BETA_API=1
+   PRIVATE _DEFAULT_SOURCE=1
+)
+
 
 install(
    TARGETS war2edit

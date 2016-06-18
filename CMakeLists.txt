@@ -45,9 +45,6 @@ check_compiler_warnings(
     -Wcast-align
 )
 add_definitions(${COMPILER_WARNINGS})
-add_definitions(-DEO_BETA_API)
-add_definitions(-D_BSD_SOURCE)
-add_definitions(-D_DEFAULT_SOURCE)
 
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
 set(PROJECT_URL "http://www.jeanguyomarch.com/war2edit.php")
@@ -75,4 +72,3 @@ add_subdirectory(bin)
 add_subdirectory(data)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake)
-
