@@ -6,40 +6,40 @@
 add_executable(war2edit
    main.c
    editor.c
-   log.c
-   bitmap.c
-   texture.c
-   sprite.c
-   file.c
-   mainconfig.c
-   menu.c
-   toolbar.c
-   cell.c
-   minimap.c
-   sel.c
-   tile.c
-   inwin.c
-   prefs.c
-   ipc.c
-   undo.c
-   str.h
    editor.h
+   log.c
    log.h
+   bitmap.c
    bitmap.h
+   texture.c
    texture.h
+   sprite.c
    sprite.h
+   file.c
    file.h
+   mainconfig.c
    mainconfig.h
+   menu.c
    menu.h
+   toolbar.c
    toolbar.h
+   cell.c
    cell.h
+   minimap.c
    minimap.h
+   sel.c
    sel.h
+   tile.c
    tile.h
+   inwin.c
    inwin.h
+   prefs.c
    prefs.h
+   ipc.c
    ipc.h
+   undo.c
    undo.h
+   str.h
    war2edit.h
 )
 
