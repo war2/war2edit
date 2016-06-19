@@ -36,6 +36,11 @@ _draw(Editor        *ed,
    bmp = ed->bitmap.pixels;
 #endif
 
+   at_x -= ed->bitmap.x_off;
+   if (at_x < 0) at_x = 0;
+   at_y -= ed->bitmap.y_off;
+   if (at_y < 0) at_y = 0;
+
    img_w *= 4;
    at_x *= 4;
 
@@ -455,9 +460,10 @@ _mouse_move_cb(void        *data,
 {
    Editor *ed = data;
    Evas_Event_Mouse_Move *ev = info;
-   int cx, cy;
+   int cx, cy, ox, oy;
 
-   bitmap_coords_to_cells(ed, ev->cur.canvas.x, ev->cur.canvas.y, &cx, &cy);
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
+   bitmap_coords_to_cells(ed, ev->cur.canvas.x - ox, ev->cur.canvas.y - oy, &cx, &cy);
 
    bitmap_cursor_move(ed, cx, cy);
 
@@ -495,8 +501,10 @@ _mouse_down_cb(void        *data,
    Editor *ed = data;
    Evas_Event_Mouse_Down *ev = info;
    int cx, cy;
+   int ox, oy;
 
-   bitmap_coords_to_cells(ed, ev->canvas.x, ev->canvas.y, &cx, &cy);
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
+   bitmap_coords_to_cells(ed, ev->canvas.x - ox, ev->canvas.y - oy, &cx, &cy);
 
    if (ed->xdebug)
      {
@@ -1176,11 +1184,14 @@ bitmap_cursor_move(Editor *ed,
                    int     cy)
 {
    int x, y;
+   int ox, oy;
+
 
    if ((ed->bitmap.cx == cx) && (ed->bitmap.cy == cy)) return;
 
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
    bitmap_cells_to_coords(ed, cx, cy, &x, &y);
-   evas_object_move(ed->bitmap.cursor, x, y);
+   evas_object_move(ed->bitmap.cursor, ox + x, oy + y);
 
    ed->bitmap.cx = cx;
    ed->bitmap.cy = cy;
@@ -1193,11 +1204,8 @@ bitmap_coords_to_cells(const Editor *ed,
                        int          *cx,
                        int          *cy)
 {
-   int ox, oy;
-
-   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
-   if (cx) *cx = (x - ox - ed->bitmap.x_off) / ed->bitmap.cell_w;
-   if (cy) *cy = (y - oy - ed->bitmap.y_off) / ed->bitmap.cell_h;
+   if (cx) *cx = (x + ed->bitmap.x_off) / ed->bitmap.cell_w;
+   if (cy) *cy = (y + ed->bitmap.y_off) / ed->bitmap.cell_h;
 }
 
 void
@@ -1207,11 +1215,8 @@ bitmap_cells_to_coords(const Editor *ed,
                        int          *x,
                        int          *y)
 {
-   int ox, oy;
-
-   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
-   if (x) *x = ox + (ed->bitmap.cell_w * cx) + ed->bitmap.x_off;
-   if (y) *y = oy + (ed->bitmap.cell_h * cy) + ed->bitmap.y_off;
+   if (x) *x = (ed->bitmap.cell_w * cx) - ed->bitmap.x_off;
+   if (y) *y = (ed->bitmap.cell_h * cy) - ed->bitmap.y_off;
 }
 
 void
@@ -1219,9 +1224,9 @@ bitmap_refresh(Editor               *ed,
                const Eina_Rectangle *zone)
 {
    Eina_Rectangle area;
+   Eina_Rectangle img, update;
    int x2, y2;
    int i, j;
-   int x, y, w, h;
 
    bitmap_visible_zone_cells_get(ed, &area);
    DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
@@ -1243,6 +1248,18 @@ bitmap_refresh(Editor               *ed,
    /* Pre-calculate loop invariants */
    x2 = area.x + area.w;
    y2 = area.y + area.h;
+
+   /* Safety checks */
+   if (EINA_UNLIKELY((unsigned int)x2 >= ed->pud->map_w))
+     {
+        ERR("You messed up... x2 is out of bounds! Truncating...");
+        x2 = ed->pud->map_w - 1;
+     }
+   if (EINA_UNLIKELY((unsigned int)y2 >= ed->pud->map_h))
+     {
+        ERR("You messed up... y2 is out of bounds! Truncating...");
+        y2 = ed->pud->map_h - 1;
+     }
 
    /*
     * XXX Not great... Simple, Stupid yet
@@ -1269,23 +1286,116 @@ bitmap_refresh(Editor               *ed,
    /* (Pre)Selections last */
    bitmap_selections_draw(ed, area.x, area.y, area.w, area.h);
 
+   /* Image rectangle (relative to the image itself) */
+   img.x = 0;
+   img.y = 0;
+   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &img.w, &img.h);
 
-   bitmap_cells_to_coords(ed, area.x, area.y, &x, &y);
-   bitmap_cells_to_coords(ed, area.x + area.w, area.y + area.h, &w, &h);
-   DBG("Evas update: %ix%i - %ix%i", x, y, w, h);
-   evas_object_image_data_update_add(ed->bitmap.img, x, y, w, h);
+   bitmap_cells_to_coords(ed, area.x, area.y, &update.x, &update.y);
+   bitmap_cells_to_coords(ed, area.x + area.w, area.y + area.h, &update.w, &update.h);
+
+   if (eina_rectangle_intersection(&update, &img))
+     {
+        DBG("Evas update: %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&update));
+        evas_object_image_data_update_add(ed->bitmap.img,
+                                          update.x, update.y, update.w, update.h);
+     }
+   else
+     {
+        WRN("Something is fishy... no intersection between the image "
+            "contour and the refresh area... "
+            "update is %"EINA_RECTANGLE_FORMAT", img is %"EINA_RECTANGLE_FORMAT,
+            EINA_RECTANGLE_ARGS(&update), EINA_RECTANGLE_ARGS(&img));
+     }
+
 }
 
 void
 bitmap_visible_zone_cells_get(const Editor   *ed,
                               Eina_Rectangle *zone)
 {
-   int x, y, w, h;
+   int w, h;
 
-   evas_object_geometry_get(ed->bitmap.img, &x, &y, &w, &h);
+   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &w, &h);
 
-   bitmap_coords_to_cells(ed, x, y, &(zone->x), &(zone->y));
-   bitmap_coords_to_cells(ed, x + w, y + h, &(zone->w), &(zone->h));
-   zone->w++;
-   zone->h++;
+   bitmap_coords_to_cells(ed, 0, 0, &(zone->x), &(zone->y));
+   bitmap_coords_to_cells(ed, w, h, &(zone->w), &(zone->h));
+
+   zone->w -= (zone->x - 1);
+   zone->h -= (zone->y - 1);
+}
+
+void
+bitmap_move(Editor *ed,
+            int     x,
+            int     y)
+{
+
+   /*
+    * FIXME This is terrible
+    */
+   ed->bitmap.x_off = x;
+   ed->bitmap.y_off = y;
+   DBG("New xoff,yoff = %i,%i",ed->bitmap.x_off,ed->bitmap.y_off);
+   bitmap_refresh(ed, NULL);
+#if 0
+   int dx, dy, i, j;
+   int w, h;
+   int start, end;
+   int d_size, total_size;
+   Eina_Rectangle zone;
+   Eina_Bool update = EINA_FALSE;
+
+   dx = ed->bitmap.x_off - x;
+   dy = ed->bitmap.y_off - y;
+
+
+   DBG("Translating... X=%i Y=%i", dx, dy);
+   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &w, &h);
+
+   total_size = w * 4 * sizeof(uint8_t) * h;
+   DBG("Total size = %i * %i * 4 = %i", w, h, total_size);
+   if (dy != 0)
+     {
+        if (dy < 0) /* translate up */
+          {
+             d_size = abs(dy) * w * 4 * sizeof(uint8_t);
+             DBG("delta size = %i * %i * 4 = %i", w, abs(dy), d_size);
+             end = 0;
+             start = d_size;
+          }
+        else /* translate down */
+          {
+             start = 0;
+             end = 0;
+             d_size = 0;
+        //     start = 0;
+        //     end = size;
+          }
+
+        if (total_size < d_size)
+          {
+             CRI("OOPS. Will crash");
+          }
+
+        DBG("start = %i, end = %i, d_size = %i, total_size = %i", start, end, d_size, total_size);
+        memmove(&(ed->bitmap.pixels[end]), &(ed->bitmap.pixels[start]), total_size - d_size);
+
+        update = EINA_TRUE;
+     }
+   if (dx != 0)
+     {
+        /* TODO */
+        update = EINA_TRUE;
+     }
+
+   ed->bitmap.x_off = x;
+   ed->bitmap.y_off = y;
+
+   /*
+    * FIXME This is bad. There is room for a lot of optimization!!
+    */
+   if (update)
+     bitmap_refresh(ed, NULL);
+#endif
 }

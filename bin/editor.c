@@ -50,6 +50,11 @@ _scroll_cb(void        *data,
            void        *info EINA_UNUSED)
 {
    Editor *ed = data;
+   int dx, dy;
+
+   elm_interface_scrollable_content_region_get(ed->scroller, &dx, &dy, NULL, NULL);
+   DBG("Scroll: %i %i", dx, dy);
+   bitmap_move(ed, dx, dy);
 
    // FIXME BAAAAAAD!!!! when minimap changes the view,
    // it makes the scroller scroll, then this callback is called,
