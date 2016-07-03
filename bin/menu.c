@@ -1032,52 +1032,45 @@ menu_player_properties_new(Editor      *ed,
  *                             Starting Properties                            *
  *============================================================================*/
 
-static Eina_Bool
+static void
 _validator_cb(void           *data,
               const Eo_Event *desc)
 {
-   Eina_Bool status;
    Validator *val = data;
    Elm_Validate_Content *vc = desc->info;
    unsigned long int numeric;
    const char *str;
 
-   status = elm_validator_regexp_helper(val->re, desc);
-   if (status == EO_CALLBACK_CONTINUE)
+   elm_validator_regexp_helper(val->re, desc);
+
+   /* Trim leading zeros */
+   str = vc->text;
+   while ((*str == '0') && (*str != '\0')) str++;
+
+   /* Avoid overflows */
+   if (strlen(str) <= 10)
      {
-        status = EO_CALLBACK_STOP;
-
-        /* Trim leading zeros */
-        str = vc->text;
-        while ((*str == '0') && (*str != '\0')) str++;
-
-        /* Avoid overflows */
-        if (strlen(str) <= 10)
+        numeric = strtoul(str, NULL, 10);
+        if ((numeric >= val->range.start) && (numeric <= val->range.end))
           {
-             numeric = strtoul(str, NULL, 10);
-             if ((numeric >= val->range.start) && (numeric <= val->range.end))
+             if (val->prescalor.inverse)
+               numeric = val->prescalor.inverse(numeric);
+             switch (val->bind.type)
                {
-                  if (val->prescalor.inverse)
-                    numeric = val->prescalor.inverse(numeric);
-                  switch (val->bind.type)
-                    {
-                     case POINTER_TYPE_BYTE:
-                        *(val->bind.ptr.byte_ptr) = (uint8_t)numeric;
-                        break;
+                case POINTER_TYPE_BYTE:
+                   *(val->bind.ptr.byte_ptr) = (uint8_t)numeric;
+                   break;
 
-                     case POINTER_TYPE_WORD:
-                        *(val->bind.ptr.word_ptr) = (uint16_t)numeric;
-                        break;
+                case POINTER_TYPE_WORD:
+                   *(val->bind.ptr.word_ptr) = (uint16_t)numeric;
+                   break;
 
-                     case POINTER_TYPE_LONG:
-                        *(val->bind.ptr.long_ptr) = (uint32_t)numeric;
-                        break;
-                    }
-                  status = EO_CALLBACK_CONTINUE;
+                case POINTER_TYPE_LONG:
+                   *(val->bind.ptr.long_ptr) = (uint32_t)numeric;
+                   break;
                }
           }
      }
-   return status;
 }
 
 static void
