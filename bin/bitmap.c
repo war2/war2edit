@@ -1250,16 +1250,10 @@ bitmap_refresh(Editor               *ed,
    y2 = area.y + area.h;
 
    /* Safety checks */
-   if (EINA_UNLIKELY((unsigned int)x2 >= ed->pud->map_w))
-     {
-        ERR("You messed up... x2 is out of bounds! Truncating...");
-        x2 = ed->pud->map_w - 1;
-     }
-   if (EINA_UNLIKELY((unsigned int)y2 >= ed->pud->map_h))
-     {
-        ERR("You messed up... y2 is out of bounds! Truncating...");
-        y2 = ed->pud->map_h - 1;
-     }
+   if ((unsigned int)x2 > ed->pud->map_w)
+     x2 = ed->pud->map_w;
+   if ((unsigned int)y2 > ed->pud->map_h)
+     y2 = ed->pud->map_h;
 
    /*
     * XXX Not great... Simple, Stupid yet
@@ -1291,14 +1285,18 @@ bitmap_refresh(Editor               *ed,
    img.y = 0;
    evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &img.w, &img.h);
 
-   bitmap_cells_to_coords(ed, area.x, area.y, &update.x, &update.y);
-   bitmap_cells_to_coords(ed, area.x + area.w, area.y + area.h, &update.w, &update.h);
+   /*
+    * FIXME
+    */
 
+   //bitmap_cells_to_coords(ed, area.x, area.y, &update.x, &update.y);
+   //bitmap_cells_to_coords(ed, area.x + area.w, area.y + area.h, &update.w, &update.h);
+
+   evas_object_image_data_update_add(ed->bitmap.img, 0, 0, img.w, img.h);
+#if 0
    if (eina_rectangle_intersection(&update, &img))
      {
         DBG("Evas update: %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&update));
-        evas_object_image_data_update_add(ed->bitmap.img,
-                                          update.x, update.y, update.w, update.h);
      }
    else
      {
@@ -1307,7 +1305,7 @@ bitmap_refresh(Editor               *ed,
             "update is %"EINA_RECTANGLE_FORMAT", img is %"EINA_RECTANGLE_FORMAT,
             EINA_RECTANGLE_ARGS(&update), EINA_RECTANGLE_ARGS(&img));
      }
-
+#endif
 }
 
 void
@@ -1330,72 +1328,76 @@ bitmap_move(Editor *ed,
             int     x,
             int     y)
 {
+ //  DBG("New xoff,yoff = %i,%i",ed->bitmap.x_off,ed->bitmap.y_off);
 
-   /*
-    * FIXME This is terrible
-    */
-   ed->bitmap.x_off = x;
-   ed->bitmap.y_off = y;
-   DBG("New xoff,yoff = %i,%i",ed->bitmap.x_off,ed->bitmap.y_off);
-   bitmap_refresh(ed, NULL);
-#if 0
-   int dx, dy, i, j;
+   int dx, dy, abs_dx, abs_dy,  i, j;
    int w, h;
    int start, end;
    int d_size, total_size;
    Eina_Rectangle zone;
-   Eina_Bool update = EINA_FALSE;
 
    dx = ed->bitmap.x_off - x;
    dy = ed->bitmap.y_off - y;
-
-
-   DBG("Translating... X=%i Y=%i", dx, dy);
-   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &w, &h);
-
-   total_size = w * 4 * sizeof(uint8_t) * h;
-   DBG("Total size = %i * %i * 4 = %i", w, h, total_size);
-   if (dy != 0)
-     {
-        if (dy < 0) /* translate up */
-          {
-             d_size = abs(dy) * w * 4 * sizeof(uint8_t);
-             DBG("delta size = %i * %i * 4 = %i", w, abs(dy), d_size);
-             end = 0;
-             start = d_size;
-          }
-        else /* translate down */
-          {
-             start = 0;
-             end = 0;
-             d_size = 0;
-        //     start = 0;
-        //     end = size;
-          }
-
-        if (total_size < d_size)
-          {
-             CRI("OOPS. Will crash");
-          }
-
-        DBG("start = %i, end = %i, d_size = %i, total_size = %i", start, end, d_size, total_size);
-        memmove(&(ed->bitmap.pixels[end]), &(ed->bitmap.pixels[start]), total_size - d_size);
-
-        update = EINA_TRUE;
-     }
-   if (dx != 0)
-     {
-        /* TODO */
-        update = EINA_TRUE;
-     }
+   abs_dy = abs(dy);
+   abs_dx = abs(dx);
 
    ed->bitmap.x_off = x;
    ed->bitmap.y_off = y;
 
-   /*
-    * FIXME This is bad. There is room for a lot of optimization!!
-    */
-   if (update)
-     bitmap_refresh(ed, NULL);
-#endif
+   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &w, &h);
+
+   if (dy != 0)
+     {
+        total_size = w * 4 * sizeof(uint8_t) * h;
+        d_size = abs_dy * w * 4 * sizeof(uint8_t);
+
+        /*
+         * This corner case will happen when we will scroll more than the bitmap
+         * height. We will refresh the whole bitmap then... so we need to truncate to
+         * its maximum size.
+         */
+        if (total_size < d_size)
+          d_size = total_size;
+
+        zone.h = abs_dy;
+        if (dy < 0) /* translate up */
+          {
+             end = 0;
+             start = d_size;
+             zone.y = h - abs_dy;
+          }
+        else /* translate down */
+          {
+             start = 0;
+             end = d_size;
+             zone.y = 0;
+          }
+
+        zone.x = 0;
+        zone.w = w;
+
+        memmove(&(ed->bitmap.pixels[end]), &(ed->bitmap.pixels[start]), total_size - d_size);
+
+        bitmap_coords_to_cells(ed, zone.x, zone.y, &zone.x, &zone.y);
+        bitmap_coords_to_cells(ed, zone.w, zone.h, &zone.w, &zone.h);
+        zone.w++; zone.h++;
+
+        INF("Refreshing zone: %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&zone));
+        bitmap_refresh(ed, &zone);
+
+     }
+   if (dx != 0)
+     {
+        total_size = w * 4 * sizeof(uint8_t); /* one line */
+        d_size = abs_dx * 4 * sizeof(uint8_t);
+
+        /*
+         * This corner case will happen when we will scroll more than the bitmap
+         * width. We will refresh the whole bitmap then... so we need to truncate to
+         * its maximum size.
+         */
+        if (total_size < d_size)
+          d_size = total_size;
+     }
+
 }
