@@ -1224,7 +1224,7 @@ bitmap_refresh(Editor               *ed,
                const Eina_Rectangle *zone)
 {
    Eina_Rectangle area;
-   Eina_Rectangle img, update;
+   Eina_Rectangle img/*, update*/;
    int x2, y2;
    int i, j;
 
@@ -1384,7 +1384,6 @@ bitmap_move(Editor *ed,
 
         INF("Refreshing zone: %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&zone));
         bitmap_refresh(ed, &zone);
-
      }
    if (dx != 0)
      {
@@ -1398,6 +1397,37 @@ bitmap_move(Editor *ed,
          */
         if (total_size < d_size)
           d_size = total_size;
+
+
+        if (dx < 0) /* Translate to the left */
+          {
+             start = d_size;
+             end = 0;
+             zone.x = w - abs_dx;
+          }
+        else /* Translate to the right */
+          {
+             start = 0;
+             end = d_size;
+             zone.x = 0;
+          }
+
+        for (j = 0, i = 0; i < h; i++, j += total_size)
+          {
+             memmove(&(ed->bitmap.pixels[j + end]),
+                     &(ed->bitmap.pixels[j + start]), total_size - d_size);
+          }
+
+        zone.y = 0;
+        zone.h = h;
+        zone.w = abs_dx;
+
+        bitmap_coords_to_cells(ed, zone.x, zone.y, &zone.x, &zone.y);
+        bitmap_coords_to_cells(ed, zone.w, zone.h, &zone.w, &zone.h);
+        zone.w++; zone.h++;
+
+        INF("Refreshing zone: %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&zone));
+        bitmap_refresh(ed, &zone);
      }
 
 }
