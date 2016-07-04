@@ -62,6 +62,16 @@ _scroll_cb(void        *data,
    editor_view_update(ed);
 }
 
+static void
+_scroll_stop_cb(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   INF("End of scroll");
+   bitmap_refresh(ed, NULL);
+}
+
 static Eina_Bool
 _key_down_cb(void *data  EINA_UNUSED,
              int   type  EINA_UNUSED,
@@ -273,6 +283,8 @@ editor_new(const char *pud_file,
    evas_object_size_hint_weight_set(ed->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
+   evas_object_smart_callback_add(ed->scroller, "scroll,anim,stop", _scroll_stop_cb, ed);
+   evas_object_smart_callback_add(ed->scroller, "scroll,drag,stop", _scroll_stop_cb, ed);
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
 
