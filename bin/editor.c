@@ -528,7 +528,7 @@ editor_load(Editor     *ed,
    uint16_t tile;
    uint8_t bl, br, tl, tr, seed;
 
-   printf("%s(%s)\n", __func__, file);
+   DBG("Loading %s\n", file);
 
    if (file)
      {
