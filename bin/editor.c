@@ -672,6 +672,7 @@ editor_view_update(Editor *ed)
    cx = rintf((float)rx / wf);
    cy = rintf((float)ry / hf);
 
+   bitmap_refresh(ed, NULL);
    minimap_view_move(ed, cx, cy, EINA_FALSE);
    minimap_view_resize(ed, cw, ch);
 }

@@ -435,8 +435,6 @@ _bitmap_autoresize(Editor *ed)
 #endif
 
    //evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
-
-   bitmap_refresh(ed, NULL);
 }
 
 static void
