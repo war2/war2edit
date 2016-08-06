@@ -603,6 +603,7 @@ bitmap_unit_draw(Editor       *ed,
    at_x = (x * TEXTURE_WIDTH) + ((int)(w * TEXTURE_WIDTH) - (int)sw) / 2;
    at_y = (y * TEXTURE_HEIGHT) + ((int)(h * TEXTURE_HEIGHT) - (int)sh) / 2;
 
+   //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
    _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
 }
 
