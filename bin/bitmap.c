@@ -799,9 +799,9 @@ enum
 };
 
 static inline uint8_t
-_conflit_solve(const uint8_t  imposed,
-               const uint8_t  conflict,
-               Eina_Bool     *result_is_conflict)
+_conflict_solve(uint8_t    imposed,
+                uint8_t    conflict,
+                Eina_Bool *result_is_conflict)
 {
    /* If the imposed and potential conflictual fragments are compatible,
     * the potential conflict is not a conflict. Otherwise,
@@ -832,8 +832,8 @@ bitmap_tile_calculate(Editor           *ed,
    Eina_Rectangle zone;
 
 #define _TILE_RESOLVE(T, SUB, X, Y) \
-   next[T].SUB = _conflit_solve(imposed, cells[Y][X].tile_ ## SUB, \
-                                &(next[T].conflict))
+   next[T].SUB = _conflict_solve(imposed, cells[Y][X].tile_ ## SUB, \
+                                 &(next[T].conflict))
 
    if (x > 0)
      {
