@@ -1,7 +1,7 @@
 /*
  * texture.h
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #ifndef _TEXTURE_H_
@@ -10,21 +10,10 @@
 #define TEXTURE_WIDTH  32
 #define TEXTURE_HEIGHT 32
 
-
 Eina_Bool texture_init(void);
 void texture_shutdown(void);
-
-Eet_File *texture_tileset_open(Pud_Era era);
-
-void *texture_load(Eet_File *src, unsigned int key);
-unsigned char *texture_get(unsigned int key, Pud_Era era);
-
-Eina_Bool texture_water_is(unsigned int tile);
-Eina_Bool texture_wall_is(unsigned int tile);
-Eina_Bool texture_tree_is(unsigned int tile);
-Eina_Bool texture_rock_is(unsigned int tile);
-Eina_Bool texture_walkable_is(unsigned int tile);
-Eina_Bool texture_constructible_is(unsigned int tile);
+Eina_Bool texture_tileset_open(Pud_Era era);
+Eina_Bool texture_access_test(uint16_t tile, cairo_surface_t *atlas, unsigned int *x_off, unsigned int *y_off);
+cairo_surface_t *texture_atlas_get(Pud_Era era);
 
 #endif /* ! _TEXTURE_H_ */
-

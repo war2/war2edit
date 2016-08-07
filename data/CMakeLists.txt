@@ -1,9 +1,9 @@
 install(
    FILES
-   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/forest.eet
-   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/winter.eet
-   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/wasteland.eet
-   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/swamp.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/forest.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/winter.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/wasteland.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/tiles/swamp.png
    DESTINATION share/${CMAKE_PROJECT_NAME}/tiles
 )
 

@@ -177,7 +177,6 @@ Editor *editor_new(const char *pud_file, Eina_Bool xdebug);
 Eina_Bool editor_load(Editor *ed, const char *file);
 Eina_Bool editor_save(Editor *ed, const char *file);
 void editor_error(Editor *ed, const char *msg);
-unsigned char *editor_texture_tile_access(const Editor *ed, unsigned int x, unsigned int y);
 void editor_name_set(Editor *ed, const char *name);
 Eina_Bool editor_unit_ref(Editor *ed);
 Eina_Bool editor_unit_unref(Editor *ed);

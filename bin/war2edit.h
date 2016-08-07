@@ -9,9 +9,7 @@
 
 #include <pud.h>
 #include <war2.h>
-#if 0
 #include <cairo.h>
-#endif
 #include <Elementary.h>
 
 typedef struct _Cell Cell;
@@ -20,13 +18,10 @@ typedef struct _Editor Editor;
 typedef struct
 {
    Evas_Object *clip;
-   Evas_Object *shallow;
    Evas_Image *img;
 
-#if 0
    cairo_surface_t *surf;
    cairo_t *cr;
-#endif
 
    int x_off;
    int y_off;

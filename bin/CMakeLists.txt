@@ -53,7 +53,7 @@ target_include_directories(war2edit
    PUBLIC ${ELEMENTARY_INCLUDE_DIRS}
    PUBLIC ${LIBPUD_INCLUDE_DIRS}
    PUBLIC ${LIBWAR2_INCLUDE_DIRS}
-#  ${CAIRO_INCLUDE_DIRS}
+   PUBLIC ${CAIRO_INCLUDE_DIRS}
 )
 
 target_link_libraries(war2edit
@@ -65,7 +65,7 @@ target_link_libraries(war2edit
    ${ELEMENTARY_LIBRARIES}
    ${LIBPUD_LIBRARIES}
    ${LIBWAR2_LIBRARIES}
-#  ${CAIRO_LIBRARIES}
+   ${CAIRO_LIBRARIES}
 )
 add_dependencies(
    war2edit

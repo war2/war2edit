@@ -1,98 +1,57 @@
 /*
  * texture.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
 
-static Eina_Hash *_textures = NULL;
-static Eet_File *_tilesets[4] = { NULL, NULL, NULL, NULL };
+static cairo_surface_t *_atlases[4] = { NULL, NULL, NULL, NULL };
 
-
-void *
-texture_load(Eet_File     *src,
-             unsigned int  key)
-{
-   /* 4 channels (rgba) of 1 byte each */
-   const int expected_size = TEXTURE_WIDTH * TEXTURE_HEIGHT * 4 * sizeof(unsigned char);
-   void *mem;
-   char key_str[8];
-   int size;
-
-   snprintf(key_str, sizeof(key_str), "0x%04x", key);
-
-   /* Get raw data (uncompressed). */
-   mem = eet_read(src, key_str, &size);
-   if (!mem)
-     {
-        ERR("Cannot find key \"%s\"", key_str);
-        return NULL;
-     }
-
-   /* Check the size */
-   if (EINA_UNLIKELY(size != expected_size))
-     {
-        CRI("Image raw data was loaded with size [%i], expected [%i].",
-            size, expected_size);
-        free(mem);
-        return NULL;
-     }
-
-   //DBG("Loaded texture [%s] at <%p>", key_str, mem);
-
-   return mem;
-}
-
-Eet_File *
+Eina_Bool
 texture_tileset_open(Pud_Era era)
 {
-   EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), NULL);
+   EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), EINA_FALSE);
 
-   Eet_File *ef;
    const char *file = NULL;
    char path[PATH_MAX];
+   cairo_surface_t *surf;
 
    /* Don't load a tileset twice */
-   if (_tilesets[era])
-     return _tilesets[era];
+   if (_atlases[era])
+     return EINA_TRUE;
 
    switch (era)
      {
-      case PUD_ERA_FOREST:    file = "tiles/forest.eet";    break;
-      case PUD_ERA_WINTER:    file = "tiles/winter.eet";    break;
-      case PUD_ERA_WASTELAND: file = "tiles/wasteland.eet"; break;
-      case PUD_ERA_SWAMP:     file = "tiles/swamp.eet";     break;
+      case PUD_ERA_FOREST:    file = "tiles/forest.png";    break;
+      case PUD_ERA_WINTER:    file = "tiles/winter.png";    break;
+      case PUD_ERA_WASTELAND: file = "tiles/wasteland.png"; break;
+      case PUD_ERA_SWAMP:     file = "tiles/swamp.png";     break;
      }
 
    snprintf(path, sizeof(path), "%s/%s", elm_app_data_dir_get(), file);
-   ef = eet_open(path, EET_FILE_MODE_READ);
-   if (EINA_UNLIKELY(!ef))
+
+   if (EINA_UNLIKELY(!ecore_file_exists(path)))
+     {
+        CRI("Atlas path \"%s\" does not exist", path);
+        return EINA_FALSE;
+     }
+   surf = cairo_image_surface_create_from_png(path);
+   if (EINA_UNLIKELY(!surf))
      {
         CRI("Failed to open tileset at path \"%s\"", path);
-        return NULL;
+        return EINA_FALSE;
      }
-   DBG("Open tileset file [%s]", file);
+   DBG("Open atlas file [%s]", path);
+   _atlases[era] = surf;
 
-   _tilesets[era] = ef;
-
-   return ef;
+   return EINA_TRUE;
 }
 
 Eina_Bool
 texture_init(void)
 {
-   /* Used to load textures only when they are required */
-   _textures = eina_hash_int32_new(EINA_FREE_CB(free));
-   if (EINA_UNLIKELY(!_textures))
-     {
-        CRI("Failed to create Hash for textures");
-        goto fail;
-     }
    return EINA_TRUE;
-
-fail:
-   return EINA_FALSE;
 }
 
 void
@@ -100,49 +59,61 @@ texture_shutdown(void)
 {
    unsigned int i;
 
-   eina_hash_free(_textures);
-   for (i = 0; i < EINA_C_ARRAY_LENGTH(_tilesets); ++i)
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(_atlases); i++)
      {
-        if (_tilesets[i])
+        if (_atlases[i])
           {
-             eet_close(_tilesets[i]);
-             _tilesets[i] = NULL;
+             cairo_surface_destroy(_atlases[i]);
+             _atlases[i] = NULL;
           }
      }
 }
 
-
-unsigned char *
-texture_get(unsigned int  key,
-            Pud_Era       tileset)
+Eina_Bool
+texture_access_test(uint16_t         tile,
+                    cairo_surface_t *atlas,
+                    unsigned int    *x_off,
+                    unsigned int    *y_off)
 {
-   Eina_Bool chk;
-   unsigned char *tex;
+   unsigned int major, minor;
+   const unsigned int solid_offset = (0xd + 1) * 0x9 * TEXTURE_HEIGHT;
+   unsigned int x, y;
+   unsigned char *pixels, *px;
 
-   tex = eina_hash_find(_textures, &key);
-   if (tex == NULL)
+   major = (tile & 0x0f00) >> 8;
+   minor = (tile & 0x00f0) >> 4;
+
+   if (major == 0) /* Solid tiles */
      {
-        tex = texture_load(_tilesets[tileset], key);
-        if (EINA_UNLIKELY(tex == NULL))
-          {
-             ERR("Failed to load texture for key [%u] (0x%04x)", key, key);
-             return NULL;
-          }
-        chk = eina_hash_add(_textures, &key, tex);
-        if (chk == EINA_FALSE)
-          {
-             ERR("Failed to add texture <%p> to hash", tex);
-             free(tex);
-             return NULL;
-          }
-        //DBG("Access key: [%u] (not yet registered). TEX = <%p>", key, tex);
-        return tex;
+        y = solid_offset + ((minor - 1) * TEXTURE_HEIGHT);
+        x = tile & 0x000f * TEXTURE_WIDTH;
      }
    else
      {
-        //DBG("Access key: [%u] (already registered). TEX = <%p>", key, tex);
-        return tex;
+        y = ((major - 1) * TEXTURE_HEIGHT * (0xd + 1)) + (minor * TEXTURE_HEIGHT);
+        x = (tile & 0x000f) * TEXTURE_WIDTH;
      }
+
+   /* FIXME */
+   x = 0;
+   y = 0;
+   if (x_off) *x_off = x;
+   if (y_off) *y_off = y;
+
+   pixels = cairo_image_surface_get_data(atlas);
+   printf("x = %u, y = %u, width = %i, height = %i\n",
+          x, y, cairo_image_surface_get_width(atlas),
+          cairo_image_surface_get_height(atlas));
+   px = &pixels[(x * 4) + (y * cairo_image_surface_get_width(atlas))];
+   if (px[3] != 0xff)
+     return EINA_FALSE;
+
+   return EINA_TRUE;
 }
 
-
+cairo_surface_t *
+texture_atlas_get(Pud_Era era)
+{
+   EINA_SAFETY_ON_FALSE_RETURN_VAL((era >= 0) && (era <= 3), NULL);
+   return _atlases[era];
+}

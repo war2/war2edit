@@ -30,7 +30,8 @@ _draw(Editor        *ed,
    int bmp_x_start;
    int bmp_x_step;
 
-#if 0
+   return; // XXX Override draw
+#if 1
    bmp = cairo_image_surface_get_data(ed->bitmap.surf);
 #else
    bmp = ed->bitmap.pixels;
@@ -392,6 +393,7 @@ _bitmap_autoresize(Editor *ed)
    int x, y, w, h;
    unsigned char *pixels;
 
+
    evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
    elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
 
@@ -413,28 +415,32 @@ _bitmap_autoresize(Editor *ed)
    ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
    ed->bitmap.cr = cairo_create(ed->bitmap.surf);
    pixels = cairo_image_surface_get_data(ed->bitmap.surf);
+
+   cairo_set_source_rgb(ed->bitmap.cr, 1.0, 1.0, 0.0);
+   cairo_rectangle(ed->bitmap.cr, 10, 10, 200, 200);
+   cairo_fill(ed->bitmap.cr);
 #endif
 
    evas_object_move(ed->bitmap.img, x, y);
    evas_object_move(ed->bitmap.clip, x, y);
 
-   pixels = realloc(ed->bitmap.pixels, w * h * 4 * sizeof(uint8_t));
-   if (EINA_UNLIKELY(!pixels))
-     {
-        CRI("Failed to realloc pixels map. Aborting resize");
-        return;
-     }
-   ed->bitmap.pixels = pixels;
+//   pixels = realloc(ed->bitmap.pixels, w * h * 4 * sizeof(uint8_t));
+//   if (EINA_UNLIKELY(!pixels))
+//     {
+//        CRI("Failed to realloc pixels map. Aborting resize");
+//        return;
+//     }
+ //  ed->bitmap.pixels = pixels;
 
-   evas_object_image_size_set(ed->bitmap.img, w, h);
-   evas_object_image_data_set(ed->bitmap.img, pixels);
+  // evas_object_image_size_set(ed->bitmap.img, w, h);
+  // evas_object_image_data_set(ed->bitmap.img, pixels);
    evas_object_resize(ed->bitmap.img, w, h);
    evas_object_resize(ed->bitmap.clip, w, h);
 #if 0
    cairo_surface_flush(ed->bitmap.surf);
 #endif
 
-   //evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
+   evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
 }
 
 static void
@@ -775,18 +781,37 @@ bitmap_tile_draw(Editor       *ed,
                  unsigned int  x,
                  unsigned int  y)
 {
-   unsigned char *tex;
+   cairo_surface_t *atlas;
+   unsigned int ox, oy, px, py;
 
-   tex = texture_get(ed->cells[y][x].tile, ed->pud->era);
-   if (EINA_UNLIKELY(!tex))
+   atlas = texture_atlas_get(ed->pud->era);
+   if (EINA_UNLIKELY(!atlas))
      {
-        ERR("Failed to access texture at index %u,%u, era %s",
-            x, y, pud_era2str(ed->pud->era));
+        ERR("Failed to get atlas for era %s", pud_era2str(ed->pud->era));
         return;
      }
 
-   _draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
-         TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
+   if (EINA_UNLIKELY(!texture_access_test(ed->cells[y][x].tile, atlas, &ox, &oy)))
+     {
+        ERR("Cannot map tile texture 0x%04x", ed->cells[y][x].tile);
+        return;
+     }
+
+   px = x * TEXTURE_WIDTH;
+   py = y * TEXTURE_HEIGHT;
+
+   cairo_set_source_surface(ed->bitmap.cr, atlas, -ox + px, -oy +py);
+   cairo_save(ed->bitmap.cr);
+   cairo_rectangle(ed->bitmap.cr, px, py, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+   cairo_clip(ed->bitmap.cr);
+   cairo_paint(ed->bitmap.cr);
+   cairo_restore(ed->bitmap.cr);
+
+//   cairo_mask_surface(ed->bitmap.cr, atlas, ox, oy);
+//   cairo_fill(ed->bitmap.cr);
+
+   //_draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
+   //      TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
    minimap_render(ed, x, y, 1, 1);
 }
 
@@ -1041,6 +1066,7 @@ bitmap_add(Editor *ed)
    Eo *o;
    Eina_Bool chk;
    const char group[] = "war2edit/cursor";
+   unsigned char *pixels;
 
    DBG("Adding bitmap");
 
@@ -1058,29 +1084,32 @@ bitmap_add(Editor *ed)
    ed->bitmap.max_w = ed->bitmap.cell_w * ed->pud->map_w;
    ed->bitmap.max_h = ed->bitmap.cell_h * ed->pud->map_h;
 
-   /* Shallow */
-   o = ed->bitmap.shallow = evas_object_rectangle_add(e);
-   evas_object_size_hint_align_set(o, 0.0, 0.0);
-   evas_object_size_hint_weight_set(o, 0.0, 0.0);
-   evas_object_resize(o, ed->bitmap.max_w, ed->bitmap.max_h);
-   evas_object_size_hint_min_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
-   evas_object_size_hint_max_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
-   evas_object_color_set(o, 0, 0, 0, 0);
-   evas_object_hide(o);
-   elm_object_content_set(ed->scroller, o);
-
    /* Bitmap image */
    o = ed->bitmap.img = evas_object_image_filled_add(e);
    evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
    evas_object_size_hint_align_set(o, 0.0, 0.0);
    evas_object_size_hint_weight_set(o, 0.0, 0.0);
-   evas_object_smart_member_add(o, ed->scroller);
+   evas_object_size_hint_min_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
+   evas_object_size_hint_max_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
+   elm_object_content_set(ed->scroller, o);
    evas_object_smart_callback_add(o, "mouse,down", _mouse_down_cb, ed);
    evas_object_smart_callback_add(o, "mouse,move", _mouse_move_cb, ed);
    evas_object_smart_callback_add(o, "mouse,up", _mouse_up_cb, ed);
    evas_object_propagate_events_set(o, EINA_FALSE);
    evas_object_pass_events_set(o, EINA_FALSE);
    evas_object_show(o);
+
+   /* Cairo surface for the game */
+   ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                ed->bitmap.max_w,
+                                                ed->bitmap.max_h);
+   ed->bitmap.cr = cairo_create(ed->bitmap.surf);
+   pixels = cairo_image_surface_get_data(ed->bitmap.surf);
+   evas_object_image_size_set(ed->bitmap.img,
+                              cairo_image_surface_get_width(ed->bitmap.surf),
+                              cairo_image_surface_get_height(ed->bitmap.surf));
+   evas_object_image_data_set(ed->bitmap.img, pixels);
+
 
    /* Clip - to avoid the cursor overlapping with the scroller */
    o = ed->bitmap.clip = evas_object_rectangle_add(e);
@@ -1112,6 +1141,10 @@ bitmap_add(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
    sel_add(ed);
+
+   cairo_set_source_rgb(ed->bitmap.cr, 1.0, 1.0, 0.0);
+   cairo_rectangle(ed->bitmap.cr, 10, 10, 200, 200);
+   cairo_fill(ed->bitmap.cr);
 
    _bitmap_autoresize(ed);
 
@@ -1329,6 +1362,7 @@ bitmap_move(Editor *ed,
 {
  //  DBG("New xoff,yoff = %i,%i",ed->bitmap.x_off,ed->bitmap.y_off);
 
+   return;
    int dx, dy, abs_dx, abs_dy,  i, j;
    int w, h;
    int start, end;
