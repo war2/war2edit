@@ -71,14 +71,14 @@ texture_shutdown(void)
 
 Eina_Bool
 texture_access_test(uint16_t         tile,
-                    cairo_surface_t *atlas,
+                    cairo_surface_t *atlas EINA_UNUSED,
                     unsigned int    *x_off,
                     unsigned int    *y_off)
 {
    unsigned int major, minor;
    const unsigned int solid_offset = (0xd + 1) * 0x9 * TEXTURE_HEIGHT;
    unsigned int x, y;
-   unsigned char *pixels, *px;
+   //unsigned char *pixels, *px;
 
    major = (tile & 0x0f00) >> 8;
    minor = (tile & 0x00f0) >> 4;
@@ -86,7 +86,7 @@ texture_access_test(uint16_t         tile,
    if (major == 0) /* Solid tiles */
      {
         y = solid_offset + ((minor - 1) * TEXTURE_HEIGHT);
-        x = tile & 0x000f * TEXTURE_WIDTH;
+        x = ((int)tile & 0x000f) * TEXTURE_WIDTH;
      }
    else
      {
@@ -94,19 +94,13 @@ texture_access_test(uint16_t         tile,
         x = (tile & 0x000f) * TEXTURE_WIDTH;
      }
 
-   /* FIXME */
-   x = 0;
-   y = 0;
    if (x_off) *x_off = x;
    if (y_off) *y_off = y;
 
-   pixels = cairo_image_surface_get_data(atlas);
-   printf("x = %u, y = %u, width = %i, height = %i\n",
-          x, y, cairo_image_surface_get_width(atlas),
-          cairo_image_surface_get_height(atlas));
-   px = &pixels[(x * 4) + (y * cairo_image_surface_get_width(atlas))];
-   if (px[3] != 0xff)
-     return EINA_FALSE;
+   //pixels = cairo_image_surface_get_data(atlas);
+   //px = &pixels[(x * 4) + (y * cairo_image_surface_get_width(atlas))];
+   //if (px[0] != 0xff)
+   //  return EINA_FALSE;
 
    return EINA_TRUE;
 }

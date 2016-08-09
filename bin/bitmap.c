@@ -400,45 +400,11 @@ _bitmap_autoresize(Editor *ed)
    if (w > ed->bitmap.max_w) w = ed->bitmap.max_w;
    if (h > ed->bitmap.max_h) h = ed->bitmap.max_h;
 
-#if 0
-   /* FIXME Can we resize a cairo surface????
-    * For now, all I've found is to make another surface...
-    * pretty bad....
-    */
-   if (ed->bitmap.surf)
-     {
-        cairo_destroy(ed->bitmap.cr);
-        cairo_surface_destroy(ed->bitmap.surf);
-     }
-
-   /* Re-assign surfaces and resize image proxy */
-   ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-   ed->bitmap.cr = cairo_create(ed->bitmap.surf);
-   pixels = cairo_image_surface_get_data(ed->bitmap.surf);
-
-   cairo_set_source_rgb(ed->bitmap.cr, 1.0, 1.0, 0.0);
-   cairo_rectangle(ed->bitmap.cr, 10, 10, 200, 200);
-   cairo_fill(ed->bitmap.cr);
-#endif
-
    evas_object_move(ed->bitmap.img, x, y);
    evas_object_move(ed->bitmap.clip, x, y);
 
-//   pixels = realloc(ed->bitmap.pixels, w * h * 4 * sizeof(uint8_t));
-//   if (EINA_UNLIKELY(!pixels))
-//     {
-//        CRI("Failed to realloc pixels map. Aborting resize");
-//        return;
-//     }
- //  ed->bitmap.pixels = pixels;
-
-  // evas_object_image_size_set(ed->bitmap.img, w, h);
-  // evas_object_image_data_set(ed->bitmap.img, pixels);
    evas_object_resize(ed->bitmap.img, w, h);
    evas_object_resize(ed->bitmap.clip, w, h);
-#if 0
-   cairo_surface_flush(ed->bitmap.surf);
-#endif
 
    evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
 }
@@ -800,18 +766,11 @@ bitmap_tile_draw(Editor       *ed,
    px = x * TEXTURE_WIDTH;
    py = y * TEXTURE_HEIGHT;
 
-   cairo_set_source_surface(ed->bitmap.cr, atlas, -ox + px, -oy +py);
-   cairo_save(ed->bitmap.cr);
+   cairo_set_source_surface(ed->bitmap.cr, atlas,
+                            (int)px - (int)ox, (int)py - (int)oy);
    cairo_rectangle(ed->bitmap.cr, px, py, TEXTURE_WIDTH, TEXTURE_HEIGHT);
-   cairo_clip(ed->bitmap.cr);
-   cairo_paint(ed->bitmap.cr);
-   cairo_restore(ed->bitmap.cr);
+   cairo_fill(ed->bitmap.cr);
 
-//   cairo_mask_surface(ed->bitmap.cr, atlas, ox, oy);
-//   cairo_fill(ed->bitmap.cr);
-
-   //_draw(ed, tex, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT,
-   //      TEXTURE_WIDTH, TEXTURE_HEIGHT, EINA_FALSE, -1);
    minimap_render(ed, x, y, 1, 1);
 }
 
