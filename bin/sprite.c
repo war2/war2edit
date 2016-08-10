@@ -1,7 +1,7 @@
 /*
  * sprite.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -15,62 +15,90 @@ static Eet_File *_units_ef = NULL;
 static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
 
+typedef struct
+{
+   unsigned char *data;
+   unsigned int w;
+   unsigned int h;
+} Sprite_Descriptor;
+
+static Sprite_Descriptor *
+_sprite_descriptor_new(unsigned char *data,
+                       unsigned int   w,
+                       unsigned int   h)
+{
+   Sprite_Descriptor *d;
+
+   d = malloc(sizeof(*d));
+   if (EINA_UNLIKELY(!d))
+     {
+        CRI("Failed to allocate memory");
+        return NULL;
+     }
+   d->data = data;
+   d->w = w;
+   d->h = h;
+
+   return d;
+}
+
+static unsigned char *
+_sprite_descriptor_dup(const Sprite_Descriptor *d)
+{
+   unsigned char *data;
+
+   data = NULL;
+
+   return data;
+}
+
+static void
+_sprite_descriptor_free(Sprite_Descriptor *d)
+{
+   if (d)
+     {
+        free(d->data);
+        free(d);
+     }
+}
+
+
+static void *
+_sprite_load(Eet_File     *src,
+            const char   *key,
+            unsigned int *w_ret,
+            unsigned int *h_ret)
+{
+   unsigned char *mem;
+
+   mem = eet_data_image_read(src, key, w_ret, h_ret, NULL, NULL, NULL, NULL);
+   if (EINA_UNLIKELY(!mem))
+     {
+        CRI("Failed to load sprite for key \"%s\"", key);
+        return NULL;
+     }
+   return mem;
+}
+
 static Eina_Bool
 _sprite_load_add(Eet_File   *ef,
                  const char *key)
 {
    unsigned char *data;
 
-   data = sprite_load(ef, key, NULL, NULL, NULL, NULL);
+   data = _sprite_load(ef, key, NULL, NULL);
    if (EINA_UNLIKELY(!data))
      {
         CRI("Failed to load data for key \"%s\"", key);
         return EINA_FALSE;
      }
+   // FIXME Datadescriptor
    if (EINA_UNLIKELY(!eina_hash_add(_sprites, key, data)))
      {
         CRI("Failed to write data in hash for key \"%s\"", key);
         return EINA_FALSE;
      }
    return EINA_TRUE;
-}
-
-void *
-sprite_load(Eet_File     *src,
-            const char   *key,
-            int          *x_ret,
-            int          *y_ret,
-            unsigned int *w_ret,
-            unsigned int *h_ret)
-{
-   unsigned char *mem;
-   int size, expected_size;
-   uint16_t x, y, w, h;
-
-   mem = eet_read(src, key, &size);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(mem, NULL);
-
-   memcpy(&x, mem + 0, sizeof(uint16_t));
-   memcpy(&y, mem + 2, sizeof(uint16_t));
-   memcpy(&w, mem + 4, sizeof(uint16_t));
-   memcpy(&h, mem + 6, sizeof(uint16_t));
-
-   expected_size = (w * h * 4) + 8;
-   if (expected_size != size)
-     {
-        CRI("Sprite data was loaded with size [%i], expected [%i]",
-            size, expected_size);
-        free(mem);
-        return NULL;
-     }
-
-   //DBG("Loaded sprite [%s] of size %ix%i (offsets: %i,%i)\n", key, w, h, x, y);
-
-   if (x_ret) *x_ret = x;
-   if (y_ret) *y_ret = y;
-   if (w_ret) *w_ret = w;
-   if (h_ret) *h_ret = h;
-   return mem + 8;
 }
 
 Eet_File *
@@ -136,10 +164,8 @@ unsigned char *
 sprite_get(Pud_Unit       unit,
            Pud_Era        era,
            Sprite_Info    info,
-           int           *x,
-           int           *y,
-           unsigned int  *w,
-           unsigned int  *h,
+           unsigned int  *w_ret,
+           unsigned int  *h_ret,
            Eina_Bool     *flip_me)
 {
    unsigned char *data;
@@ -148,7 +174,8 @@ sprite_get(Pud_Unit       unit,
    Eina_Bool chk;
    int orient;
    Eina_Bool flip;
-   uint16_t sx, sy, sw, sh;
+   Sprite_Descriptor *d;
+   unsigned int w, h;
 
    if (pud_unit_building_is(unit))
      {
@@ -213,33 +240,41 @@ sprite_get(Pud_Unit       unit,
      }
    if (flip_me) *flip_me = flip;
 
-   data = eina_hash_find(_sprites, key);
-   if (data == NULL)
+   d = eina_hash_find(_sprites, key);
+   if (d == NULL)
      {
-        data = sprite_load(ef, key, x, y, w, h);
+        data = _sprite_load(ef, key, &w, &h);
         if (EINA_UNLIKELY(data == NULL))
           {
              ERR("Failed to load sprite for key [%s]", key);
              return NULL;
           }
-        chk = eina_hash_add(_sprites, key, data);
-        if (EINA_UNLIKELY(chk == EINA_FALSE))
+
+        d = _sprite_descriptor_new(data, w, h);
+        if (EINA_UNLIKELY(!d))
           {
-             ERR("Failed to add sprite <%p> to hash", data);
+             CRI("Failed to create sprite descriptor");
              free(data);
              return NULL;
           }
+        chk = eina_hash_add(_sprites, key, d);
+        if (EINA_UNLIKELY(chk == EINA_FALSE))
+          {
+             ERR("Failed to add sprite <%p> to hash", data);
+             _sprite_descriptor_free(d);
+             return NULL;
+          }
         //DBG("Access key [%s] (not yet registered). SRT = <%p>", key, data);
-        return data;
+        if (w_ret) *w_ret = d->w;
+        if (h_ret) *h_ret = d->h;
+        return d->data;
      }
    else
      {
-        if (x) { memcpy(&sx, data - 8, sizeof(uint16_t)); *x = sx; }
-        if (y) { memcpy(&sy, data - 6, sizeof(uint16_t)); *y = sy; }
-        if (w) { memcpy(&sw, data - 4, sizeof(uint16_t)); *w = sw; }
-        if (h) { memcpy(&sh, data - 2, sizeof(uint16_t)); *h = sh; }
         //DBG("Access key [%s] (already registered). SRT = <%p>", key, data);
-        return data;
+        if (w_ret) *w_ret = d->w;
+        if (h_ret) *h_ret = d->h;
+        return d->data;
      }
 }
 
@@ -254,8 +289,6 @@ sprite_info_random_get(void)
 static void
 _free_cb(void *data)
 {
-   /* There is an 8 bytes offset */
-   data -= 8;
    free(data);
 }
 
@@ -293,10 +326,10 @@ sprite_init(void)
         goto sel_fail;
      }
 
-   _sprite_load_add(ef, SELECTION_1x1);
-   _sprite_load_add(ef, SELECTION_2x2);
-   _sprite_load_add(ef, SELECTION_3x3);
-   _sprite_load_add(ef, SELECTION_4x4);
+  // _sprite_load_add(ef, SELECTION_1x1);
+  // _sprite_load_add(ef, SELECTION_2x2);
+  // _sprite_load_add(ef, SELECTION_3x3);
+  // _sprite_load_add(ef, SELECTION_4x4);
    eet_close(ef);
 
    return EINA_TRUE;
@@ -327,6 +360,7 @@ sprite_shutdown(void)
    eet_close(_units_ef);
    _units_ef = NULL;
    eina_hash_free(_sprites);
+   _sprites = NULL;
 }
 
 void
@@ -427,6 +461,7 @@ sprite_tile_size_get(Pud_Unit      unit,
 unsigned char *
 sprite_selection_get(unsigned int edge)
 {
+   return NULL;
    const char *key = NULL;
    switch (edge)
      {
@@ -453,4 +488,3 @@ sprite_selection_get(unsigned int edge)
 
    return eina_hash_find(_sprites, key);
 }
-

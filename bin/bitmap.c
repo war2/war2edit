@@ -524,6 +524,9 @@ bitmap_unit_draw(Editor       *ed,
    Pud_Unit unit = PUD_UNIT_NONE;
    Pud_Player col;
    unsigned int orient;
+   cairo_surface_t *surf;
+   cairo_matrix_t mat;
+   cairo_t *cr;
 
    if (unit_type == BITMAP_UNIT_BELOW)
      {
@@ -569,14 +572,42 @@ bitmap_unit_draw(Editor       *ed,
    if (unit == PUD_UNIT_NONE)
      return;
 
-   sprite = sprite_get(unit, ed->pud->era, orient, NULL, NULL, &sw, &sh, &flip);
-   EINA_SAFETY_ON_NULL_RETURN(sprite);
+   sprite = sprite_get(unit, ed->pud->era, orient, &sw, &sh, &flip);
+   if (EINA_UNLIKELY(!sprite))
+     {
+        CRI("Failed to get sprite 0x%x", unit);
+        return;
+     }
 
    at_x = (x * TEXTURE_WIDTH) + ((int)(w * TEXTURE_WIDTH) - (int)sw) / 2;
    at_y = (y * TEXTURE_HEIGHT) + ((int)(h * TEXTURE_HEIGHT) - (int)sh) / 2;
 
+   surf = cairo_image_surface_create_for_data(sprite, CAIRO_FORMAT_ARGB32, sw, sh,
+                                              cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, sw));
+   cr = cairo_create(surf);
+
+ //  if (flip)
+ //    {
+ //       cairo_matrix_init(&mat,
+ //                         -1.0             ,  0.0,
+ //                          0.0             ,  1.0,
+ //                         (2.0 * 0.0) + sw ,  0.0);
+ //       cairo_transform(cr, &mat);
+ //    }
+
+   /* TODO  Colorize */
+   
+ //  cairo_surface_write_to_png(surf, "blah.png");
+
+   cairo_set_source_surface(ed->bitmap.cr, surf, at_x, at_y);
+   cairo_rectangle(ed->bitmap.cr, at_x, at_y, sw, sh);
+   cairo_fill(ed->bitmap.cr);
+
+   cairo_surface_destroy(surf);
+   cairo_destroy(cr);
+
    //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
-   _draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
+   //_draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
 }
 
 void
@@ -1063,6 +1094,7 @@ bitmap_add(Editor *ed)
                                                 ed->bitmap.max_w,
                                                 ed->bitmap.max_h);
    ed->bitmap.cr = cairo_create(ed->bitmap.surf);
+   cairo_surface_flush(ed->bitmap.surf);
    pixels = cairo_image_surface_get_data(ed->bitmap.surf);
    evas_object_image_size_set(ed->bitmap.img,
                               cairo_image_surface_get_width(ed->bitmap.surf),
