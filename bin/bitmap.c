@@ -526,7 +526,7 @@ bitmap_unit_draw(Editor       *ed,
    unsigned int orient;
    cairo_surface_t *surf;
    cairo_matrix_t mat;
-   cairo_t *cr;
+   cairo_t *const cr = ed->bitmap.cr;
 
    if (unit_type == BITMAP_UNIT_BELOW)
      {
@@ -584,27 +584,30 @@ bitmap_unit_draw(Editor       *ed,
 
    surf = cairo_image_surface_create_for_data(sprite, CAIRO_FORMAT_ARGB32, sw, sh,
                                               cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, sw));
-   cr = cairo_create(surf);
 
- //  if (flip)
- //    {
- //       cairo_matrix_init(&mat,
- //                         -1.0             ,  0.0,
- //                          0.0             ,  1.0,
- //                         (2.0 * 0.0) + sw ,  0.0);
- //       cairo_transform(cr, &mat);
- //    }
+   if (flip)
+     {
+        cairo_matrix_init(&mat,
+                          -1.0             ,  0.0,
+                           0.0             ,  1.0,
+                          (2.0 * at_x) + sw ,  0.0);
+        cairo_save(cr);
+        cairo_transform(cr, &mat);
+     }
 
    /* TODO  Colorize */
    
- //  cairo_surface_write_to_png(surf, "blah.png");
 
-   cairo_set_source_surface(ed->bitmap.cr, surf, at_x, at_y);
-   cairo_rectangle(ed->bitmap.cr, at_x, at_y, sw, sh);
-   cairo_fill(ed->bitmap.cr);
+   cairo_set_source_surface(cr, surf, at_x, at_y);
+   cairo_rectangle(cr, at_x, at_y, sw, sh);
+   cairo_fill(cr);
+
+   if (flip)
+     {
+        cairo_restore(cr);
+     }
 
    cairo_surface_destroy(surf);
-   cairo_destroy(cr);
 
    //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
    //_draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
