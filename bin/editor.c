@@ -187,8 +187,8 @@ end:
 
 
 Editor *
-editor_new(const char *pud_file,
-           Eina_Bool   xdebug)
+editor_new(const char   *pud_file,
+           unsigned int  debug)
 {
    Editor *ed;
    char title[512];
@@ -201,7 +201,7 @@ editor_new(const char *pud_file,
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
-   ed->xdebug = xdebug;
+   ed->debug = debug;
 
    /* Get theme */
    if (main_in_tree_is())

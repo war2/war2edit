@@ -391,7 +391,7 @@ _mouse_down_cb(void        *data,
    evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
    bitmap_coords_to_cells(ed, ev->canvas.x - ox, ev->canvas.y - oy, &cx, &cy);
 
-   if (ed->xdebug)
+   if (ed->debug)
      {
         Cell *c = &(ed->cells[cy][cx]);
         fprintf(stdout, "[%u,%u] =", cx, cy);
@@ -424,13 +424,29 @@ _mouse_up_cb(void        *data,
  *                                 Public API                                 *
  *============================================================================*/
 
+static void
+bitmap_cell_write_coords(Editor       *ed EINA_UNUSED,
+                         unsigned int  x  EINA_UNUSED,
+                         unsigned int  y  EINA_UNUSED)
+{
+//   cairo_t *const cr = ed->bitmap.cr;
+//   char msg[16];
+//
+//   snprintf(msg, sizeof(msg), "%u,%u", x, y);
+//   msg[sizeof(msg) - 1] = '\0';
+//
+  // cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  // cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT);
+  // cairo_show_text(cr, msg);
+}
+
 void
 bitmap_unit_draw(Editor       *ed,
                  unsigned int  x,
                  unsigned int  y,
                  Bitmap_Unit   unit_type)
 {
-   Cell **cells = ed->cells;
+   Cell *const *const cells = ed->cells;
    const Cell *c = &(cells[y][x]);
    Eina_Bool flip;
    int at_x, at_y;
@@ -1065,6 +1081,15 @@ bitmap_add(Editor *ed)
                               cairo_image_surface_get_height(ed->bitmap.surf));
    evas_object_image_data_set(ed->bitmap.img, pixels);
 
+   /* Debug will required text */
+   if (ed->debug != EDITOR_DEBUG_NONE)
+     {
+        cairo_select_font_face(ed->bitmap.cr, "Sans",
+                               CAIRO_FONT_SLANT_NORMAL,
+                               CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(ed->bitmap.cr, 8);
+     }
+
 
    /* Clip - to avoid the cursor overlapping with the scroller */
    o = ed->bitmap.clip = evas_object_rectangle_add(e);
@@ -1263,6 +1288,14 @@ bitmap_refresh(Editor               *ed,
    for (j = y2 - 1; j >= area.y; --j)
      for (i = x2 - 1; i >= area.x; --i)
        bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
+
+   /* Debug: print cells numbers */
+   if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)
+     {
+        for (j = y2 - 1; j >= area.y; --j)
+          for (i = x2 - 2; i >= area.x; --i)
+            bitmap_cell_write_coords(ed, i, j);
+     }
 
    /* (Pre)Selections last */
    bitmap_selections_draw(ed, area.x, area.y, area.w, area.h);

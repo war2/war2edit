@@ -43,7 +43,11 @@ typedef uint16_t Editor_Sel;
 #define EDITOR_SEL_ACTION_MASK               ((Editor_Sel) (0x0f << 6))
 
 
-
+enum
+{
+   EDITOR_DEBUG_NONE            = 0,
+   EDITOR_DEBUG_CELLS_COORDS    = (1 << 0),
+};
 
 struct _Editor
 {
@@ -109,7 +113,7 @@ struct _Editor
    uint8_t     sides[8]; /* Orc, Human */
    Evas_Point  start_locations[8];
 
-   Eina_Bool    xdebug;
+   unsigned int    debug;
 };
 
 
@@ -173,7 +177,7 @@ Eina_Bool editor_init(void);
 void editor_shutdown(void);
 
 void editor_free(Editor *ed);
-Editor *editor_new(const char *pud_file, Eina_Bool xdebug);
+Editor *editor_new(const char *pud_file, unsigned int debug);
 Eina_Bool editor_load(Editor *ed, const char *file);
 Eina_Bool editor_save(Editor *ed, const char *file);
 void editor_error(Editor *ed, const char *msg);

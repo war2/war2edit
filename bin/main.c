@@ -19,7 +19,7 @@ static const Ecore_Getopt _options =
    "A modest clone of Warcraft II World Map Editor",
    EINA_TRUE,
    {
-      ECORE_GETOPT_STORE_TRUE('x', "xdebug", "Enable graphical debug"),
+      ECORE_GETOPT_STORE_TRUE('d', "debug", "Enable graphical debug"),
       ECORE_GETOPT_HELP ('h', "help"),
       ECORE_GETOPT_VERSION('V', "version"),
       ECORE_GETOPT_SENTINEL
@@ -57,15 +57,16 @@ elm_main(int    argc,
    Editor *ed;
    unsigned int ed_count = 0;
    Eina_Bool quit_opt = EINA_FALSE;
-   Eina_Bool xdebug = EINA_FALSE;
+   Eina_Bool debug = EINA_FALSE;
    Ecore_Getopt_Value values[] = {
-      ECORE_GETOPT_VALUE_BOOL(xdebug),
+      ECORE_GETOPT_VALUE_BOOL(debug),
       ECORE_GETOPT_VALUE_BOOL(quit_opt),
       ECORE_GETOPT_VALUE_BOOL(quit_opt)
    };
    const Module *mod_ptr;
    const Module *mod_end = &(_modules[EINA_C_ARRAY_LENGTH(_modules)]);
    const char *env;
+   unsigned int debug_flags = 0;
 
    args = ecore_getopt_parse(&_options, values, argc, argv);
    if (args < 0)
@@ -80,6 +81,10 @@ elm_main(int    argc,
         ret = EXIT_SUCCESS;
         goto end;
      }
+
+   if (debug)
+     debug_flags = ~0U;
+
 
    /* Are we running in tree? */
    env = getenv("WAR2EDIT_IN_TREE");
@@ -105,7 +110,7 @@ elm_main(int    argc,
    for (i = args; i < argc; ++i)
      {
         /* If an editor fails to open, don't close now */
-        ed = editor_new(argv[i], xdebug);
+        ed = editor_new(argv[i], debug_flags);
         if (!ed)
           ERR("Failed to create editor with file \"%s\"", argv[i]);
         else
@@ -114,7 +119,7 @@ elm_main(int    argc,
 
    if (ed_count == 0)
      {
-        ed = editor_new(NULL, xdebug);
+        ed = editor_new(NULL, debug_flags);
         if (EINA_UNLIKELY(!ed))
           {
              CRI("Failed to create editor");
