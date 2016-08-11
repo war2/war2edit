@@ -542,6 +542,25 @@ bitmap_unit_draw(Editor       *ed,
    //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
 }
 
+static void
+_draw_selection(cairo_t      *cr,
+                unsigned int  x,
+                unsigned int  y,
+                unsigned int  spread)
+{
+   cairo_surface_t *surf;
+
+   x *= TEXTURE_WIDTH;
+   y *= TEXTURE_HEIGHT;
+
+   surf = sprite_selection_get(spread);
+   spread *= TEXTURE_WIDTH;
+
+   cairo_set_source_surface(cr, surf, x, y);
+   cairo_rectangle(cr, x, y, spread, spread);
+   cairo_fill(cr);
+}
+
 void
 bitmap_selections_draw(Editor       *ed,
                        int           x,
@@ -555,7 +574,6 @@ bitmap_selections_draw(Editor       *ed,
    unsigned int y2 = y1 + h;
    unsigned int i, j;
    Cell *c;
-   cairo_surface_t *surf;
    cairo_t *const cr = ed->bitmap.cr;
 
    if (ed->sel.selections <= 0) return;
@@ -571,23 +589,11 @@ bitmap_selections_draw(Editor       *ed,
           c = &(ed->cells[j][i]);
           if ((c->anchor_below) && (c->selected_below))
             {
-               surf = sprite_selection_get(c->spread_x_below);
-               cairo_set_source_surface(cr, surf,
-                                        i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT);
-               cairo_rectangle(cr, i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
-                               c->spread_x_below * TEXTURE_WIDTH,
-                               c->spread_y_below * TEXTURE_HEIGHT);
-               cairo_fill(cr);
+               _draw_selection(cr, i, j, c->spread_x_below);
             }
           if ((c->anchor_above) && (c->selected_above))
             {
-               surf = sprite_selection_get(c->spread_x_above);
-               cairo_set_source_surface(cr, surf,
-                                        i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT);
-               cairo_rectangle(cr, i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
-                               c->spread_x_above * TEXTURE_WIDTH,
-                               c->spread_y_above * TEXTURE_HEIGHT);
-               cairo_fill(cr);
+               _draw_selection(cr, i, j, c->spread_x_above);
             }
        }
 }
