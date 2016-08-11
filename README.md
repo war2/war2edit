@@ -17,11 +17,9 @@ Build
 TODO - Showstoppers
 ===================
 
-- [X] Redo completly the graphical part. Elm_Bitmap is waayyy to heavy and inefficient.
-      Seems the best option is Evas_GL. Evas_Image + proxys are so easy to use,
-      and so efficient, but the smart_move kills it...
-- [X] Minimap window is annoying and suboptimal (let's Evas do the scaling)
-- [X] Place textures
+- [ ] Tiles algorithm is broken with dark tiles
+- [ ] Minimap rendering with cairo
+- [ ] Scaling of map via cairo
 - [ ] Different brush types
 - [ ] Different brush sizes
 - [X] Load a map
@@ -38,7 +36,7 @@ TODO - Showstoppers
 Improvements
 ============
 
-- [ ] Use a dedicated graphics library to draw. Cairo?
+- [X] Use a dedicated graphics library to draw. Cairo?
 
 Contributors
 ============
