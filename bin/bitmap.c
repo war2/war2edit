@@ -587,9 +587,16 @@ bitmap_selections_draw(Editor       *ed,
           // TODO Pre-selections
 
           c = &(ed->cells[j][i]);
-          if ((c->anchor_below) && (c->selected_below))
+          if (c->selected_below)
             {
-               _draw_selection(cr, i, j, c->spread_x_below);
+               if (c->anchor_below)
+                 {
+                    _draw_selection(cr, i, j, c->spread_x_below);
+                 }
+               else if (c->start_location != CELL_NOT_START_LOCATION)
+                 {
+                    _draw_selection(cr, i, j, 1);
+                 }
             }
           if ((c->anchor_above) && (c->selected_above))
             {
@@ -610,6 +617,19 @@ bitmap_unit_del_at(Editor       *ed,
    anchor = cell_anchor_pos_get(ed->cells, x, y, &rx, &ry, below);
    sx = (below) ? anchor->spread_x_below : anchor->spread_x_above;
    sy = (below) ? anchor->spread_y_below : anchor->spread_y_above;
+
+   if (ed->cells[y][x].start_location != CELL_NOT_START_LOCATION)
+     {
+        /* There is no spread for start location. Explictely
+         * reset to 1x1 for the deletion loop to be run */
+        sx = 1;
+        sy = 1;
+
+        /* Remove start location */
+        ed->start_locations[ed->cells[y][x].start_location].x = -1;
+        ed->start_locations[ed->cells[y][x].start_location].y = -1;
+     }
+
    for (j = ry; j < ry + sy; ++j)
      for (i = rx; i < rx + sx; ++i)
        {
@@ -654,7 +674,7 @@ bitmap_unit_set(Editor       *ed,
    const unsigned int map_h = ed->pud->map_h;
    Cell *c;
 
-   /* Don't draw */
+   /* Don't do anything */
    if (unit == PUD_UNIT_NONE)
      return;
 

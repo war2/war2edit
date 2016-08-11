@@ -131,7 +131,7 @@ sel_end(Editor *ed)
           {
              /* Selections for units below */
              anchor = cell_anchor_get(cells, i, j, EINA_TRUE);
-             if (anchor->unit_below != PUD_UNIT_NONE)
+             if ((anchor->unit_below != PUD_UNIT_NONE) || (anchor->start_location != CELL_NOT_START_LOCATION))
                {
                   if (inclusive)
                     {
@@ -216,8 +216,11 @@ sel_del(Editor *ed)
      for (i = 0; i < ed->pud->map_w; ++i)
        {
           c = &(ed->cells[j][i]);
-          if ((c->anchor_below) && (c->selected_below == SEL_SET))
-            bitmap_unit_del_at(ed, i, j, EINA_TRUE);
+          if (c->selected_below == SEL_SET)
+            {
+               if (c->anchor_below || c->start_location != CELL_NOT_START_LOCATION)
+                 bitmap_unit_del_at(ed, i, j, EINA_TRUE);
+            }
           if ((c->anchor_above) && (c->selected_above == SEL_SET))
             bitmap_unit_del_at(ed, i, j, EINA_FALSE);
        }
