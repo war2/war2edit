@@ -1,7 +1,7 @@
 /*
  * sprite.h
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #ifndef _SPRITE_H_
@@ -38,7 +38,7 @@ Sprite_Info sprite_info_random_get(void);
 Eina_Bool sprite_init(void);
 void sprite_shutdown(void);
 void sprite_tile_size_get(Pud_Unit unit, unsigned int *w, unsigned int *h);
-unsigned char *sprite_selection_get(unsigned int edge);
+cairo_surface_t *sprite_selection_get(unsigned int edge);
 
 #endif /* ! _SPRITE_H_ */
 

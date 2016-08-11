@@ -14,6 +14,7 @@
 static Eet_File *_units_ef = NULL;
 static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
+static cairo_surface_t *_sels[4] = { NULL, NULL, NULL, NULL };
 
 
 static Sprite_Descriptor *
@@ -63,27 +64,6 @@ _sprite_load(Eet_File     *src,
         return NULL;
      }
    return mem;
-}
-
-static Eina_Bool
-_sprite_load_add(Eet_File   *ef,
-                 const char *key)
-{
-   unsigned char *data;
-
-   data = _sprite_load(ef, key, NULL, NULL);
-   if (EINA_UNLIKELY(!data))
-     {
-        CRI("Failed to load data for key \"%s\"", key);
-        return EINA_FALSE;
-     }
-   // FIXME Datadescriptor
-   if (EINA_UNLIKELY(!eina_hash_add(_sprites, key, data)))
-     {
-        CRI("Failed to write data in hash for key \"%s\"", key);
-        return EINA_FALSE;
-     }
-   return EINA_TRUE;
 }
 
 Eet_File *
@@ -274,11 +254,19 @@ _free_cb(void *data)
 Eina_Bool
 sprite_init(void)
 {
-   Eet_File *ef;
    char path[PATH_MAX];
+   const char *sels[] = {
+      "sel1x1.png",
+      "sel2x2.png",
+      "sel3x3.png",
+      "sel4x4.png",
+   };
+   int i;
 
-   snprintf(path, sizeof(path),
-            "%s/sprites/misc/sel.eet", elm_app_data_dir_get());
+   EINA_SAFETY_ON_FALSE_RETURN_VAL(
+      EINA_C_ARRAY_LENGTH(sels) == EINA_C_ARRAY_LENGTH(_sels),
+      EINA_FALSE);
+
    if (EINA_UNLIKELY(!sprite_units_open()))
      {
         CRI("Failed to open units file");
@@ -292,29 +280,34 @@ sprite_init(void)
         goto sprites_fail;
      }
 
-   if (EINA_UNLIKELY(!sprite_units_open()))
+   /* Load selection sprites */
+   for (i = 0; i < (int)EINA_C_ARRAY_LENGTH(_sels); i++)
      {
-        CRI("Failed to load units");
-        goto units_fail;
+        snprintf(path, sizeof(path),
+                 "%s/sprites/misc/%s", elm_app_data_dir_get(), sels[i]);
+        path[sizeof(path) - 1] = '\0';
+        if (!ecore_file_exists(path))
+          {
+             CRI("File \"%s\" does not exist", path);
+             goto sel_fail;
+          }
+        _sels[i] = cairo_image_surface_create_from_png(path);
+        if (EINA_UNLIKELY(!_sels[i]))
+          {
+             CRI("Failed to create cairo surface from %s", path);
+             goto surf_fail;
+          }
      }
-
-   ef = eet_open(path, EET_FILE_MODE_READ);
-   if (EINA_UNLIKELY(!ef))
-     {
-        CRI("Failed to open file \"%s\"", path);
-        goto sel_fail;
-     }
-
-  // _sprite_load_add(ef, SELECTION_1x1);
-  // _sprite_load_add(ef, SELECTION_2x2);
-  // _sprite_load_add(ef, SELECTION_3x3);
-  // _sprite_load_add(ef, SELECTION_4x4);
-   eet_close(ef);
 
    return EINA_TRUE;
 
+surf_fail:
+   for (i--; i >= 0; i--)
+     {
+        cairo_surface_destroy(_sels[i]);
+        _sels[i] = NULL;
+     }
 sel_fail:
-units_fail:
    eina_hash_free(_sprites);
 sprites_fail:
    eet_close(_units_ef);
@@ -334,6 +327,12 @@ sprite_shutdown(void)
              eet_close(_buildings[i]);
              _buildings[i] = NULL;
           }
+     }
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(_sels); i++)
+     {
+        cairo_surface_destroy(_sels[i]);
+        _sels[i] = NULL;
      }
 
    eet_close(_units_ef);
@@ -437,33 +436,9 @@ sprite_tile_size_get(Pud_Unit      unit,
    if (sprite_h) *sprite_h = h;
 }
 
-unsigned char *
+cairo_surface_t *
 sprite_selection_get(unsigned int edge)
 {
-   return NULL;
-   const char *key = NULL;
-   switch (edge)
-     {
-      case 1:
-         key = SELECTION_1x1;
-         break;
-
-      case 2:
-         key = SELECTION_2x2;
-         break;
-
-      case 3:
-         key = SELECTION_3x3;
-         break;
-
-      case 4:
-         key = SELECTION_4x4;
-         break;
-
-      default:
-         CRI("Invalid edge parameter '%u'", edge);
-         return NULL;
-     }
-
-   return eina_hash_find(_sprites, key);
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((edge <= 0) || (edge > 4), NULL);
+   return _sels[edge - 1];
 }

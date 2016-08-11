@@ -24,7 +24,10 @@ install(
 
 install(
    FILES
-   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel.eet
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel1x1.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel2x2.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel3x3.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/misc/sel4x4.png
    DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/misc
 )
 
