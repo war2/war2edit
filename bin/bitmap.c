@@ -13,89 +13,6 @@
  *                                 Private API                                *
  *============================================================================*/
 
-static void
-_draw(Editor        *ed,
-      unsigned char *img,
-      int            at_x,
-      int            at_y,
-      int            img_w,
-      int            img_h,
-      Eina_Bool      hflip,
-      int            colorize)
-{
-   int bmp_w, bmp_h;
-   int img_y, bmp_y, img_x, bmp_x, k;
-   unsigned char *bmp;
-   unsigned char bgr[4];
-   int bmp_x_start;
-   int bmp_x_step;
-
-   return; // XXX Override draw
-#if 1
-   bmp = cairo_image_surface_get_data(ed->bitmap.surf);
-#else
-   bmp = ed->bitmap.pixels;
-#endif
-
-   at_x -= ed->bitmap.x_off;
-   if (at_x < 0) at_x = 0;
-   at_y -= ed->bitmap.y_off;
-   if (at_y < 0) at_y = 0;
-
-   img_w *= 4;
-   at_x *= 4;
-
-   evas_object_geometry_get(ed->bitmap.img, NULL, NULL, &bmp_w, &bmp_h);
-   bmp_w *= 4;
-
-   /*
-    * FIXME
-    *
-    * Ideally, we should not make manual rendering like we do now...
-    * We should Cairo handle all that, use GL behind the scenes,
-    * and it is likely to be much faster.
-    *
-    * This is legacy from my elm_bitmap. I'll change it some day...
-    *
-    * FIXME
-    */
-
-   /* Calculate the horizontal mirroring  */
-   if (hflip)
-     {
-        bmp_x_start = at_x + img_w;
-        bmp_x_step = -4;
-     }
-   else
-     {
-        bmp_x_start = at_x;
-        bmp_x_step = 4;
-     }
-
-   for (img_y = 0, bmp_y = at_y;
-        (img_y < img_h) && (bmp_y < bmp_h);
-        ++img_y, ++bmp_y)
-     {
-        for (img_x = 0, bmp_x = bmp_x_start;
-             (img_x < img_w) && (bmp_x < bmp_w);
-             img_x += 4, bmp_x += bmp_x_step)
-          {
-             k = img_x + (img_y * img_w);
-             memcpy(&(bgr[0]), &(img[k]), 4);
-             if (colorize != -1)
-               {
-                  war2_sprites_color_convert(colorize,
-                                             bgr[2], bgr[1], bgr[0],
-                                             &(bgr[2]), &(bgr[1]), &(bgr[0]));
-               }
-             if (bgr[3] != 0)
-               {
-                  memcpy(&(bmp[bmp_x + bmp_y * bmp_w]), &(bgr[0]), 4);
-               }
-          }
-     }
-}
-
 static uint8_t
 _solid_component_get(Editor_Sel action,
                      Editor_Sel tint)
@@ -391,8 +308,6 @@ static void
 _bitmap_autoresize(Editor *ed)
 {
    int x, y, w, h;
-   unsigned char *pixels;
-
 
    evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
    elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
@@ -517,16 +432,17 @@ bitmap_unit_draw(Editor       *ed,
 {
    Cell **cells = ed->cells;
    const Cell *c = &(cells[y][x]);
-   unsigned char *sprite;
    Eina_Bool flip;
    int at_x, at_y;
-   unsigned int w, h, sw, sh;
+   unsigned int w, h, i, j;
    Pud_Unit unit = PUD_UNIT_NONE;
    Pud_Player col;
    unsigned int orient;
    cairo_surface_t *surf;
    cairo_matrix_t mat;
    cairo_t *const cr = ed->bitmap.cr;
+   Sprite_Descriptor *d;
+   unsigned char *pixels;
 
    if (unit_type == BITMAP_UNIT_BELOW)
      {
@@ -572,34 +488,48 @@ bitmap_unit_draw(Editor       *ed,
    if (unit == PUD_UNIT_NONE)
      return;
 
-   sprite = sprite_get(unit, ed->pud->era, orient, &sw, &sh, &flip);
-   if (EINA_UNLIKELY(!sprite))
+   d = sprite_get(unit, ed->pud->era, orient, &flip);
+   if (EINA_UNLIKELY(!d))
      {
         CRI("Failed to get sprite 0x%x", unit);
         return;
      }
 
-   at_x = (x * TEXTURE_WIDTH) + ((int)(w * TEXTURE_WIDTH) - (int)sw) / 2;
-   at_y = (y * TEXTURE_HEIGHT) + ((int)(h * TEXTURE_HEIGHT) - (int)sh) / 2;
+   at_x = (x * TEXTURE_WIDTH) + ((int)(w * TEXTURE_WIDTH) - (int)d->w) / 2;
+   at_y = (y * TEXTURE_HEIGHT) + ((int)(h * TEXTURE_HEIGHT) - (int)d->h) / 2;
 
-   surf = cairo_image_surface_create_for_data(sprite, CAIRO_FORMAT_ARGB32, sw, sh,
-                                              cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, sw));
+   surf = cairo_image_surface_create_for_data(d->data, CAIRO_FORMAT_ARGB32, d->w, d->h,
+                                              cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, d->w));
+
+   /* Colorize source sprite */
+   if (d->color != col)
+     {
+
+        const unsigned int pixels = cairo_image_surface_get_width(surf) *
+           cairo_image_surface_get_height(surf) * 4;
+        for (i = 0; i < pixels; i += 4)
+          {
+             war2_sprites_color_convert(d->color, col,
+                                        d->data[i + 2], d->data[i + 1], d->data[i + 0],
+                                        &d->data[i + 2], &d->data[i + 1], &d->data[i + 0]);
+          }
+        cairo_surface_mark_dirty(surf);
+        d->color = col;
+     }
 
    if (flip)
      {
         cairo_matrix_init(&mat,
-                          -1.0             ,  0.0,
-                           0.0             ,  1.0,
-                          (2.0 * at_x) + sw ,  0.0);
+                          -1.0               , 0.0,
+                          0.0                , 1.0,
+                          (2.0 * at_x) + d->w, 0.0);
         cairo_save(cr);
         cairo_transform(cr, &mat);
      }
 
-   /* TODO  Colorize */
-   
 
    cairo_set_source_surface(cr, surf, at_x, at_y);
-   cairo_rectangle(cr, at_x, at_y, sw, sh);
+   cairo_rectangle(cr, at_x, at_y, d->w, d->h);
    cairo_fill(cr);
 
    if (flip)
@@ -610,7 +540,6 @@ bitmap_unit_draw(Editor       *ed,
    cairo_surface_destroy(surf);
 
    //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
-   //_draw(ed, sprite, at_x, at_y, sw, sh, flip, col);
 }
 
 void
@@ -640,19 +569,19 @@ bitmap_selections_draw(Editor       *ed,
           c = &(ed->cells[j][i]);
           if ((c->anchor_below) && (c->selected_below))
             {
-               _draw(ed, sprite_selection_get(c->spread_x_below),
-                     i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
-                     c->spread_x_below * TEXTURE_WIDTH,
-                     c->spread_y_below * TEXTURE_HEIGHT,
-                     EINA_FALSE, -1);
+            //   _draw(ed, sprite_selection_get(c->spread_x_below),
+            //         i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
+            //         c->spread_x_below * TEXTURE_WIDTH,
+            //         c->spread_y_below * TEXTURE_HEIGHT,
+            //         EINA_FALSE, -1);
             }
           if ((c->anchor_above) && (c->selected_above))
             {
-               _draw(ed, sprite_selection_get(c->spread_x_above),
-                     i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
-                     c->spread_x_above * TEXTURE_WIDTH,
-                     c->spread_y_above * TEXTURE_HEIGHT,
-                     EINA_FALSE, -1);
+            //   _draw(ed, sprite_selection_get(c->spread_x_above),
+            //         i * TEXTURE_WIDTH, j * TEXTURE_HEIGHT,
+            //         c->spread_x_above * TEXTURE_WIDTH,
+            //         c->spread_y_above * TEXTURE_HEIGHT,
+            //         EINA_FALSE, -1);
             }
        }
 }

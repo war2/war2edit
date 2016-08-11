@@ -15,12 +15,6 @@ static Eet_File *_units_ef = NULL;
 static Eet_File *_buildings[4] = { NULL, NULL, NULL, NULL };
 static Eina_Hash *_sprites = NULL;
 
-typedef struct
-{
-   unsigned char *data;
-   unsigned int w;
-   unsigned int h;
-} Sprite_Descriptor;
 
 static Sprite_Descriptor *
 _sprite_descriptor_new(unsigned char *data,
@@ -38,18 +32,9 @@ _sprite_descriptor_new(unsigned char *data,
    d->data = data;
    d->w = w;
    d->h = h;
+   d->color = PUD_PLAYER_RED;
 
    return d;
-}
-
-static unsigned char *
-_sprite_descriptor_dup(const Sprite_Descriptor *d)
-{
-   unsigned char *data;
-
-   data = NULL;
-
-   return data;
 }
 
 static void
@@ -160,12 +145,10 @@ sprite_buildings_open(Pud_Era era)
    return ef;
 }
 
-unsigned char *
+Sprite_Descriptor *
 sprite_get(Pud_Unit       unit,
            Pud_Era        era,
            Sprite_Info    info,
-           unsigned int  *w_ret,
-           unsigned int  *h_ret,
            Eina_Bool     *flip_me)
 {
    unsigned char *data;
@@ -265,16 +248,12 @@ sprite_get(Pud_Unit       unit,
              return NULL;
           }
         //DBG("Access key [%s] (not yet registered). SRT = <%p>", key, data);
-        if (w_ret) *w_ret = d->w;
-        if (h_ret) *h_ret = d->h;
-        return d->data;
+        return d;
      }
    else
      {
         //DBG("Access key [%s] (already registered). SRT = <%p>", key, data);
-        if (w_ret) *w_ret = d->w;
-        if (h_ret) *h_ret = d->h;
-        return d->data;
+        return d;
      }
 }
 

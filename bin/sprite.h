@@ -20,9 +20,17 @@ typedef enum
    SPRITE_INFO_ICON , /* special value for icons */
 } Sprite_Info;
 
+typedef struct
+{
+   unsigned char *data;
+   unsigned int w;
+   unsigned int h;
+   Pud_Player   color;
+} Sprite_Descriptor;
 
-unsigned char *sprite_get(Pud_Unit unit, Pud_Era era, Sprite_Info info,
-                          unsigned int *w_ret, unsigned int *h_ret, Eina_Bool *flip_me);
+
+Sprite_Descriptor *sprite_get(Pud_Unit unit, Pud_Era era, Sprite_Info info,
+                              Eina_Bool *flip_me);
 Eet_File *sprite_buildings_open(Pud_Era era);
 Eet_File *sprite_units_open(void);
 Sprite_Info sprite_info_random_get(void);
