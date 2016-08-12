@@ -219,6 +219,10 @@ editor_new(const char   *pud_file,
    ed->orc_menus = eina_array_new(4);
    ed->human_menus = eina_array_new(4);
 
+   /* No previous click */
+   ed->prev_x = -1;
+   ed->prev_y = -1;
+
    for (i = 0; i < 8; i++)
      {
         /* No start location */

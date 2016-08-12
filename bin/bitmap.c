@@ -94,13 +94,19 @@ _click_handle(Editor *ed,
    Sprite_Info orient;
    int w, h;
    Eina_Rectangle zone;
+   Editor_Sel action;
 
    if (!bitmap_cursor_enabled_get(ed)) return;
    if (((unsigned int)x >= ed->pud->map_w) ||
        ((unsigned int)y >= ed->pud->map_h))
      return;
+   if ((x == ed->prev_x) && (y == ed->prev_y))
+     return;
 
-   const Editor_Sel action = editor_sel_action_get(ed);
+   ed->prev_x = x;
+   ed->prev_y = y;
+
+   action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
      {
         if (pud_unit_start_location_is(ed->sel_unit))
@@ -420,6 +426,9 @@ _mouse_up_cb(void        *data,
 
    if (sel_active_is(ed))
      sel_end(ed);
+
+   ed->prev_x = -1;
+   ed->prev_y = -1;
 }
 
 

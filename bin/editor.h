@@ -114,6 +114,11 @@ struct _Editor
    Evas_Point  start_locations[8];
 
    unsigned int    debug;
+
+   /* Used to avoid setting tiles in the same cell every time
+    * the mouse is moved within the cell */
+   int prev_x;
+   int prev_y;
 };
 
 
