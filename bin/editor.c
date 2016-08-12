@@ -559,7 +559,7 @@ editor_load(Editor     *ed,
        {
           tile = pud_tile_get(pud, i, j);
           tile_decompose(tile, &tl, &tr, &bl, &br, &seed);
-          bitmap_tile_set(ed, i, j, tl, tr, bl, br, seed);
+          bitmap_tile_set(ed, i, j, tl, tr, bl, br, seed, EINA_TRUE);
        }
 
    for (i = 0; i < pud->units_count; ++i)

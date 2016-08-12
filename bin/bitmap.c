@@ -82,7 +82,7 @@ _place_selected_tile(Editor           *ed,
 
    component = _solid_component_get(action, tint);
    bitmap_tile_set(ed, x, y, component, component,
-                   component, component, randomize);
+                   component, component, randomize, EINA_TRUE);
    bitmap_tile_calculate(ed, x, y, NULL);
 }
 
@@ -948,7 +948,7 @@ bitmap_tile_calculate(Editor           *ed,
              ok &= bitmap_tile_set(ed, next[k].x, next[k].y,
                                    next[k].tl, next[k].tr,
                                    next[k].bl, next[k].br,
-                                   TILE_RANDOMIZE);
+                                   TILE_RANDOMIZE, EINA_FALSE);
 
              if (next[k].conflict == EINA_FALSE)
                continue;
@@ -963,11 +963,11 @@ bitmap_tile_calculate(Editor           *ed,
    return ok;
 }
 
-Eina_Bool
-bitmap_full_tile_set(Editor   *ed,
-                     int       x,
-                     int       y,
-                     uint16_t  tile)
+static Eina_Bool
+_bitmap_full_tile_set(Editor   *ed,
+                      int       x,
+                      int       y,
+                      uint16_t  tile)
 {
    /* Safety checks */
    EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
@@ -1005,14 +1005,15 @@ bitmap_full_tile_set(Editor   *ed,
 }
 
 Eina_Bool
-bitmap_tile_set(Editor  *ed,
-                int      x,
-                int      y,
-                uint8_t  tl,
-                uint8_t  tr,
-                uint8_t  bl,
-                uint8_t  br,
-                uint8_t  seed)
+bitmap_tile_set(Editor    *ed,
+                int        x,
+                int        y,
+                uint8_t    tl,
+                uint8_t    tr,
+                uint8_t    bl,
+                uint8_t    br,
+                uint8_t    seed,
+                Eina_Bool  force)
 {
    Cell *c = &(ed->cells[y][x]);
    uint16_t tile;
@@ -1027,7 +1028,13 @@ bitmap_tile_set(Editor  *ed,
                          c->tile_bl, c->tile_br,
                          seed, ed->pud->era);
 
-   return bitmap_full_tile_set(ed, x, y, tile);
+   if (!force)
+     {
+        tile &= ~0x000f;
+        tile |= (c->tile & 0x000f);
+     }
+
+   return _bitmap_full_tile_set(ed, x, y, tile);
 }
 
 Eina_Bool
