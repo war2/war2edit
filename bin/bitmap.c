@@ -96,6 +96,9 @@ _click_handle(Editor *ed,
    Eina_Rectangle zone;
 
    if (!bitmap_cursor_enabled_get(ed)) return;
+   if (((unsigned int)x >= ed->pud->map_w) ||
+       ((unsigned int)y >= ed->pud->map_h))
+     return;
 
    const Editor_Sel action = editor_sel_action_get(ed);
    if (ed->sel_unit != PUD_UNIT_NONE)
