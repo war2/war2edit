@@ -523,7 +523,7 @@ menu_add(Editor *ed)
 
    /* Add a fictive radio which will be used to reset the units selection */
    ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL,
-                                      _radio_units_changed_cb, EINA_FALSE);
+                                      _radio_units_changed_cb, NULL);
    menu_unit_selection_reset(ed);
 
 #undef RADIO_ADD
@@ -534,7 +534,7 @@ menu_add(Editor *ed)
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Players", NULL, NULL);
 
 #define RADIO_ADD(unit_, label_) \
-   _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb, EINA_FALSE)
+   _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb, NULL)
 
    rd = NULL; /* Reset the radio group */
    rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);
