@@ -81,17 +81,27 @@ _run_cb(void        *data,
 {
    Editor *ed = data;
    Ecore_Exe *exe;
-   const char *war2_cdrom, *war2_disk, *war2_path, *dosbox_cmd;
    char cmd[1024];
-
-   war2_cdrom = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/cdrom");
-   war2_disk = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/disk");
-   war2_path = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/path");
-   dosbox_cmd = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bin");
+   char *dosbox = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bin");
+   char *disk = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/disk");
+   char *cdrom = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/cdrom");
+   char *path = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/path");
+   char *extra_cmd = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/cmd");
 
    snprintf(cmd, sizeof(cmd),
-            "%s -c \"mount C: %s\" -c \"mount D: %s -t cdrom\" -c \"C:\" -c \"%s\"",
-            dosbox_cmd, war2_disk, war2_cdrom, war2_path);
+            "%s"
+            " -c \"mount C: %s\""
+            " -c \"mount D: %s -t cdrom\""
+            " %s"
+            " -c \"C:\" -c \"%s\"",
+            dosbox, disk, cdrom, extra_cmd, path);
+   cmd[sizeof(cmd)] = '\0';
+
+   free(dosbox);
+   free(disk);
+   free(cdrom);
+   free(path);
+   free(extra_cmd);
 
    exe = ecore_exe_pipe_run(cmd,
                             ECORE_EXE_PIPE_READ_LINE_BUFFERED |

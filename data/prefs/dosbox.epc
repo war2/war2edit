@@ -60,6 +60,11 @@ collection {
             }
          }
 
+         item { name: "dosbox/cmd"; type: TEXT;
+            editable: 1;
+            label: "Extra command";
+         }
+
          item { name: "dosbox/bin"; type: TEXT;
             editable: 1;
             label: "DOSBox binary";
