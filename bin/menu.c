@@ -1106,7 +1106,13 @@ _pack_range_entry(Evas_Object  *table,
    val->prescalor.operation = operation;
    val->prescalor.inverse = inverse;
 
+#if defined(EFL_VERSION_1_19) /* 1.19 or higher */
+   efl_event_callback_add(o, ELM_ENTRY_EVENT_VALIDATE, _validator_cb, val);
+#elif defined(EFL_VERSION_1_18)
    eo_event_callback_add(o, ELM_ENTRY_EVENT_VALIDATE, _validator_cb, val);
+#else
+# warning No Automatic validation available
+#endif
 
    switch (val->bind.type)
      {
