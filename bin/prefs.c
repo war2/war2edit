@@ -37,8 +37,26 @@ _prefs_file_get(Prefs type)
 Eina_Bool
 prefs_init(void)
 {
-   _prefs[PREFS_DOSBOX] = _prefs_new("dosbox");
+   int i;
+   const char *str[__PREFS_LAST] = {
+      [PREFS_DOSBOX] = "dosbox",
+   };
+
+   for (i = 0; i < (int)EINA_C_ARRAY_LENGTH(_prefs); i++)
+     {
+        _prefs[i] = _prefs_new(str[i]);
+        if (EINA_UNLIKELY(!_prefs[i]))
+          {
+             CRI("Failed to initialize preferences \"%s\"", str[i]);
+             goto fail;
+          }
+     }
+
    return EINA_TRUE;
+
+fail:
+   // TODO release
+   return EINA_FALSE;
 }
 
 void
@@ -62,6 +80,7 @@ prefs_new(Evas_Object *parent,
 {
    Evas_Object *obj;
    char path[PATH_MAX];
+   Eina_Bool chk;
 
    obj = elm_prefs_add(parent);
    evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -70,7 +89,13 @@ prefs_new(Evas_Object *parent,
 
    snprintf(path, sizeof(path), "%s/prefs/%s",
             elm_app_data_dir_get(), _prefs_file_get(type));
-   elm_prefs_file_set(obj, path, NULL);
+   chk = elm_prefs_file_set(obj, path, NULL);
+   if (EINA_UNLIKELY(!chk))
+     {
+        CRI("Failed to set preferences from file \"%s\"", path);
+        eo_unref(obj);
+        return NULL;
+     }
    elm_prefs_data_set(obj, _prefs[type]);
    evas_object_show(obj);
 
