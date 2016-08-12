@@ -856,13 +856,15 @@ bitmap_tile_calculate(Editor           *ed,
 {
    Cell *const *const cells = ed->cells;
    Eina_Bool ok = EINA_TRUE;
-   Tile_Propagation next[8] = { {0} };
+   Tile_Propagation next[8];
    const Tile_Propagate current_prop = (prop) ? prop->prop : TILE_PROPAGATE_FULL;
    const int x = (prop) ? prop->x : px;
    const int y = (prop) ? prop->y : py;
    unsigned int k;
    uint8_t imposed;
    Eina_Rectangle zone;
+
+   memset(next, 0, sizeof(next));
 
 #define _TILE_RESOLVE(T, SUB, X, Y) \
    next[T].SUB = _conflict_solve(imposed, cells[Y][X].tile_ ## SUB, \
