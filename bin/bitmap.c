@@ -1026,6 +1026,11 @@ bitmap_tile_set(Editor    *ed,
 {
    Cell *c = &(ed->cells[y][x]);
    uint16_t tile;
+   Eina_Bool same;
+
+   /* Are we replacing the tile by an equivalent one? */
+   same = ((c->tile_tl == tl) && (c->tile_tr == tr) &&
+           (c->tile_bl == bl) && (c->tile_br == br));
 
    /* Set tile internals */
    if (tl != TILE_NONE) c->tile_tl = tl;
@@ -1037,7 +1042,7 @@ bitmap_tile_set(Editor    *ed,
                          c->tile_bl, c->tile_br,
                          seed, ed->pud->era);
 
-   if (!force)
+   if (!force && same)
      {
         tile &= ~0x000f;
         tile |= (c->tile & 0x000f);
