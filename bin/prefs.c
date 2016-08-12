@@ -1,7 +1,7 @@
 /*
  * prefs.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
@@ -13,25 +13,18 @@ _prefs_new(const char *suffix)
 {
    char dirname[64];
    char path[128];
+   Eina_Bool chk;
 
-   snprintf(dirname, sizeof(dirname), "%s/.war2edit", getenv("HOME"));
-   snprintf(path, sizeof(path), "%s/config_%s", dirname, suffix);
-   ecore_file_mkdir(dirname);
+   snprintf(dirname, sizeof(dirname), "%s/.config/war2edit", getenv("HOME"));
+   snprintf(path, sizeof(path), "%s/%s.cfg", dirname, suffix);
+   chk = ecore_file_mkpath(dirname);
+   if (EINA_UNLIKELY(!chk))
+     {
+        CRI("Failed to create directory \"%s\"", dirname);
+        return NULL;
+     }
 
    return elm_prefs_data_new(path, NULL, EET_FILE_MODE_READ_WRITE);
-}
-
-static inline const char *
-_prefs_file_get(Prefs type)
-{
-   switch (type)
-     {
-      case PREFS_DOSBOX:
-         return "dosbox.epb";
-
-      default:
-         return NULL;
-     }
 }
 
 Eina_Bool
@@ -55,7 +48,8 @@ prefs_init(void)
    return EINA_TRUE;
 
 fail:
-   // TODO release
+   for (i--; i >= 0; i--)
+     elm_prefs_data_unref(_prefs[i]);
    return EINA_FALSE;
 }
 
@@ -81,14 +75,17 @@ prefs_new(Evas_Object *parent,
    Evas_Object *obj;
    char path[PATH_MAX];
    Eina_Bool chk;
+   const char *epbs[__PREFS_LAST] = {
+      [PREFS_DOSBOX] = "dosbox.epb",
+   };
 
    obj = elm_prefs_add(parent);
    evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(obj, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_prefs_autosave_set(obj, EINA_TRUE);
 
-   snprintf(path, sizeof(path), "%s/prefs/%s",
-            elm_app_data_dir_get(), _prefs_file_get(type));
+   snprintf(path, sizeof(path),
+            "%s/prefs/%s", elm_app_data_dir_get(), epbs[type]);
    chk = elm_prefs_file_set(obj, path, NULL);
    if (EINA_UNLIKELY(!chk))
      {
@@ -113,4 +110,3 @@ prefs_value_string_get(Prefs       type,
    eina_value_get(&value, &val);
    return val;
 }
-
