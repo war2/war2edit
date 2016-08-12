@@ -393,7 +393,7 @@ editor_save(Editor     *ed,
         return EINA_FALSE;
      }
 
-   INF("Map has been saved to \"%s\"", pud->filename);
+   INF("Map has been saved to \"%s\"", file);
    return EINA_TRUE;
 
 panic:
