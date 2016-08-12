@@ -209,7 +209,7 @@ editor_new(const char   *pud_file,
    else
      {
         len = snprintf(path, sizeof(path),
-                       "%s/war2edit/themes/%s.edj", PACKAGE_DATA_DIR, theme);
+                       "%s/themes/%s.edj", PACKAGE_DATA_DIR, theme);
      }
    path[sizeof(path) - 1] = '\0';
    ed->edje_file = strndup(path, len);
