@@ -51,15 +51,13 @@ set(CMAKE_MACOSX_RPATH OFF)
 
 find_package(PkgConfig)
 
-# 1.16.99 is required because a bug in hoversel has been fixed then
-set(EFL_VERSION 1.16.99)
-set(ELM_VERSION 1.16.99)
+set(EFL_VERSION 1.18.0)
 pkg_check_modules(EINA eina>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(EET eet>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(EVAS evas>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(ECORE ecore>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(ECORE_FILE ecore-file>=${EFL_VERSION} REQUIRED)
-pkg_check_modules(ELEMENTARY elementary>=${ELM_VERSION} REQUIRED)
+pkg_check_modules(ELEMENTARY elementary>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(CAIRO cairo REQUIRED)
 pkg_check_modules(LIBPUD pud REQUIRED)
 pkg_check_modules(LIBWAR2 war2 REQUIRED)
