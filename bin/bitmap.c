@@ -462,7 +462,7 @@ bitmap_unit_draw(Editor       *ed,
    const Cell *c = &(cells[y][x]);
    Eina_Bool flip;
    int at_x, at_y;
-   unsigned int w, h, i, j;
+   unsigned int w, h, i;
    Pud_Unit unit = PUD_UNIT_NONE;
    Pud_Player col;
    unsigned int orient;
@@ -470,7 +470,6 @@ bitmap_unit_draw(Editor       *ed,
    cairo_matrix_t mat;
    cairo_t *const cr = ed->bitmap.cr;
    Sprite_Descriptor *d;
-   unsigned char *pixels;
 
    if (unit_type == BITMAP_UNIT_BELOW)
      {
