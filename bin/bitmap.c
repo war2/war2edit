@@ -77,6 +77,9 @@ _place_selected_tile(Editor           *ed,
    uint8_t component;
    uint8_t randomize = TILE_RANDOMIZE;
 
+   if ((x >= ed->pud->map_w) || (y >= ed->pud->map_h))
+     return;
+
    if (spread == EDITOR_SEL_SPREAD_SPECIAL)
      randomize |= TILE_SPECIAL;
 
@@ -95,6 +98,7 @@ _click_handle(Editor *ed,
    int w, h;
    Eina_Rectangle zone;
    Editor_Sel action;
+   int z, i, j;
 
    if (!bitmap_cursor_enabled_get(ed)) return;
    if (((unsigned int)x >= ed->pud->map_w) ||
@@ -143,9 +147,33 @@ _click_handle(Editor *ed,
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
-        _place_selected_tile(ed, action,
-                             editor_sel_spread_get(ed),
-                             editor_sel_tint_get(ed), x, y);
+        switch (editor_sel_radius_get(ed))
+          {
+           case EDITOR_SEL_RADIUS_SMALL:
+              z = 1 / 2;
+              break;
+
+           case EDITOR_SEL_RADIUS_MEDIUM:
+              z = 3 / 2;
+              break;
+
+           case EDITOR_SEL_RADIUS_BIG:
+              z = 5 / 2;
+              break;
+
+           default:
+              CRI("Unknown radius. Default to small...");
+              z = 1 / 2;
+              break;
+          }
+
+        for (j = -z; j <= z; j++)
+          for (i = -z; i <= z; i++)
+            {
+               _place_selected_tile(ed, action,
+                                    editor_sel_spread_get(ed),
+                                    editor_sel_tint_get(ed), x + i, y + j);
+            }
      }
 }
 
