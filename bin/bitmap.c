@@ -406,8 +406,7 @@ _mouse_move_cb(void        *data,
      }
    else
      {
-        if (ed->sel_unit != PUD_UNIT_NONE)
-          bitmap_cursor_state_evaluate(ed, cx, cy);
+        bitmap_cursor_state_evaluate(ed, cx, cy);
      }
 
    if (bitmap_cursor_enabled_get(ed))
