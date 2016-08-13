@@ -51,8 +51,15 @@ install(
    ${CMAKE_CURRENT_SOURCE_DIR}/images/selection.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/trees.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/water.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/war2edit.png
 
    DESTINATION share/${CMAKE_PROJECT_NAME}/images
+)
+
+install(
+   FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/desktop/war2edit.desktop
+   DESTINATION share/applications
 )
 
 add_subdirectory(prefs)

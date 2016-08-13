@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=War2Edit
+Comment=Warcraft II Map Editor
+Comment[fr]=Éditeur de carte Warcraft II
+Exec=war2edit
+Icon=war2edit
+Keywords=game;warcraft;mapeditor
+Categories=Game;WarcraftII
+StartupWMClass=war2edit
