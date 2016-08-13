@@ -26,16 +26,6 @@ _win_del_cb(void        *data,
 }
 
 static void
-_error_close_cb(void        *data,
-                Evas_Object *obj  EINA_UNUSED,
-                void        *info EINA_UNUSED)
-{
-   Editor *ed = data;
-   DBG("Closing Editor %p after error...", ed);
-   editor_free(ed);
-}
-
-static void
 _win_resize_cb(void        *data,
                Evas        *e    EINA_UNUSED,
                Evas_Object *obj  EINA_UNUSED,
@@ -136,21 +126,22 @@ editor_free(Editor *ed)
 
 void
 editor_error(Editor     *ed,
-             const char *msg)
+             const char *fmt, ...)
 {
-   Evas_Object *box, *o, *e;
+   Evas_Object *box, *e;
+   char msg[4096];
+   va_list args;
+
+   va_start(args, fmt);
+   vsnprintf(msg, sizeof(msg), fmt, args);
+   va_end(args);
+   msg[sizeof(msg) - 1] = '\0';
 
    if (inwin_id_is(ed, INWIN_EDITOR_ERROR))
      {
         inwin_activate(ed);
         return;
      }
-
-   /* Confirm button */
-   o = elm_button_add(ed->win);
-   EINA_SAFETY_ON_NULL_GOTO(o, end);
-   elm_object_text_set(o, "Ok");
-   evas_object_smart_callback_add(o, "clicked", _error_close_cb, ed);
 
    /* Info label */
    e = elm_label_add(ed->win);
@@ -167,11 +158,9 @@ editor_error(Editor     *ed,
    elm_box_horizontal_set(box, EINA_FALSE);
    elm_box_homogeneous_set(box, EINA_FALSE);
    elm_box_pack_start(box, e);
-   elm_box_pack_end(box, o);
 
    inwin_set(ed, box, INWIN_EDITOR_ERROR, "Ok", NULL, NULL, NULL);
    evas_object_show(box);
-   evas_object_show(o);
    evas_object_show(e);
 
    return;

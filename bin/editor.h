@@ -186,7 +186,7 @@ void editor_free(Editor *ed);
 Editor *editor_new(const char *pud_file, unsigned int debug);
 Eina_Bool editor_load(Editor *ed, const char *file);
 Eina_Bool editor_save(Editor *ed, const char *file);
-void editor_error(Editor *ed, const char *msg);
+void editor_error(Editor *ed, const char *fmt, ...) EINA_PRINTF(2,3);
 void editor_name_set(Editor *ed, const char *name);
 Eina_Bool editor_unit_ref(Editor *ed);
 Eina_Bool editor_unit_unref(Editor *ed);
@@ -204,19 +204,10 @@ void editor_handle_delete(Editor *ed);
 
 Editor *editor_focused_get(void);
 
-#define EDITOR_ERROR_RET(ed_, msg_, ...) \
+#define EDITOR_ERROR(ed_, msg_, ...) \
    do { \
-      CRI(msg_); \
-      editor_error(ed_, msg_); \
-      return __VA_ARGS__; \
-   } while (0)
-
-#define EDITOR_ERROR_GOTO(ed_, msg_, label_) \
-   do { \
-      CRI(msg_); \
-      editor_error(ed_, msg_); \
-      goto label_; \
+      CRI(msg_, ## __VA_ARGS__); \
+      editor_error(ed_, msg_, ## __VA_ARGS__); \
    } while (0)
 
 #endif /* ! _EDITOR_H_ */
-
