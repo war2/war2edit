@@ -1,6 +1,7 @@
 #! /usr/bin/env sh
 
 set -e
+set -u
 
 WIDTH=100
 HEIGHT=100
@@ -27,4 +28,3 @@ FILES="$(ls -1 *.svg)"
 for f in $FILES; do
    inkscape_export "$f"
 done
-
