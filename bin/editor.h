@@ -119,6 +119,7 @@ struct _Editor
     * the mouse is moved within the cell */
    int prev_x;
    int prev_y;
+   Eina_Bool was_oob;
 };
 
 

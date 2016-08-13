@@ -403,10 +403,17 @@ _mouse_move_cb(void        *data,
        (ed->bitmap.cy + ed->bitmap.ch > (int)ed->pud->map_h))
      {
         bitmap_cursor_enabled_set(ed, EINA_FALSE);
+        ed->was_oob = EINA_TRUE;
      }
    else
      {
-        bitmap_cursor_state_evaluate(ed, cx, cy);
+        if (ed->was_oob)
+          {
+             bitmap_cursor_enabled_set(ed, EINA_TRUE);
+             ed->was_oob = EINA_FALSE;
+          }
+        if (ed->sel_unit != PUD_UNIT_NONE)
+          bitmap_cursor_state_evaluate(ed, cx, cy);
      }
 
    if (bitmap_cursor_enabled_get(ed))
