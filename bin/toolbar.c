@@ -95,7 +95,7 @@ _run_cb(void        *data,
             " %s"
             " -c \"C:\" -c \"%s\"",
             dosbox, disk, cdrom, extra_cmd, path);
-   cmd[sizeof(cmd)] = '\0';
+   cmd[sizeof(cmd) - 1] = '\0';
 
    free(dosbox);
    free(disk);
