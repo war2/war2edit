@@ -1003,7 +1003,7 @@ _pack_ai_selector(Evas_Object  *table,
       PUD_AI_HUMAN_12,
       PUD_AI_HUMAN_13,
    };
-   const int count = (int)EINA_C_ARRAY_LENGTH(values);
+   const unsigned int count = EINA_C_ARRAY_LENGTH(values);
 
    o = _hoversel_add(table, _ai_to_string(*bind));
 
