@@ -967,7 +967,7 @@ _pack_ai_selector(Evas_Object  *table,
 {
    Evas_Object *o;
    unsigned int i;
-   uint8_t values[] = {
+   const uint8_t values[] = {
       PUD_AI_LAND_ATTACK,
       PUD_AI_PASSIVE,
       PUD_AI_SEA_ATTACK,
