@@ -979,12 +979,35 @@ _pack_ai_selector(Evas_Object  *table,
       PUD_AI_LAND_ATTACK,
       PUD_AI_PASSIVE,
       PUD_AI_SEA_ATTACK,
-      PUD_AI_AIR_ATTACK
+      PUD_AI_AIR_ATTACK,
+
+      PUD_AI_ORC_3,
+      PUD_AI_ORC_4,
+      PUD_AI_ORC_5,
+      PUD_AI_ORC_6,
+      PUD_AI_ORC_7,
+      PUD_AI_ORC_8,
+      PUD_AI_ORC_9,
+      PUD_AI_ORC_10,
+      PUD_AI_ORC_11,
+      PUD_AI_ORC_12,
+      PUD_AI_ORC_13,
+      PUD_AI_HUMAN_4,
+      PUD_AI_HUMAN_5,
+      PUD_AI_HUMAN_6,
+      PUD_AI_HUMAN_7,
+      PUD_AI_HUMAN_8,
+      PUD_AI_HUMAN_9,
+      PUD_AI_HUMAN_10,
+      PUD_AI_HUMAN_11,
+      PUD_AI_HUMAN_12,
+      PUD_AI_HUMAN_13,
    };
+   const int count = (int)EINA_C_ARRAY_LENGTH(values);
 
    o = _hoversel_add(table, _ai_to_string(*bind));
 
-   for (i = 0; i < EINA_C_ARRAY_LENGTH(values); ++i)
+   for (i = 0; i < count; ++i)
      _hoversel_item_add(o, _ai_to_string(values[i]), _bind_cb, bind);
 
    // More AIs. Slow!!
