@@ -933,11 +933,19 @@ _ai_to_string(uint8_t ai)
       case PUD_AI_AIR_ATTACK:  return STR_PUD_AI_AIR_ATTACK;
       case PUD_AI_PASSIVE:     return STR_PUD_AI_PASSIVE;
 
+      /* Ignore these */
+      case PUD_AI_HUMAN_14_RED:
+      case PUD_AI_HUMAN_14_WHITE:
+      case PUD_AI_HUMAN_14_BLACK:
+      case PUD_AI_ORC_14_GREEN:
+      case PUD_AI_ORC_14_WHITE:
+         return NULL;
+
       default:
          break;
      }
 
-   if ((ai >= PUD_AI_ORC_3) && (ai <= PUD_AI_HUMAN_13))
+   if ((ai >= PUD_AI_ORC_3) && (ai <= PUD_AI_ORC_13))
      {
         if (ai % 2 == 0) /* orc */
           snprintf(buf, sizeof(buf), STR_PUD_AI_HUMAN_FMT, ai / 2);
@@ -952,7 +960,7 @@ _ai_to_string(uint8_t ai)
    else
      {
         CRI("Unhandled AI value 0x%x", ai);
-        return NULL;
+        buf[0] = '?'; buf[1] = '?'; buf[2] = '?'; buf[3] = '\0';
      }
 
    buf[sizeof(buf) - 1] = '\0';
