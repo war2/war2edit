@@ -951,7 +951,7 @@ _ai_to_string(uint8_t ai)
      }
    else
      {
-        CRI("Unhandled AI value %x", ai);
+        CRI("Unhandled AI value 0x%x", ai);
         return NULL;
      }
 
