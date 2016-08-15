@@ -186,6 +186,18 @@ tile_walkable_is(uint8_t tl,
            !tile_coast_is(tl, tr, bl, br));
 }
 
+static inline Eina_Bool
+tile_deep_water_is(uint8_t tl,
+                   uint8_t tr,
+                   uint8_t bl,
+                   uint8_t br)
+{
+   return (((tl == TILE_WATER_LIGHT) || (tl == TILE_WATER_DARK)) &&
+           ((tr == TILE_WATER_LIGHT) || (tr == TILE_WATER_DARK)) &&
+           ((bl == TILE_WATER_LIGHT) || (bl == TILE_WATER_DARK)) &&
+           ((br == TILE_WATER_LIGHT) || (br == TILE_WATER_DARK)));
+}
+
 uint16_t
 tile_calculate(uint8_t tl,
                uint8_t tr,

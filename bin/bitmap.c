@@ -295,7 +295,7 @@ bitmap_cursor_state_evaluate(Editor       *ed,
           }
         else /* marine,ground units */
           {
-             if (CELLS_TYPE(tile_water_is, _exclusive_op)) /* water */
+             if (CELLS_TYPE(tile_deep_water_is, _exclusive_op)) /* water */
                {
                   if (pud_unit_marine_is(ed->sel_unit))
                     {
@@ -307,6 +307,11 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                     }
                   else
                     bitmap_cursor_enabled_set(ed, EINA_FALSE);
+               }
+             else if (CELLS_TYPE(tile_water_is, _exclusive_op)) /* border water-ground */
+               {
+                  // TODO Handle Shipyard, Foundry, ...
+                  bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
              else /* ground */
                {
