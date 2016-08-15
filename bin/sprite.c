@@ -377,6 +377,8 @@ sprite_tile_size_get(Pud_Unit      unit,
       case PUD_UNIT_HUMAN_TRANSPORT:
       case PUD_UNIT_CIRCLE_OF_POWER:
       case PUD_UNIT_RUNESTONE:
+      case PUD_UNIT_JUGGERNAUGHT:
+      case PUD_UNIT_BATTLESHIP:
          w = 2;
          h = 2;
          break;
@@ -409,8 +411,6 @@ sprite_tile_size_get(Pud_Unit      unit,
       case PUD_UNIT_GOLD_MINE:
       case PUD_UNIT_OIL_PATCH:
       case PUD_UNIT_DRAGON:
-      case PUD_UNIT_JUGGERNAUGHT:
-      case PUD_UNIT_BATTLESHIP:
          w = 3;
          h = 3;
          break;
