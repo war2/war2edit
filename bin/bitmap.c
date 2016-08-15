@@ -310,8 +310,10 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                }
              else if (CELLS_TYPE(tile_water_is, _exclusive_op)) /* border water-ground */
                {
-                  // TODO Handle Shipyard, Foundry, ...
-                  bitmap_cursor_enabled_set(ed, EINA_FALSE);
+                  if (pud_unit_coast_building_is(ed->sel_unit))
+                    bitmap_cursor_enabled_set(ed, EINA_TRUE);
+                  else
+                    bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
              else /* ground */
                {
