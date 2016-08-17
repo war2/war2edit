@@ -263,7 +263,7 @@ _radio_units_changed_cb(void        *data,
    unsigned int w, h;
    Editor *ed = evas_object_data_get(obj, "editor");
    _radio_changed_common_do(data, (int *)(&(ed->sel_unit)));
-   DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit));
+   DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit, PUD_TRUE));
 
    sprite_tile_size_get(ed->sel_unit, &w, &h);
    bitmap_cursor_size_set(ed, (int)w, (int)h);

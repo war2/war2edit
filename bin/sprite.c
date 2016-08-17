@@ -143,7 +143,7 @@ sprite_get(Pud_Unit       unit,
    if (pud_unit_building_is(unit))
      {
         ef = _buildings[era];
-        snprintf(key, sizeof(key), "%s", pud_unit2str(unit));
+        snprintf(key, sizeof(key), "%s", pud_unit2str(unit, PUD_FALSE));
         flip = EINA_FALSE;
      }
    else
@@ -181,17 +181,17 @@ sprite_get(Pud_Unit       unit,
                 case PUD_UNIT_GIANT_TURTLE:
                 case PUD_UNIT_CRITTER:
                    snprintf(key, sizeof(key), "%s/%s/%i",
-                            pud_unit2str(unit), pud_era2str(era), orient);
+                            pud_unit2str(unit, PUD_FALSE), pud_era2str(era), orient);
                    break;
 
                 case PUD_UNIT_HUMAN_START:
                 case PUD_UNIT_ORC_START:
-                   snprintf(key, sizeof(key), "%s/0", pud_unit2str(unit));
+                   snprintf(key, sizeof(key), "%s/0", pud_unit2str(unit, PUD_FALSE));
                    break;
 
                 default:
                    snprintf(key, sizeof(key), "%s/%i",
-                            pud_unit2str(unit), orient);
+                            pud_unit2str(unit, PUD_FALSE), orient);
                    break;
                }
           }
