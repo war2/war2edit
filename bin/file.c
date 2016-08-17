@@ -36,6 +36,29 @@ _fs_hide(Editor *ed)
  *============================================================================*/
 
 static void
+_continue_load_cb(void        *data,
+                  Evas_Object *obj  EINA_UNUSED,
+                  void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   editor_load(ed, ed->save_file_tmp);
+   ed->save_file_tmp = NULL;
+   evas_object_del(ed->pop);
+   ed->pop = NULL;
+}
+
+static void
+_cancel_load_cb(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   ed->save_file_tmp = NULL;
+   evas_object_del(ed->pop);
+   ed->pop = NULL;
+}
+
+static void
 _done_cb(void        *data,
          Evas_Object *obj   EINA_UNUSED,
          void        *event)
@@ -62,10 +85,29 @@ _done_cb(void        *data,
      {
         if (ed->pud)
           {
-             // TODO
-             CRI("TODO PROMPT FOR SAVE");
+             Evas_Object *b;
+
+             ed->pop = elm_popup_add(ed->fs);
+             elm_object_text_set(ed->pop,  "Unsaved data will be lost. Continue?");
+
+             b = elm_button_add(ed->pop);
+             elm_object_text_set(b, "Cancel");
+             elm_object_part_content_set(ed->pop, "button1", b);
+             evas_object_smart_callback_add(b, "clicked", _cancel_load_cb, ed);
+
+             b = elm_button_add(ed->pop);
+             elm_object_text_set(b, "Load");
+             elm_object_part_content_set(ed->pop, "button2", b);
+             evas_object_smart_callback_add(b, "clicked", _continue_load_cb, ed);
+
+             evas_object_show(ed->pop);
+
+             ed->save_file_tmp = file;
           }
-        editor_load(ed, file);
+        else
+          {
+             editor_load(ed, file);
+          }
      }
 
 hide_fileselector:

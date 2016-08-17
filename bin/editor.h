@@ -104,6 +104,9 @@ struct _Editor
    } sel;
 
    Evas_Object *radio_units_reset;
+   Evas_Object *pop;
+
+   Eina_Stringshare *save_file_tmp;
 
    Eina_Array  *orc_menus;
    Eina_Array  *human_menus;
