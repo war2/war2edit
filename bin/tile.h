@@ -234,28 +234,28 @@ uint8_t tile_conflict_resolve_get(uint8_t t);
 
 /* Helpers */
 #define TILE_SOLID_IS(cptr) \
-   tile_solid_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_solid_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_WATER_IS(cptr) \
-   tile_water_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_water_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_GROUND_IS(cptr) \
-   tile_ground_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_ground_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_GRASS_IS(cptr) \
-   tile_grass_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_grass_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_TREES_IS(cptr) \
-   tile_trees_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_trees_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_ROCKS_IS(cptr) \
-   tile_rocks_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_rocks_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_WALKABLE_IS(cptr) \
-   tile_walkable_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_walkable_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_WALL_IS(cptr) \
-   tile_wall_is(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_wall_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 
 uint16_t
@@ -265,7 +265,7 @@ tile_action_get(uint8_t tl,
                 uint8_t br);
 
 #define TILE_ACTION_GET(cptr) \
-   tile_action_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_action_get((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 uint16_t
 tile_movement_get(uint8_t tl,
@@ -274,7 +274,7 @@ tile_movement_get(uint8_t tl,
                   uint8_t br);
 
 #define TILE_MOVEMENT_GET(cptr) \
-   tile_movement_get(cptr->tile_tl, cptr->tile_tr, cptr->tile_bl, cptr->tile_br)
+   tile_movement_get((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #endif /* ! _TILE_H_ */
 
