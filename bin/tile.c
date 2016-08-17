@@ -508,7 +508,9 @@ tile_action_get(uint8_t tl,
 {
    uint16_t action;
 
-   if (tile_water_is(tl, tr, bl, br)) /* water */
+   if (tile_coast_is(tl, tr, bl, br)) /* coast => land */
+     action = 0x4000;
+   else if (tile_water_is(tl, tr, bl, br)) /* water */
      action = 0x0000;
    else if (tile_rocks_is(tl, tr, bl, br)) /* forest */
      action = 0xfffd;
