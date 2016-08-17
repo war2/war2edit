@@ -51,7 +51,7 @@ _scroll_cb(void        *data,
            Evas_Object *obj  EINA_UNUSED,
            void        *info EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
 
    // FIXME BAAAAAAD!!!! when minimap changes the view,
    // it makes the scroller scroll, then this callback is called,
