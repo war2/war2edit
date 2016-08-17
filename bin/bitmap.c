@@ -485,15 +485,18 @@ bitmap_cell_write_coords(Editor       *ed EINA_UNUSED,
                          unsigned int  x  EINA_UNUSED,
                          unsigned int  y  EINA_UNUSED)
 {
-//   cairo_t *const cr = ed->bitmap.cr;
-//   char msg[16];
-//
-//   snprintf(msg, sizeof(msg), "%u,%u", x, y);
-//   msg[sizeof(msg) - 1] = '\0';
-//
-  // cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-  // cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT);
-  // cairo_show_text(cr, msg);
+   cairo_t *const cr = ed->bitmap.cr;
+   cairo_text_extents_t extents;
+   char msg[16];
+
+   snprintf(msg, sizeof(msg), "%u,%u", x, y);
+   msg[sizeof(msg) - 1] = '\0';
+
+   cairo_text_extents(cr, msg, &extents);
+
+   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+   cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT + extents.height);
+   cairo_show_text(cr, msg);
 }
 
 void
@@ -1397,7 +1400,7 @@ bitmap_refresh(Editor               *ed,
    if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)
      {
         for (j = y2 - 1; j >= area.y; --j)
-          for (i = x2 - 2; i >= area.x; --i)
+          for (i = x2 - 1; i >= area.x; --i)
             bitmap_cell_write_coords(ed, i, j);
      }
 
