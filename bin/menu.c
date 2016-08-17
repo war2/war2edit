@@ -143,10 +143,12 @@ _win_del_cb(void        *data,
 }
 
 static void
-_win_new_cb(void        *data  EINA_UNUSED,
+_win_new_cb(void        *data,
             Evas_Object *obj   EINA_UNUSED,
             void        *event EINA_UNUSED)
 {
+   Editor *const parent_ed = data;
+   editor_new(NULL, parent_ed->debug);
 }
 
 static void
@@ -354,7 +356,7 @@ menu_add(Editor *ed)
 
    /*==== FILE MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL,  "File", NULL, NULL);
-   elm_menu_item_add(ed->menu, itm, NULL, "New...", _win_new_cb, NULL);
+   elm_menu_item_add(ed->menu, itm, NULL, "New...", _win_new_cb, ed);
    elm_menu_item_add(ed->menu, itm, NULL, "Open...", _win_open_cb, ed);
    elm_menu_item_add(ed->menu, itm, NULL, "Save", _win_save_cb, ed);
    elm_menu_item_add(ed->menu, itm, NULL, "Save As...", _win_save_as_cb, ed);
