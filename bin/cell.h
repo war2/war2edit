@@ -24,7 +24,6 @@ struct _Cell
    unsigned int anchor_below : 1;
    unsigned int anchor_above : 1;
    unsigned int alter_above : 1;
-   unsigned int alter_start_location : 1;
    unsigned int start_location : 4;
    unsigned int start_location_human : 1;
    unsigned int selected_below : 2;

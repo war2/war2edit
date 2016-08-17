@@ -614,7 +614,7 @@ editor_sync(Editor *ed)
                   else
                     u->type = PUD_UNIT_ORC_START;
                   u->owner = c->start_location;
-                  u->alter = c->alter_start_location;
+                  u->alter = 0;
                }
 
              /* I'm not using pud_tile_set() because I know what I'm doing,

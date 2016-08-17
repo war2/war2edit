@@ -792,7 +792,6 @@ bitmap_unit_set(Editor       *ed,
         c = &(ed->cells[y][x]);
         c->start_location = color;
         c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
-        c->alter_start_location = !!alter;
         ret = UNIT_START_LOCATION;
         goto end;
      }
