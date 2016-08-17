@@ -18,7 +18,6 @@ typedef struct
 
 
 static Eina_List *_editors = NULL;
-static Ecore_Event_Handler *_handler = NULL;
 static unsigned int _eds = 0;
 static Editor *_focused = NULL;
 static Elm_Genlist_Item_Class *_itcg = NULL;
@@ -60,16 +59,23 @@ _scroll_cb(void        *data,
    editor_view_update(ed);
 }
 
-static Eina_Bool
-_key_down_cb(void *data  EINA_UNUSED,
-             int   type  EINA_UNUSED,
-             void *event)
+static void
+_key_down_cb(void        *data,
+             Evas        *evas  EINA_UNUSED,
+             Evas_Object *obj   EINA_UNUSED,
+             void        *event)
 {
-   Ecore_Event_Key *ev = event;
-   if (!strcmp(ev->keyname, "BackSpace"))
-     editor_handle_delete(_focused);
+   const Evas_Event_Key_Down *const ev = event;
+   Editor *const ed = data;
 
-   return ECORE_CALLBACK_PASS_ON;
+   if (evas_key_modifier_is_set(ev->modifiers, "Control"))
+     {
+     }
+   else
+     {
+        if (!strcmp(ev->key, "BackSpace"))
+          editor_handle_delete(ed);
+     }
 }
 
 static void
@@ -181,13 +187,6 @@ _unit_descriptor_free(Unit_Descriptor *d)
 Eina_Bool
 editor_init(void)
 {
-   _handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, _key_down_cb, NULL);
-   if (EINA_UNLIKELY(!_handler))
-     {
-        CRI("Failed to attach key down handler");
-        return EINA_FALSE;
-     }
-
    _itc = elm_genlist_item_class_new();
    _itc->item_style = "default";
    _itc->func.text_get = _text_get_cb;
@@ -207,7 +206,6 @@ editor_shutdown(void)
 
    EINA_LIST_FREE(_editors, ed)
       editor_free(ed);
-   ecore_event_handler_del(_handler);
 
    elm_genlist_item_class_free(_itc);
    _itc = NULL;
@@ -378,6 +376,7 @@ editor_new(const char   *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed->scroller, err_win_del);
    evas_object_size_hint_weight_set(ed->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_KEY_DOWN, _key_down_cb, ed);
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
    elm_table_pack(t, ed->scroller, 0, 0, 10, 1);
    evas_object_show(ed->scroller);
