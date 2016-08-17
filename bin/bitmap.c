@@ -481,15 +481,19 @@ _mouse_up_cb(void        *data,
  *============================================================================*/
 
 static void
-bitmap_cell_write_coords(Editor       *ed EINA_UNUSED,
-                         unsigned int  x  EINA_UNUSED,
-                         unsigned int  y  EINA_UNUSED)
+bitmap_cell_write_coords(Editor       *ed,
+                         unsigned int  x,
+                         unsigned int  y)
 {
    cairo_t *const cr = ed->bitmap.cr;
    cairo_text_extents_t extents;
    char msg[16];
 
-   snprintf(msg, sizeof(msg), "%u,%u", x, y);
+   //if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)
+   //  {
+   //     snprintf(msg, sizeof(msg), "%u,%u", x, y);
+   //  }
+   snprintf(msg, sizeof(msg), "0x%04x", TILE_ACTION_GET(&(ed->cells[y][x])));
    msg[sizeof(msg) - 1] = '\0';
 
    cairo_text_extents(cr, msg, &extents);
@@ -1397,8 +1401,24 @@ bitmap_refresh(Editor               *ed,
        bitmap_unit_draw(ed, i, j, UNIT_ABOVE);
 
    /* Debug: print cells numbers */
-   if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)
+   if (ed->debug)
      {
+        cairo_t *const cr = ed->bitmap.cr;
+        cairo_set_line_width(cr, 2);
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        for (j = y2 - 1; j >= area.y; --j)
+          {
+             cairo_move_to(cr, area.x * TEXTURE_WIDTH, j * TEXTURE_HEIGHT);
+             cairo_line_to(cr, x2 * TEXTURE_WIDTH, j * TEXTURE_HEIGHT);
+             cairo_stroke(cr);
+          }
+        for (i = x2 - 1; i >= area.x; --i)
+          {
+             cairo_move_to(cr, i * TEXTURE_WIDTH, area.y * TEXTURE_HEIGHT);
+             cairo_line_to(cr, i * TEXTURE_WIDTH, y2 * TEXTURE_HEIGHT);
+             cairo_stroke(cr);
+          }
+
         for (j = y2 - 1; j >= area.y; --j)
           for (i = x2 - 1; i >= area.x; --i)
             bitmap_cell_write_coords(ed, i, j);
