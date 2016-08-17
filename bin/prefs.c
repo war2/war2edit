@@ -108,5 +108,6 @@ prefs_value_string_get(Prefs       type,
 
    elm_prefs_data_value_get(prefs_get(type), key, NULL, &value);
    eina_value_get(&value, &val);
+   if (!val) return NULL;
    return elm_entry_markup_to_utf8(val);
 }

@@ -6,10 +6,23 @@
 
 #include "war2edit.h"
 
+typedef struct
+{
+   EINA_INLIST;
+
+   /* 8 bytes alligned -> 16 bytes per element */
+   uint32_t  x    : 31;
+   uint32_t  y    : 31;
+   Unit      type : 2;
+} Unit_Descriptor;
+
+
 static Eina_List *_editors = NULL;
 static Ecore_Event_Handler *_handler = NULL;
 static unsigned int _eds = 0;
 static Editor *_focused = NULL;
+static Elm_Genlist_Item_Class *_itcg = NULL;
+static Elm_Genlist_Item_Class *_itc = NULL;
 
 
 /*============================================================================*
@@ -79,6 +92,88 @@ _spawn_cb(void         *data  EINA_UNUSED,
       toolbar_runner_segment_selected_set(ed, select);
 }
 
+static char *
+_text_get_cb(void        *data,
+             Evas_Object *obj  EINA_UNUSED,
+             const char  *part EINA_UNUSED)
+{
+   Unit_Descriptor *const d = data;
+   char buf[256];
+   int bytes;
+
+   switch (d->type)
+     {
+      case UNIT_BELOW:
+      case UNIT_ABOVE:
+      case UNIT_START_LOCATION:
+         bytes = snprintf(buf, sizeof(buf), "DO ME");
+         break;
+
+      case UNIT_NONE:
+      default:
+         return NULL;
+     }
+   buf[sizeof(buf) - 1] = '\0';
+   return strndup(buf, bytes);
+}
+
+static char *
+_text_group_get_cb(void        *data,
+                   Evas_Object *obj  EINA_UNUSED,
+                   const char  *part EINA_UNUSED)
+{
+   char buf[256];
+   int bytes;
+   const int player = (int)((uintptr_t)data);
+
+   if (player < 8)
+     {
+        int b;
+
+        b = snprintf(buf, sizeof(buf), "Player %i (", player);
+        bytes = snprintf(buf + b, sizeof(buf) - b, "%s)", pud_color2str(player));
+        bytes += b;
+        buf[b] -= 0x20; // Uppercase
+     }
+   else
+     {
+        bytes = snprintf(buf, sizeof(buf), "Neutral");
+     }
+   buf[sizeof(buf) - 1] = '\0';
+
+   return strndup(buf, bytes);;
+}
+
+static Unit_Descriptor *
+_unit_descriptor_new(unsigned int x,
+                     unsigned int y,
+                     Unit         type)
+{
+   Unit_Descriptor *d;
+
+   d = malloc(sizeof(*d));
+   if (EINA_UNLIKELY(!d))
+     {
+        CRI("Failed to allocate memory");
+        return NULL;
+     }
+
+   d->x = x;
+   d->y = y;
+   d->type = type;
+
+   return d;
+}
+
+static void
+_unit_descriptor_free(Unit_Descriptor *d)
+{
+   if (d)
+     {
+        free(d);
+     }
+}
+
 /*============================================================================*
  *                                 Public API                                 *
  *============================================================================*/
@@ -93,6 +188,14 @@ editor_init(void)
         return EINA_FALSE;
      }
 
+   _itc = elm_genlist_item_class_new();
+   _itc->item_style = "default";
+   _itc->func.text_get = _text_get_cb;
+
+   _itcg = elm_genlist_item_class_new();
+   _itcg->item_style = "group_index";
+   _itcg->func.text_get = _text_group_get_cb;
+
    ipc_spawns_cb_set(_spawn_cb, NULL);
    return EINA_TRUE;
 }
@@ -105,6 +208,11 @@ editor_shutdown(void)
    EINA_LIST_FREE(_editors, ed)
       editor_free(ed);
    ecore_event_handler_del(_handler);
+
+   elm_genlist_item_class_free(_itc);
+   _itc = NULL;
+   elm_genlist_item_class_free(_itcg);
+   _itcg = NULL;
 }
 
 void
@@ -176,7 +284,7 @@ editor_new(const char   *pud_file,
 {
    Editor *ed;
    char title[512];
-   Evas_Object *o, *box;
+   Evas_Object *o, *box, *t;
    Eina_Bool open_pud = EINA_FALSE;
    char path[PATH_MAX];
    const char theme[] = "default";
@@ -239,6 +347,16 @@ editor_new(const char   *pud_file,
    elm_win_resize_object_add(ed->win, o);
    evas_object_show(o);
 
+  /* Add a box to put widgets in it */
+   t = elm_table_add(o);
+   EINA_SAFETY_ON_NULL_GOTO(t, err_win_del);
+   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_table_homogeneous_set(t, EINA_TRUE);
+   elm_box_pack_end(o, t);
+   evas_object_show(t);
+
+
    /* Get the main menu */
    menu_add(ed);
 
@@ -251,7 +369,7 @@ editor_new(const char   *pud_file,
    elm_box_horizontal_set(box, EINA_TRUE);
    elm_box_homogeneous_set(box, EINA_FALSE);
    evas_object_show(box);
-   elm_box_pack_end(o, box);
+   elm_box_pack_start(o, box);
    toolbar_add(ed, box);
 
 
@@ -261,8 +379,38 @@ editor_new(const char   *pud_file,
    evas_object_size_hint_weight_set(ed->scroller, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
-   elm_box_pack_end(o, ed->scroller);
+   elm_table_pack(t, ed->scroller, 0, 0, 10, 1);
    evas_object_show(ed->scroller);
+
+   /* Right panel (for debugging) */
+   ed->rpanel = elm_panel_add(ed->win);
+   elm_panel_orient_set(ed->rpanel, ELM_PANEL_ORIENT_RIGHT);
+   evas_object_size_hint_weight_set(ed->rpanel, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(ed->rpanel, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_panel_hidden_set(ed->rpanel, EINA_TRUE);
+   elm_table_pack(t, ed->rpanel, 7, 0, 3, 1);
+   evas_object_show(ed->rpanel);
+
+   /* Units genlist */
+   o = ed->units_genlist = elm_genlist_add(ed->rpanel);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(o);
+   elm_object_content_set(ed->rpanel, ed->units_genlist);
+
+   for (i = 0; i < (int) EINA_C_ARRAY_LENGTH(ed->gen_group_players); i++)
+     {
+        ed->gen_group_players[i] =
+           elm_genlist_item_append(ed->units_genlist, _itcg,
+                                   (void *)(uintptr_t)i,
+                                   NULL, ELM_GENLIST_ITEM_GROUP,
+                                   NULL, NULL);
+     }
+   ed->gen_group_neutral =
+      elm_genlist_item_append(ed->units_genlist, _itcg,
+                              (void *)(uintptr_t)PUD_PLAYER_NEUTRAL,
+                              NULL, ELM_GENLIST_ITEM_GROUP,
+                              NULL, NULL);
 
    undo_add(ed);
 
@@ -565,25 +713,153 @@ editor_load(Editor     *ed,
 }
 
 Eina_Bool
-editor_unit_ref(Editor *ed)
+editor_unit_ref(Editor       *ed,
+                unsigned int  x,
+                unsigned int  y,
+                Unit          type)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    if (EINA_UNLIKELY(ed->pud->units_count >= UINT16_MAX))
      return EINA_FALSE;
 
+   Unit_Descriptor *d;
+   Eina_Bool ret = EINA_FALSE;
+   unsigned int player;
+   const Cell *c;
+   Elm_Object_Item *eoi;
+
+   d = _unit_descriptor_new(x, y, type);
+   if (EINA_UNLIKELY(!d))
+     {
+        CRI("Failed to create unit descriptor");
+        goto end;
+     }
+
+   c = &(ed->cells[y][x]);
+   switch (type)
+     {
+      case UNIT_BELOW:
+         player = c->player_below;
+         break;
+
+      case UNIT_ABOVE:
+         player = c->player_above;
+         break;
+
+      case UNIT_START_LOCATION:
+         player = c->start_location;
+         break;
+
+      case UNIT_NONE:
+      default:
+         CRI("Invalid unit type 0x%x", type);
+         return EINA_FALSE;
+     }
+
+   if (player < 8)
+     {
+        ed->player_units[player] = eina_inlist_append(ed->player_units[player],
+                                                      EINA_INLIST_GET(d));
+        eoi = ed->gen_group_players[player];
+     }
+   else if (player == PUD_PLAYER_NEUTRAL)
+     {
+        ed->neutral_units = eina_inlist_append(ed->neutral_units,
+                                               EINA_INLIST_GET(d));
+        eoi = ed->gen_group_neutral;
+     }
+   else
+     {
+        ERR("Invalid player number %i at %u,%u (0x%x)",
+            player, x, y, type);
+        goto end;
+     }
+
+   elm_genlist_item_append(ed->units_genlist, _itc,
+                           d, eoi, ELM_GENLIST_ITEM_NONE,
+                           NULL, d);
+
+   //eoi = elm_genlist_item_append(ed->units_genlist, _itc);
+   DBG("Add unit for player %i", player);
+
+   ret = EINA_TRUE;
+end:
    ed->pud->units_count++;
-   return EINA_TRUE;
+   return ret;
 }
 
 Eina_Bool
-editor_unit_unref(Editor *ed)
+editor_unit_unref(Editor       *ed,
+                  unsigned int  x,
+                  unsigned int  y,
+                  Unit          type)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
-   if (ed->pud->units_count <= 0)
-     return EINA_FALSE;
+   if (EINA_UNLIKELY(ed->pud->units_count <= 0))
+     {
+        CRI("Attempt to unref, but units count is already %i", ed->pud->units_count);
+        return EINA_FALSE;
+     }
 
+   unsigned int player;
+   const Cell *c;
+   Eina_Inlist *l;
+   Unit_Descriptor *d;
+   Eina_Bool ret = EINA_FALSE;
+
+   c = &(ed->cells[y][x]);
+   switch (type)
+     {
+      case UNIT_BELOW:
+         player = c->player_below;
+         break;
+
+      case UNIT_ABOVE:
+         player = c->player_above;
+         break;
+
+      case UNIT_START_LOCATION:
+         player = c->start_location;
+         break;
+
+      case UNIT_NONE:
+      default:
+         CRI("Invalid unit type 0x%x", type);
+         return EINA_FALSE;
+     }
+
+   if (player < 8)
+     {
+        EINA_INLIST_FOREACH_SAFE(ed->player_units[player], l, d)
+           if ((d->x == x) && (d->y == y) && (d->type == type))
+             {
+                ed->player_units[player] = eina_inlist_remove(ed->player_units[player], l);
+                _unit_descriptor_free(d);
+                break;
+             }
+     }
+   else if (player == PUD_PLAYER_NEUTRAL)
+     {
+        EINA_INLIST_FOREACH_SAFE(ed->neutral_units, l, d)
+           if ((d->x == x) && (d->y == y) && (d->type == type))
+             {
+                ed->neutral_units = eina_inlist_remove(ed->neutral_units, l);
+                _unit_descriptor_free(d);
+                break;
+             }
+     }
+   else
+     {
+        ERR("Invalid player number %i at %u,%u (0x%0x)",
+            player, x, y, type);
+        goto end;
+     }
+   DBG("Del unit for player %i", player);
+
+   ret = EINA_TRUE;
+end:
    ed->pud->units_count--;
-   return EINA_TRUE;
+   return ret;
 }
 
 void

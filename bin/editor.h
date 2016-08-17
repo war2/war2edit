@@ -64,6 +64,8 @@ struct _Editor
    Evas_Object  *fs; /* File selector */
    Evas_Object  *menu_swamp_radio;
    Evas_Object  *menu_map_radio_group;
+   Evas_Object  *rpanel;
+   Evas_Object  *units_genlist;
 
    Cell        **cells;
 
@@ -107,6 +109,11 @@ struct _Editor
    Eina_Array  *human_menus;
 
    Eina_Array *undo;
+
+   Elm_Object_Item *gen_group_players[8];
+   Elm_Object_Item *gen_group_neutral;
+   Eina_Inlist *player_units[8];
+   Eina_Inlist *neutral_units;
 
    /* === PUD specific === */
    Pud        *pud;
@@ -188,8 +195,8 @@ Eina_Bool editor_load(Editor *ed, const char *file);
 Eina_Bool editor_save(Editor *ed, const char *file);
 void editor_error(Editor *ed, const char *fmt, ...) EINA_PRINTF(2,3);
 void editor_name_set(Editor *ed, const char *name);
-Eina_Bool editor_unit_ref(Editor *ed);
-Eina_Bool editor_unit_unref(Editor *ed);
+Eina_Bool editor_unit_ref(Editor *ed, unsigned int x, unsigned int y, Unit type);
+Eina_Bool editor_unit_unref(Editor *ed, unsigned int x, unsigned int y, Unit type);
 uint16_t
 editor_alter_defaults_get(const Editor *ed,
                           const Pud_Unit          unit);

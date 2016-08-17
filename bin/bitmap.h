@@ -7,15 +7,8 @@
 #ifndef _BITMAP_H_
 #define _BITMAP_H_
 
-typedef enum
-{
-   BITMAP_UNIT_BELOW,
-   BITMAP_UNIT_ABOVE,
-   BITMAP_UNIT_START_LOCATION
-} Bitmap_Unit;
-
 Eina_Bool bitmap_add(Editor *ed);
-void bitmap_unit_set(Editor * ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
+Unit bitmap_unit_set(Editor * ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
 
 void bitmap_refresh(Editor *ed,
                     const Eina_Rectangle *zone);
@@ -34,7 +27,7 @@ bitmap_selections_draw(Editor * ed,
 void bitmap_unit_draw(Editor * ed,
                       unsigned int x,
                       unsigned int y,
-                      Bitmap_Unit unit_type);
+                      Unit unit_type);
 
 void bitmap_tile_draw(Editor * ed,
                       unsigned int x,
@@ -43,7 +36,7 @@ void
 bitmap_unit_del_at(Editor * ed,
                    unsigned int     x,
                    unsigned int     y,
-                   Eina_Bool        below);
+                   Unit        type);
 
 Eina_Bool
 bitmap_tile_set(Editor *  ed,

@@ -99,6 +99,7 @@ _click_handle(Editor *ed,
    Eina_Rectangle zone;
    Editor_Sel action;
    int z, i, j;
+   Unit type = UNIT_NONE;
 
    if (!bitmap_cursor_enabled_get(ed)) return;
    if (((unsigned int)x >= ed->pud->map_w) ||
@@ -122,7 +123,7 @@ _click_handle(Editor *ed,
                {
                   ed->cells[ly][lx].unit_below = PUD_UNIT_NONE;
                   ed->cells[ly][lx].start_location = CELL_NOT_START_LOCATION;
-                  editor_unit_unref(ed);
+                  editor_unit_unref(ed, lx, ly, UNIT_START_LOCATION);
                   minimap_update(ed, lx, ly);
                   EINA_RECTANGLE_SET(&zone, lx - 1, ly - 1, 3, 3);
                   bitmap_refresh(ed, &zone);
@@ -136,10 +137,10 @@ _click_handle(Editor *ed,
         orient = sprite_info_random_get();
 
         bitmap_cursor_size_get(ed, &w, &h);
-        editor_unit_ref(ed);
-        bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
-                         orient, x, y, w, h,
-                         editor_alter_defaults_get(ed, ed->sel_unit));
+        type = bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
+                               orient, x, y, w, h,
+                               editor_alter_defaults_get(ed, ed->sel_unit));
+        editor_unit_ref(ed, x, y, type);
         minimap_render_unit(ed, x, y, ed->sel_unit);
         bitmap_cursor_enabled_set(ed, EINA_FALSE);
         EINA_RECTANGLE_SET(&zone, x - 6, y - 6, 12, 12); // XXX Zone is random
@@ -499,7 +500,7 @@ void
 bitmap_unit_draw(Editor       *ed,
                  unsigned int  x,
                  unsigned int  y,
-                 Bitmap_Unit   unit_type)
+                 Unit          unit_type)
 {
    Cell *const *const cells = ed->cells;
    const Cell *c = &(cells[y][x]);
@@ -514,7 +515,7 @@ bitmap_unit_draw(Editor       *ed,
    cairo_t *const cr = ed->bitmap.cr;
    Sprite_Descriptor *d;
 
-   if (unit_type == BITMAP_UNIT_BELOW)
+   if (unit_type == UNIT_BELOW)
      {
         if (c->anchor_below != 1)
           {
@@ -528,7 +529,7 @@ bitmap_unit_draw(Editor       *ed,
         w = c->spread_x_below;
         h = c->spread_y_below;
      }
-   else if (unit_type == BITMAP_UNIT_ABOVE)
+   else if (unit_type == UNIT_ABOVE)
      {
         if (c->anchor_above != 1)
           {
@@ -542,7 +543,7 @@ bitmap_unit_draw(Editor       *ed,
         w = c->spread_x_above;
         h = c->spread_y_above;
      }
-   else if ((unit_type == BITMAP_UNIT_START_LOCATION) &&
+   else if ((unit_type == UNIT_START_LOCATION) &&
             (c->start_location != CELL_NOT_START_LOCATION))
      {
         unit = (c->start_location_human)
@@ -679,54 +680,84 @@ void
 bitmap_unit_del_at(Editor       *ed,
                    unsigned int  x,
                    unsigned int  y,
-                   Eina_Bool     below)
+                   Unit          type)
 {
    Cell *c, *anchor;
    unsigned int rx, ry, sx, sy, i, j;
 
-   anchor = cell_anchor_pos_get(ed->cells, x, y, &rx, &ry, below);
-   sx = (below) ? anchor->spread_x_below : anchor->spread_x_above;
-   sy = (below) ? anchor->spread_y_below : anchor->spread_y_above;
-
-   if (ed->cells[y][x].start_location != CELL_NOT_START_LOCATION)
+   switch (type)
      {
-        /* There is no spread for start location. Explictely
-         * reset to 1x1 for the deletion loop to be run */
-        sx = 1;
-        sy = 1;
+        case UNIT_BELOW:
+           anchor = cell_anchor_pos_get(ed->cells, x, y, &rx, &ry, EINA_TRUE);
+           sx = anchor->spread_x_below;
+           sy = anchor->spread_y_below;
+           break;
 
-        /* Remove start location */
-        ed->start_locations[ed->cells[y][x].start_location].x = -1;
-        ed->start_locations[ed->cells[y][x].start_location].y = -1;
+        case UNIT_ABOVE:
+           anchor = cell_anchor_pos_get(ed->cells, x, y, &rx, &ry, EINA_FALSE);
+           sx = anchor->spread_x_above;
+           sy = anchor->spread_y_above;
+           break;
+
+        case UNIT_START_LOCATION:
+           if (ed->cells[y][x].start_location != CELL_NOT_START_LOCATION)
+             {
+                CRI("%u,%u has no start location", x, y);
+                return;
+             }
+           /* There is no spread for start location. Explictely
+            * reset to 1x1 for the deletion loop to be run */
+           sx = 1;
+           sy = 1;
+
+           /* Remove start location */
+           ed->start_locations[ed->cells[y][x].start_location].x = -1;
+           ed->start_locations[ed->cells[y][x].start_location].y = -1;
+           break;
+
+        case UNIT_NONE:
+        default:
+           CRI("Invalid unit type 0x%x", type);
+           return;
      }
 
    for (j = ry; j < ry + sy; ++j)
      for (i = rx; i < rx + sx; ++i)
        {
           c = &(ed->cells[j][i]);
-          if (below)
+          switch (type)
             {
-               c->unit_below = PUD_UNIT_NONE;
-               c->spread_x_below = 0;
-               c->spread_y_below = 0;
-               c->anchor_below = 0;
-               c->selected_below = 0;
-               c->start_location = CELL_NOT_START_LOCATION;
-            }
-          else
-            {
-               c->unit_above = PUD_UNIT_NONE;
-               c->spread_x_above = 0;
-               c->spread_y_above = 0;
-               c->anchor_above = 0;
-               c->selected_above = 0;
+             case UNIT_START_LOCATION:
+                c->start_location = CELL_NOT_START_LOCATION;
+                break;
+
+             case UNIT_BELOW:
+                c->unit_below = PUD_UNIT_NONE;
+                c->spread_x_below = 0;
+                c->spread_y_below = 0;
+                c->anchor_below = 0;
+                c->selected_below = 0;
+                break;
+
+             case UNIT_ABOVE:
+                c->unit_above = PUD_UNIT_NONE;
+                c->spread_x_above = 0;
+                c->spread_y_above = 0;
+                c->anchor_above = 0;
+                c->selected_above = 0;
+                break;
+
+                /* Pointless, here to silent warning */
+             case UNIT_NONE:
+             default:
+                return;
             }
           minimap_update(ed, i, j);
        }
-   editor_unit_unref(ed);
+   editor_unit_unref(ed, x, y, type);
 }
 
-void
+Unit
 bitmap_unit_set(Editor       *ed,
                 Pud_Unit      unit,
                 Pud_Player    color,
@@ -743,10 +774,11 @@ bitmap_unit_set(Editor       *ed,
    const unsigned int map_w = ed->pud->map_w;
    const unsigned int map_h = ed->pud->map_h;
    Cell *c;
+   Unit ret = UNIT_NONE;
 
    /* Don't do anything */
    if (unit == PUD_UNIT_NONE)
-     return;
+     return UNIT_NONE;
 
    if (pud_unit_start_location_is(unit))
      {
@@ -754,6 +786,7 @@ bitmap_unit_set(Editor       *ed,
         c->start_location = color;
         c->start_location_human = (unit == PUD_UNIT_HUMAN_START);
         c->alter_start_location = !!alter;
+        ret = UNIT_START_LOCATION;
         goto end;
      }
 
@@ -795,16 +828,19 @@ bitmap_unit_set(Editor       *ed,
         c->anchor_above = 1;
         c->spread_x_above = w;
         c->spread_y_above = h;
+        ret = UNIT_ABOVE;
      }
    else
      {
         c->anchor_below = 1;
         c->spread_x_below = w;
         c->spread_y_below = h;
+        ret = UNIT_BELOW;
      }
 
 end:
    minimap_update(ed, x, y);
+   return ret;
 }
 
 void
@@ -1048,7 +1084,7 @@ _bitmap_full_tile_set(Editor   *ed,
                  TILE_WALKABLE_IS(c)) ||
                 (pud_unit_building_is(c->unit_below) &&
                  TILE_GRASS_IS(c))))))
-          bitmap_unit_del_at(ed, x, y, EINA_TRUE);
+          bitmap_unit_del_at(ed, x, y, UNIT_BELOW);
      }
 
    c->tile = tile;
@@ -1344,18 +1380,18 @@ bitmap_refresh(Editor               *ed,
      for (i = area.x; i < x2; ++i)
        {
           bitmap_tile_draw(ed, i, j);
-          bitmap_unit_draw(ed, i, j, BITMAP_UNIT_START_LOCATION);
+          bitmap_unit_draw(ed, i, j, UNIT_START_LOCATION);
        }
 
    /* Units below */
    for (j = y2 - 1; j >= area.y; --j)
      for (i = x2 - 1; i >= area.x; --i)
-       bitmap_unit_draw(ed, i, j, BITMAP_UNIT_BELOW);
+       bitmap_unit_draw(ed, i, j, UNIT_BELOW);
 
    /* Units above */
    for (j = y2 - 1; j >= area.y; --j)
      for (i = x2 - 1; i >= area.x; --i)
-       bitmap_unit_draw(ed, i, j, BITMAP_UNIT_ABOVE);
+       bitmap_unit_draw(ed, i, j, UNIT_ABOVE);
 
    /* Debug: print cells numbers */
    if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)

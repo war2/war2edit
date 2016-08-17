@@ -218,11 +218,13 @@ sel_del(Editor *ed)
           c = &(ed->cells[j][i]);
           if (c->selected_below == SEL_SET)
             {
-               if (c->anchor_below || c->start_location != CELL_NOT_START_LOCATION)
-                 bitmap_unit_del_at(ed, i, j, EINA_TRUE);
+               if (c->anchor_below)
+                 bitmap_unit_del_at(ed, i, j, UNIT_BELOW);
+               if (c->start_location != CELL_NOT_START_LOCATION)
+                 bitmap_unit_del_at(ed, i, j, UNIT_START_LOCATION);
             }
           if ((c->anchor_above) && (c->selected_above == SEL_SET))
-            bitmap_unit_del_at(ed, i, j, EINA_FALSE);
+            bitmap_unit_del_at(ed, i, j, UNIT_ABOVE);
        }
    bitmap_refresh(ed, NULL); // FIXME BAD
 }

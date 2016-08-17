@@ -9,11 +9,21 @@
 
 #include <pud.h>
 #include <war2.h>
+#include <Eina.h>
 #include <cairo.h>
 #include <Elementary.h>
 
 typedef struct _Cell Cell;
 typedef struct _Editor Editor;
+
+typedef enum
+{
+   UNIT_NONE             = 0,
+   UNIT_BELOW            = 1,
+   UNIT_ABOVE            = 2,
+   UNIT_START_LOCATION   = 3,
+} Unit;
+
 
 typedef struct
 {
