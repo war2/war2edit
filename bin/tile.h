@@ -92,7 +92,8 @@ tile_coast_is(uint8_t tl,
               uint8_t bl,
               uint8_t br)
 {
-   return ((!tile_solid_is(tl, tr, bl, br)) &&
+   return ((((tl == TILE_GROUND_LIGHT) || (tr == TILE_GROUND_LIGHT)) ||
+            ((bl == TILE_GROUND_LIGHT) || (br == TILE_GROUND_LIGHT))) &&
            (((tl == TILE_WATER_LIGHT) || (tr == TILE_WATER_LIGHT)) ||
             ((bl == TILE_WATER_LIGHT) || (br == TILE_WATER_LIGHT))));
 }
