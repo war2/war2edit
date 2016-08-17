@@ -380,9 +380,9 @@ menu_add(Editor *ed)
 #define RADIO_ADD_COMMON(unit_, label_, storage_) \
    _radio_add(ed, rd, unit_, i, label_, _radio_units_changed_cb, storage_)
 
-#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, STR_ ## unit_, ed->human_menus)
-#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, STR_ ## unit_, ed->orc_menus)
-#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, STR_ ## unit_, NULL)
+#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->human_menus)
+#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->orc_menus)
+#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), NULL)
 #define RADIO_ADD(unit_, label_) RADIO_ADD_COMMON(unit_, label_, NULL)
 
    rd = NULL; /* Unset radio group */
