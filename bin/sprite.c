@@ -379,6 +379,7 @@ sprite_tile_size_get(Pud_Unit      unit,
       case PUD_UNIT_RUNESTONE:
       case PUD_UNIT_JUGGERNAUGHT:
       case PUD_UNIT_BATTLESHIP:
+      case PUD_UNIT_KURDRAN_AND_SKY_REE:
          w = 2;
          h = 2;
          break;
