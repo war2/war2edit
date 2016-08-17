@@ -531,7 +531,9 @@ tile_movement_get(uint8_t tl,
 {
    uint16_t mov;
 
-   if (tile_water_is(tl, tr, bl, br))             /* water */
+   if (tile_coast_corner_is(tl, tr, bl, br)) /* coast (corner) */
+     mov = 0x0002;
+   else if (tile_water_is(tl, tr, bl, br))             /* water */
      mov = 0x0040;
    else if ((tile_trees_is(tl, tr, bl, br)) ||    /* forest */
             (tile_rocks_is(tl, tr, bl, br)))      /* mountains */
@@ -540,8 +542,6 @@ tile_movement_get(uint8_t tl,
      mov = 0x0002;
    else if (tile_dirt_is(tl, tr, bl, br))         /* dirt */
      mov = 0x0011;
-   else if (tile_coast_corner_is(tl, tr, bl, br)) /* coast (corner) */
-     mov = 0x0002;
    else if (tile_wall_is(tl, tr, bl, br))         /* wall */
      mov = 0x008d;
    else                                           /* land */
