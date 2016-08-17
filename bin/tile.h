@@ -126,11 +126,22 @@ tile_coast_corner_is(uint8_t tl,
                      uint8_t br)
 {
    unsigned int count = 0;
-   if (tl == TILE_WATER_LIGHT) ++count;
-   if (tr == TILE_WATER_LIGHT) ++count;
-   if (bl == TILE_WATER_LIGHT) ++count;
-   if (br == TILE_WATER_LIGHT) ++count;
-   return (count == 1);
+
+   if (tl == TILE_GROUND_LIGHT) count++;
+   if (tr == TILE_GROUND_LIGHT) count++;
+   if (bl == TILE_GROUND_LIGHT) count++;
+   if (br == TILE_GROUND_LIGHT) count++;
+
+   if (count == 3)
+     {
+        count = 0;
+        if (tl == TILE_WATER_LIGHT) ++count;
+        if (tr == TILE_WATER_LIGHT) ++count;
+        if (bl == TILE_WATER_LIGHT) ++count;
+        if (br == TILE_WATER_LIGHT) ++count;
+        return (count == 1);
+     }
+   return EINA_FALSE;
 }
 
 static inline Eina_Bool
