@@ -707,13 +707,15 @@ bitmap_unit_del_at(Editor       *ed,
            break;
 
         case UNIT_START_LOCATION:
-           if (ed->cells[y][x].start_location != CELL_NOT_START_LOCATION)
+           if (ed->cells[y][x].start_location == CELL_NOT_START_LOCATION)
              {
                 CRI("%u,%u has no start location", x, y);
                 return;
              }
            /* There is no spread for start location. Explictely
             * reset to 1x1 for the deletion loop to be run */
+           rx = x;
+           ry = y;
            sx = 1;
            sy = 1;
 
