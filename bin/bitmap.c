@@ -481,26 +481,32 @@ _mouse_up_cb(void        *data,
  *============================================================================*/
 
 static void
-bitmap_cell_write_coords(Editor       *ed,
-                         unsigned int  x,
-                         unsigned int  y)
+bitmap_debug_cell(Editor       *ed,
+                  unsigned int  x,
+                  unsigned int  y)
 {
    cairo_t *const cr = ed->bitmap.cr;
-   cairo_text_extents_t extents;
-   char msg[16];
+   cairo_text_extents_t ext1, ext2;
+   char msg1[16];
+   char msg2[16];
 
-   //if (ed->debug & EDITOR_DEBUG_CELLS_COORDS)
-   //  {
-   //     snprintf(msg, sizeof(msg), "%u,%u", x, y);
-   //  }
-   snprintf(msg, sizeof(msg), "0x%04x", TILE_ACTION_GET(&(ed->cells[y][x])));
-   msg[sizeof(msg) - 1] = '\0';
+   snprintf(msg1, sizeof(msg1), "0x%04x", TILE_MOVEMENT_GET(&(ed->cells[y][x])));
+   snprintf(msg2, sizeof(msg2), "0x%04x", ed->pud->movement_map[x + y*ed->pud->map_w]);
+   msg1[sizeof(msg1) - 1] = '\0';
+   msg2[sizeof(msg2) - 1] = '\0';
 
-   cairo_text_extents(cr, msg, &extents);
+   cairo_text_extents(cr, msg1, &ext1);
+   cairo_text_extents(cr, msg2, &ext2);
 
-   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-   cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT + extents.height);
-   cairo_show_text(cr, msg);
+   if (strcmp(msg1, msg2))
+     cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
+   else
+     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+
+   cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT + ext1.height);
+   cairo_show_text(cr, msg1);
+   cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT + ext1.height + ext2.height + 3);
+   cairo_show_text(cr, msg2);
 }
 
 void
@@ -1422,7 +1428,7 @@ bitmap_refresh(Editor               *ed,
 
         for (j = y2 - 1; j >= area.y; --j)
           for (i = x2 - 1; i >= area.x; --i)
-            bitmap_cell_write_coords(ed, i, j);
+            bitmap_debug_cell(ed, i, j);
      }
 
    /* (Pre)Selections last */
