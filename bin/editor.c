@@ -67,9 +67,20 @@ _key_down_cb(void        *data,
 {
    const Evas_Event_Key_Down *const ev = event;
    Editor *const ed = data;
+   Eina_Bool ctrl;
 
-   if (evas_key_modifier_is_set(ev->modifiers, "Control"))
+   ctrl = evas_key_modifier_is_set(ev->modifiers, "Control");
+
+   if (ctrl)
      {
+        if (!strcmp(ev->key, "plus"))
+          {
+             ed->zoom += 0.25;
+          }
+        else if (!strcmp(ev->key, "minus"))
+          {
+             ed->zoom -= 0.25;
+          }
      }
    else
      {
@@ -292,6 +303,7 @@ editor_new(const char   *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
    ed->debug = debug;
+   ed->zoom = 1.0;
 
    /* Get theme */
    if (main_in_tree_is())
