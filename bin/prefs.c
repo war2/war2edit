@@ -90,7 +90,7 @@ prefs_new(Evas_Object *parent,
    if (EINA_UNLIKELY(!chk))
      {
         CRI("Failed to set preferences from file \"%s\"", path);
-        eo_unref(obj);
+        evas_object_del(obj);
         return NULL;
      }
    elm_prefs_data_set(obj, _prefs[type]);
