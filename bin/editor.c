@@ -844,7 +844,8 @@ editor_unit_unref(Editor       *ed,
         EINA_INLIST_FOREACH_SAFE(ed->player_units[player], l, d)
            if ((d->x == x) && (d->y == y) && (d->type == type))
              {
-                ed->player_units[player] = eina_inlist_remove(ed->player_units[player], l);
+                ed->player_units[player] =
+                   eina_inlist_remove(ed->player_units[player], EINA_INLIST_GET(d));
                 _unit_descriptor_free(d);
                 break;
              }
@@ -854,7 +855,8 @@ editor_unit_unref(Editor       *ed,
         EINA_INLIST_FOREACH_SAFE(ed->neutral_units, l, d)
            if ((d->x == x) && (d->y == y) && (d->type == type))
              {
-                ed->neutral_units = eina_inlist_remove(ed->neutral_units, l);
+                ed->neutral_units =
+                   eina_inlist_remove(ed->neutral_units, EINA_INLIST_GET(d));
                 _unit_descriptor_free(d);
                 break;
              }
