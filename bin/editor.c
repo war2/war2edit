@@ -638,6 +638,12 @@ editor_sync(Editor *ed)
              k++;
           }
      }
+   if (EINA_UNLIKELY(k != pud->tiles))
+     {
+        CRI("Only %u tiles have been synced. Expected %u",
+            k, pud->tiles);
+        return EINA_FALSE;
+     }
 
    if (EINA_UNLIKELY(i != pud->units_count))
      {
