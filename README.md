@@ -18,29 +18,24 @@ Build
 - Launch: `war2edit`.
 
 
-TODO - Showstoppers
-===================
+TODO & BUGS
+===========
 
 - [ ] Tiles algorithm is broken with dark tiles
-- [ ] Minimap rendering with cairo
-- [ ] Scaling of map via cairo
+- [ ] Overhaul minimap
+- [ ] Scaling of map
 - [ ] Different brush types
-- [ ] Different brush sizes
-- [X] Load a map
-- [X] Auto-run war2 to test the map
 - [ ] Implement properties editors
 - [ ] Help/About panel
-- [X] Toggle race in menu
 - [ ] Toggle extension mode
-- [X] Selection mode to select units
-- [X] Delete a unit
 - [ ] Undo/Redo
+- [ ] Oil Patch can be placed too close to land
+- [ ] Oil Patch and Gold Mines must prevent collectors to be placed too close
+- [ ] Walls must be implemented (currently broken)
+- [ ] DOSBox/Boxer fancy selection panel
+- [ ] Gold Mine and Oil Patches values must be editable
 
 
-Improvements
-============
-
-- [X] Use a dedicated graphics library to draw. Cairo?
 
 Contributors
 ============
@@ -50,6 +45,7 @@ Contributors
 
 - Jean-Luc Guyomarc'h
    - Toolbar icons
+   - Game icon
 
 License
 =======
