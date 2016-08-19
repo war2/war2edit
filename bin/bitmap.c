@@ -793,7 +793,16 @@ bitmap_unit_set(Editor       *ed,
 
    /* Don't do anything */
    if (unit == PUD_UNIT_NONE)
-     return UNIT_NONE;
+     {
+        return UNIT_NONE;
+     }
+   else if ((unit == PUD_UNIT_GOLD_MINE) ||
+            (unit == PUD_UNIT_OIL_PATCH) ||
+            (unit == PUD_UNIT_CRITTER))
+     {
+        /* Gold mine, Critter and Oil patch are ALWAYS neutral */
+        color = PUD_PLAYER_NEUTRAL;
+     }
 
    if (pud_unit_start_location_is(unit))
      {
