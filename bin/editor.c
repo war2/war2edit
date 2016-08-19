@@ -431,10 +431,6 @@ editor_new(const char   *pud_file,
    /* Show window */
    evas_object_show(ed->win);
 
-   /* Add to list of editor windows */
-   _editors = eina_list_append(_editors, ed);
-
-
    menu_unit_selection_reset(ed);
 
    /* Are we opening a (supposed) PUD? */
@@ -479,6 +475,8 @@ editor_new(const char   *pud_file,
    /* Set window's title */
    editor_name_set(ed, title);
 
+   /* Add to list of editor windows */
+   _editors = eina_list_append(_editors, ed);
    return ed;
 
 err_win_del:
