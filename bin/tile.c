@@ -422,8 +422,13 @@ tile_decompose(uint16_t  tile_code,
                        tile_code, spread);
                    return;
                }
+
+             *tl = walls[0] | pair[0];
+             *tr = walls[1] | pair[0];
+             *br = walls[2] | pair[0];
+             *bl = walls[3] | pair[0];
           }
-        else
+        else /* Everything but walls */
           {
              switch (spread)
                {
