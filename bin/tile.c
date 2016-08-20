@@ -37,6 +37,39 @@ static const uint8_t _tiles_conflicts[__TILE_LAST] =
    [TILE_ORC_WALL]     = TILE_GRASS_LIGHT,
 };
 
+
+/*
+ * For walls, all blocks are rotated:
+ *   TL
+ * BL  TR
+ *   BR
+ *
+ * 1 means wall is "closed"
+ * 0 means wall is open (not closed)
+ *
+ * Bit0: BR
+ * Bit1: BL
+ * Bit2: TR
+ * Bit3: TL
+ */
+static const uint8_t _walls_table[] =
+{
+   [0x0] = 0b1101,
+   [0x1] = 0b1011,
+   [0x2] = 0b1001,
+   [0x3] = 0b0111,
+   [0x4] = 0b0101,
+   [0x5] = 0b0011,
+   [0x6] = 0b0001,
+   [0x7] = 0b1110,
+   [0x8] = 0b1100,
+   [0x9] = 0b1010,
+   [0xa] = 0b1000,
+   [0xb] = 0b0110,
+   [0xc] = 0b0100,
+   [0xd] = 0b0010,
+};
+
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
@@ -48,7 +81,8 @@ _tile_has_type(uint8_t tl,
                uint8_t br,
                uint8_t type)
 {
-   return ((tl == type) || (tr == type) || (bl == type) || (br == type));
+   return (((tl & 0xf) == type) || ((tr & 0xf) == type) ||
+           ((bl & 0xf) == type) || ((br & 0xf) == type));
 }
 
 static EINA_CONST uint16_t
@@ -70,6 +104,46 @@ _tile_boundry_low_mask_get(uint8_t tl,
      mask = (~mask) & 0x000f;
 
    return (mask - 0x0001) << 4;
+}
+
+static inline Eina_Bool
+_wall_closed_is(uint8_t tile)
+{
+   return (tile & TILE_WALL_CLOSED) ? EINA_TRUE : EINA_FALSE;
+}
+
+static inline Tile
+_wall_tile_gen(Eina_Bool closed)
+{
+   return (closed) ? TILE_WALL_CLOSED : TILE_WALL_OPEN;
+}
+
+static EINA_CONST uint16_t
+_tile_wall_mask_get(uint8_t tl,
+                    uint8_t tr,
+                    uint8_t bl,
+                    uint8_t br)
+{
+   uint16_t mask = 0xffff;
+   uint8_t key;
+   unsigned int i;
+
+   tl = _wall_closed_is(tl);
+   tr = _wall_closed_is(tr);
+   bl = _wall_closed_is(bl);
+   br = _wall_closed_is(br);
+   key = (tl << 3) | (tr << 2) | (bl << 1) | br;
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(_walls_table); i++)
+     {
+        if (key == _walls_table[i])
+          {
+             mask = (uint16_t)i << 4;
+             break;
+          }
+     }
+
+   return mask;
 }
 
 
@@ -169,13 +243,17 @@ tile_mask_calculate(uint8_t tl,
                   goto fail;
                }
           }
-        else if (TILE_HAS(TILE_HUMAN_WALL))//|| TILE_HAS(TILE_ORC_WALL))
+        else if (TILE_HAS(TILE_ORC_WALL))
           {
-             tile = 0x0900 | LOW_MASK(TILE_HUMAN_WALL);
+             tile = 0x0900 | _tile_wall_mask_get(tl, tr, bl, br);
+          }
+        else if (TILE_HAS(TILE_HUMAN_WALL))
+          {
+             tile = 0x0800 | _tile_wall_mask_get(tl, tr, bl, br);
           }
         else
           {
-             CRI("Uncovered case");
+             CRI("Uncovered tile disposition");
              goto fail;
           }
      }
@@ -183,7 +261,8 @@ tile_mask_calculate(uint8_t tl,
    return tile;
 
 fail:
-   CRI("Analysis of tile {%i %i %i %i} failed", tl, tr, bl, br);
+   CRI("Analysis of tile (tl, tr, bl, br) = (0x%02x, 0x%02x, 0x%02x, 0x%02x) failed",
+       tl, tr, bl, br);
    return 0x0000;
 
 #undef LOW_MASK
@@ -256,19 +335,6 @@ tile_calculate(uint8_t tl,
    return tile_code;
 }
 
-static inline void
-_walls_fill(uint8_t walls[4],
-            uint8_t tl,
-            uint8_t tr,
-            uint8_t br,
-            uint8_t bl)
-{
-   walls[0] = tl;
-   walls[1] = tr;
-   walls[2] = br;
-   walls[3] = bl;
-}
-
 void
 tile_decompose(uint16_t  tile_code,
                uint8_t  *tl,
@@ -307,7 +373,7 @@ tile_decompose(uint16_t  tile_code,
      }
    else /* Boundry */
      {
-        uint8_t pair[2], walls[4];
+        uint8_t pair[2];
         uint16_t master = (tile_code & 0x0f00);
         uint16_t spread = (tile_code & 0x00f0);
 
@@ -338,95 +404,22 @@ tile_decompose(uint16_t  tile_code,
              return;
           }
 
+        /* Walls */
         if ((pair[0] == TILE_ORC_WALL) || (pair[0] == TILE_HUMAN_WALL))
           {
-             switch (spread)
+             const uint8_t key = (spread >> 4) & 0xf;
+             uint8_t val;
+             if (EINA_UNLIKELY(key > 0xd))
                {
-                  /* For walls, all blocks are rotated:
-                   *   TL
-                   * BL  TR
-                   *   BR   */
-                case 0x0000:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
-                   break;
-                case 0x00d0:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
-                   break;
-                case 0x0010:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
-                   break;
-                case 0x00c0:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
-                   break;
-                case 0x0020:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
-                   break;
-                case 0x00b0:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
-                   break;
-                case 0x0030:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
-                   break;
-                case 0x00a0:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
-                   break;
-                case 0x0040:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
-                   break;
-                case 0x0090:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN,
-                               TILE_WALL_CLOSED, TILE_WALL_OPEN);
-                   break;
-                case 0x0070:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
-                               TILE_WALL_CLOSED,   TILE_WALL_OPEN);
-                   break;
-                case 0x0060:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
-                               TILE_WALL_OPEN,   TILE_WALL_CLOSED);
-                   break;
-                case 0x0080:
-                   _walls_fill(walls,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
-                   break;
-                case 0x0050:
-                   _walls_fill(walls,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN,
-                               TILE_WALL_CLOSED, TILE_WALL_CLOSED);
-                   break;
-
-                default:
-                   CRI("Invalid tile 0x%04x (unhandled spread 0x%04x)",
-                       tile_code, spread);
-                   return;
+                  CRI("Invalid wall spread 0x%04x", spread);
+                  return;
                }
 
-             *tl = walls[0] | pair[0];
-             *tr = walls[1] | pair[0];
-             *br = walls[2] | pair[0];
-             *bl = walls[3] | pair[0];
+             val = _walls_table[key];
+             *tl = _wall_tile_gen(val >> 3) | pair[0];
+             *tr = _wall_tile_gen(val >> 2) | pair[0];
+             *br = _wall_tile_gen(val >> 1) | pair[0];
+             *bl = _wall_tile_gen(val) | pair[0];
           }
         else /* Everything but walls */
           {
