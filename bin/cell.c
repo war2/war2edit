@@ -78,6 +78,10 @@ cell_dump(Cell *cell,
       "    start_location_human: %u\n"
       "    selected_below......: %u\n"
       "    selected_above......: %u\n"
+      "    tile TL.............: 0x%02x\n"
+      "    tile TR.............: 0x%02x\n"
+      "    tile BL.............: 0x%02x\n"
+      "    tile BR.............: 0x%02x\n"
       "}\n",
       cell->alter_below,
       cell->alter_above,
@@ -97,7 +101,11 @@ cell_dump(Cell *cell,
       cell->start_location,
       cell->start_location_human,
       cell->selected_below,
-      cell->selected_above
+      cell->selected_above,
+      cell->tile_tl,
+      cell->tile_tr,
+      cell->tile_bl,
+      cell->tile_br
    );
 }
 
