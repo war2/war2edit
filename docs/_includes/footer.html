@@ -1,0 +1,26 @@
+<footer>
+    <div class="container text-center">
+        <p>Copyright &copy; <a href="mailto:jean@guyomarch.bzh">Jean Guyomarc'h</a> 2016</p>
+    </div>
+</footer>
+
+<script type="text/javascript" src="{{ "/js/jquery.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/js/slick.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/js/bootstrap.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/js/jquery.easing.min.js" | prepend: site.baseurl }}"></script>
+<script type="text/javascript" src="{{ "/js/grayscale.min.js" | prepend: site.baseurl }}"></script>
+
+
+<script type="text/javascript">
+  $(document).ready(function(){
+      $('.caroussel').slick({
+          infinite: true,
+          dots: true,
+          adaptiveHeight: true,
+	  //variableWidth: true,
+	  autoplay: false,
+	  autoplaySpeed: 5000,
+	  slidesToScroll: 1
+      });
+  });
+</script>

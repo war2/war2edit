@@ -1,0 +1,102 @@
+---
+layout: main
+screenshots:
+  - cibola.jpg
+  - death.jpg
+  - raiders.jpg
+  - tandalos.jpg
+  - arena.jpg
+---
+
+<div class="intro">
+   <div class="intro-body">
+      <div class="container">
+	 <div class="row">
+	    <div class="caroussel">
+	       {% for img in page.screenshots %}
+		  <div><img src="{{ site.baseurl }}/img/{{ img }}"/ alt="Image {{ img }}"></div>
+	       {% endfor %}
+	    </div>
+	 </div>
+      </div>
+   </div>
+</div>
+
+<section id="about" class="container content-section text-center">
+   <div class="row">
+      <div class="col-lg-8 col-lg-offset-2">
+         <h2>About War2Edit</h2>
+         <p>
+         War2Edit is an unofficial Wacraft II World Map Editor clone.
+         Yes, Warcraft II, the #1 hit that came out in 1996. I am only 20 years late.
+         It still goes under heavy development, but is ready to be released as an
+         omega version. It produces fully functionnal PUDs, and it is Open Source!
+         </p>
+
+         <p>
+         <ul class="pretty-list">
+            <li>Compatible Tides of Darkness and Beyond the Dark Portal.</li>
+            <li>Forest, Winter, Wasteland and <b>Swamp</b> eras.</li>
+            <li>Built-in heroes (Lothar, Teron Gorefield, Deathwing, Kadgar, ...)</li>
+            <li>Warcraft II Launcher.</li>
+            <li>Units properties in-depth editor.</li>
+            <li>Different brush sizes and shapes for map creation.</li>
+            <li>All units with their colorations.</li>
+         </ul>
+         </p>
+      </div>
+   </div>
+</section>
+
+<!-- Download Section -->
+<section id="download" class="content-section text-center">
+   <div class="download-section">
+      <div class="container">
+         <div class="col-lg-8 col-lg-offset-2">
+            <h2>Download War2Edit</h2>
+            <p>
+               Since War2Edit is under heavy development, there are no
+               released binaries (yet). However, <b>source code</b> is available
+               for everyone to compile. Details are available on the
+               <a href="https://github.com/jeanguyomarch/war2edit/blob/master/README.md">Github Repository</a>.
+            </p>
+
+            <p>
+            Operating Systems Status Support:
+            <ul class="os-list">
+               <li><span class="label label-success">GNU/Linux</span> is very well supported</li>
+               <li><span class="label label-success">Mac OS X</span> is well supported</li>
+               <li><span class="label label-danger">Windows</span> is not (yet?) supported.
+            </ul>
+            </p>
+         </div>
+      </div>
+   </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="container content-section text-center">
+   <div class="row">
+      <div class="col-lg-8 col-lg-offset-2">
+         <h2>Contact</h2>
+         <p>
+         Feel free to email me about War2Edit, for a new feature or report a bug: <a href="mailto:jean@guyomarch.bzh">jean@guyomarch.bzh</a>.
+         You can also go through the bug tracker on GitHub. Don't hesitate to share your feels.
+         </p>
+         <ul class="list-inline banner-social-buttons">
+            <li>
+               <a href="https://github.com/{{ site.github_username}}/war2edit" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+            </li>
+         </ul>
+      </div>
+   </div>
+</section>
+
+<!--
+
+   Creadits:
+
+   Wacraft II is owned by Blizzard Entertainement.
+   This website theme is derived from Grayscale (http://startbootstrap.com/template-overviews/grayscale/)
+
+-->

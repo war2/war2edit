@@ -1,0 +1,13 @@
+# Site settings
+title: Unofficial Warcraft II World Map Editor
+email: jean@guyomarch.bzh
+description: > # this means to ignore newlines until "baseurl:"
+   War2Edit is an unofficial Warcraft II World Map Editor that
+   comes twenty years late.
+
+baseurl: "/war2edit" # the subpath of your site, e.g. /blog
+url: "https://jeanguyomarch.github.io" # the base hostname & protocol for your site
+github_username: jeanguyomarch
+
+# Build settings
+markdown: kramdown
