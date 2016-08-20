@@ -488,13 +488,17 @@ bitmap_debug_cell(Editor       *ed,
                   unsigned int  x,
                   unsigned int  y)
 {
+#if 0
    cairo_t *const cr = ed->bitmap.cr;
    cairo_text_extents_t ext1, ext2;
    char msg1[16];
    char msg2[16];
 
+//   snprintf(msg1, sizeof(msg1), "0x%04x", ed->pud->oil_map[x + y*ed->pud->map_w]);
    snprintf(msg1, sizeof(msg1), "0x%04x", TILE_MOVEMENT_GET(&(ed->cells[y][x])));
    snprintf(msg2, sizeof(msg2), "0x%04x", ed->pud->movement_map[x + y*ed->pud->map_w]);
+   //snprintf(msg1, sizeof(msg1), "0x%04x", TILE_ACTION_GET(&(ed->cells[y][x])));
+   //snprintf(msg2, sizeof(msg2), "0x%04x", ed->pud->action_map[x + y*ed->pud->map_w]);
    msg1[sizeof(msg1) - 1] = '\0';
    msg2[sizeof(msg2) - 1] = '\0';
 
@@ -510,6 +514,11 @@ bitmap_debug_cell(Editor       *ed,
    cairo_show_text(cr, msg1);
    cairo_move_to(cr, x * TEXTURE_WIDTH, y * TEXTURE_HEIGHT + ext1.height + ext2.height + 3);
    cairo_show_text(cr, msg2);
+#else
+   (void) ed;
+   (void) x;
+   (void) y;
+#endif
 }
 
 void
