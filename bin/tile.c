@@ -399,7 +399,7 @@ tile_decompose(uint16_t  tile_code,
                 case 0x0070:
                    _walls_fill(walls,
                                TILE_WALL_CLOSED, TILE_WALL_CLOSED,
-                               TILE_WALL_OPEN,   TILE_WALL_OPEN);
+                               TILE_WALL_CLOSED,   TILE_WALL_OPEN);
                    break;
                 case 0x0060:
                    _walls_fill(walls,
