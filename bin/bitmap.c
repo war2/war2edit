@@ -450,7 +450,7 @@ _mouse_down_cb(void        *data,
    if (ed->debug)
      {
         Cell *c = &(ed->cells[cy][cx]);
-        fprintf(stdout, "[%u,%u] =", cx, cy);
+        fprintf(stdout, "[%u,%u] = ", cx, cy);
         cell_dump(c, stdout);
      }
 
