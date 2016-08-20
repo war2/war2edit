@@ -944,8 +944,10 @@ bitmap_tile_calculate(Editor           *ed,
    memset(next, 0, sizeof(next));
 
 #define _TILE_RESOLVE(T, SUB, X, Y) \
-   next[T].SUB = _conflict_solve(imposed, cells[Y][X].tile_ ## SUB, \
-                                 &(next[T].conflict))
+   do { \
+      next[T].SUB = _conflict_solve(imposed, cells[Y][X].tile_ ## SUB, \
+                                    &(next[T].conflict)); \
+   } while (0)
 
    if (x > 0)
      {
