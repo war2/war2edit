@@ -24,17 +24,17 @@ static const uint8_t _tiles_compatible[__TILE_LAST][__TILE_LAST] =
 
 static const uint8_t _tiles_conflicts[__TILE_LAST] =
 {
-   /*    */ TILE_NONE,
-   /*  F */ TILE_GRASS_LIGHT,
-   /* GL */ TILE_GROUND_LIGHT,
-   /* CL */ TILE_GRASS_LIGHT,
-   /* WL */ TILE_GROUND_LIGHT,
-   /* WD */ TILE_WATER_LIGHT,
-   /* GD */ TILE_GRASS_LIGHT,
-   /* CD */ TILE_GROUND_LIGHT,
-   /*  R */ TILE_GROUND_LIGHT,
-   /* HW */ TILE_GRASS_LIGHT,
-   /* OW */ TILE_GRASS_LIGHT
+   [TILE_NONE]         = TILE_NONE,
+   [TILE_TREES]        = TILE_GRASS_LIGHT,
+   [TILE_GRASS_LIGHT]  = TILE_GROUND_LIGHT,
+   [TILE_GROUND_LIGHT] = TILE_GRASS_LIGHT,
+   [TILE_WATER_LIGHT]  = TILE_GROUND_LIGHT,
+   [TILE_WATER_DARK]   = TILE_WATER_LIGHT,
+   [TILE_GRASS_DARK]   = TILE_GRASS_LIGHT,
+   [TILE_GROUND_DARK]  = TILE_GROUND_LIGHT,
+   [TILE_ROCKS]        = TILE_GROUND_LIGHT,
+   [TILE_HUMAN_WALL]   = TILE_GRASS_LIGHT,
+   [TILE_ORC_WALL]     = TILE_GRASS_LIGHT,
 };
 
 /*============================================================================*
