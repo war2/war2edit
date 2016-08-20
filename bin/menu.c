@@ -203,7 +203,7 @@ _player_properties_cb(void        *data,
                       Evas_Object *obj   EINA_UNUSED,
                       void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
 
    if (inwin_id_is(ed, INWIN_PLAYER_PROPERTIES))
      inwin_activate(ed);
@@ -213,6 +213,8 @@ _player_properties_cb(void        *data,
                   INWIN_PLAYER_PROPERTIES,
                   "Close", NULL, NULL, NULL);
      }
+
+   menu_unit_selection_reset(ed);
 }
 
 static void
