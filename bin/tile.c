@@ -416,10 +416,10 @@ tile_decompose(uint16_t  tile_code,
                }
 
              val = _walls_table[key];
-             *tl = _wall_tile_gen(val >> 3) | pair[0];
-             *tr = _wall_tile_gen(val >> 2) | pair[0];
-             *br = _wall_tile_gen(val >> 1) | pair[0];
-             *bl = _wall_tile_gen(val) | pair[0];
+             *tl = _wall_tile_gen((val >> 3) & 0x1) | pair[0];
+             *tr = _wall_tile_gen((val >> 2) & 0x1) | pair[0];
+             *bl = _wall_tile_gen((val >> 1) & 0x1) | pair[0];
+             *br = _wall_tile_gen(val & 0x1) | pair[0];
           }
         else /* Everything but walls */
           {
