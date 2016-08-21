@@ -45,7 +45,7 @@ check_compiler_warnings(
 add_definitions(${COMPILER_WARNINGS})
 
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
-set(PROJECT_URL "http://www.jeanguyomarch.com/war2edit.php")
+set(PROJECT_URL "https://jeanguyomarch.github.io/war2edit/")
 
 set(CMAKE_MACOSX_RPATH OFF)
 
