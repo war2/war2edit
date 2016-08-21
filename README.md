@@ -21,7 +21,6 @@ Build
 TODO & BUGS
 ===========
 
-- [ ] Tiles algorithm is broken with dark tiles
 - [ ] Overhaul minimap
 - [ ] Scaling of map
 - [ ] Different brush types
