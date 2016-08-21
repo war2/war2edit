@@ -9,17 +9,17 @@ screenshots:
 ---
 
 <div class="intro">
-   <div class="intro-body">
-      <div class="container">
-	 <div class="row">
-	    <div class="caroussel">
-	       {% for img in page.screenshots %}
-		  <div><img src="{{ site.baseurl }}/img/{{ img }}"/ alt="Image {{ img }}"></div>
-	       {% endfor %}
-	    </div>
-	 </div>
+  <div class="intro-body">
+    <div class="container">
+      <div class="row">
+        <div class="caroussel">
+          {% for img in page.screenshots %}
+          <div><img src="{{ site.baseurl }}/img/{{ img }}"/ alt="Image {{ img }}"></div>
+          {% endfor %}
+        </div>
       </div>
-   </div>
+    </div>
+  </div>
 </div>
 
 <section id="about" class="container content-section text-center">
