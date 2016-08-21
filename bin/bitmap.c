@@ -184,6 +184,13 @@ _click_handle(Editor *ed,
               break;
           }
 
+        /* Walls are special and cannot be created as big */
+        if ((action == EDITOR_SEL_ACTION_ORC_WALLS) ||
+            (action == EDITOR_SEL_ACTION_HUMAN_WALLS))
+          {
+             z = 0;
+          }
+
         for (j = -z; j <= z; j++)
           for (i = -z; i <= z; i++)
             {
