@@ -226,6 +226,7 @@ toolbar_add(Editor      *ed,
 
    /* Run segment */
    s[4] = SEG_ADD(_run_cb);
+   elm_object_disabled_set(s[4], ipc_disabled_get());
    SEG_IT_ADD(s[4], "efl.png", 0);
    _segment_size_autoset(s[4], 1);
 

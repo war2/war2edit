@@ -19,6 +19,7 @@ static const Ecore_Getopt _options =
    "A modest clone of Warcraft II World Map Editor",
    EINA_TRUE,
    {
+      ECORE_GETOPT_STORE_TRUE('C', "clouseau", "Enable clouseau debug"),
       ECORE_GETOPT_STORE_TRUE('d', "debug", "Enable graphical debug"),
       ECORE_GETOPT_HELP ('h', "help"),
       ECORE_GETOPT_VERSION('V', "version"),
@@ -58,7 +59,9 @@ elm_main(int    argc,
    unsigned int ed_count = 0;
    Eina_Bool quit_opt = EINA_FALSE;
    Eina_Bool debug = EINA_FALSE;
+   Eina_Bool clouseau = EINA_FALSE;
    Ecore_Getopt_Value values[] = {
+      ECORE_GETOPT_VALUE_BOOL(clouseau),
       ECORE_GETOPT_VALUE_BOOL(debug),
       ECORE_GETOPT_VALUE_BOOL(quit_opt),
       ECORE_GETOPT_VALUE_BOOL(quit_opt)
@@ -84,6 +87,12 @@ elm_main(int    argc,
 
    if (debug)
      debug_flags = ~0U;
+
+   /*
+    * Clouseau not pleased with ecore_event_handlers
+    */
+   if (clouseau)
+     ipc_disable();
 
 
    /* Are we running in tree? */

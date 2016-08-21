@@ -1,13 +1,14 @@
 /*
  * ipc.c
  *
- * Copyright (c) 2015 Jean Guyomarc'h
+ * Copyright (c) 2015 - 2016 Jean Guyomarc'h
  */
 
 #include "war2edit.h"
 
 #define HANDLERS_COUNT 4u
 
+static Eina_Bool _disable = EINA_FALSE;
 static Ecore_Event_Handler *_handlers[HANDLERS_COUNT];
 static unsigned int _spawns = 0u;
 static Ipc_Cb _spawns_cb = NULL;
@@ -73,6 +74,8 @@ ipc_init(void)
    };
    unsigned int i;
 
+   if (_disable) return EINA_TRUE;
+
    for (i = 0; i < HANDLERS_COUNT; ++i)
      {
         _handlers[i] = ecore_event_handler_add(handlers[i].event,
@@ -94,9 +97,12 @@ ipc_shutdown(void)
 {
    unsigned int i;
 
-   for (i = 0; i < HANDLERS_COUNT; ++i)
-     if (_handlers[i])
-       ecore_event_handler_del(_handlers[i]);
+   if (!_disable)
+     {
+        for (i = 0; i < HANDLERS_COUNT; ++i)
+          if (_handlers[i])
+            ecore_event_handler_del(_handlers[i]);
+     }
 }
 
 unsigned int
@@ -117,3 +123,14 @@ ipc_spawns_cb_set(Ipc_Cb      cb,
    return old;
 }
 
+void
+ipc_disable(void)
+{
+   _disable = EINA_TRUE;
+}
+
+Eina_Bool
+ipc_disabled_get(void)
+{
+   return _disable;
+}
