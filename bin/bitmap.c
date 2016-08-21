@@ -1391,21 +1391,21 @@ bitmap_refresh(Editor               *ed,
    int i, j;
 
    bitmap_visible_zone_cells_get(ed, &area);
-   DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
+   //DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
 
    /*
     * If no zone is provided, we will use the whole visible bitmap
     */
    if (zone)
      {
-        DBG("Intersection with zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(zone));
+        //DBG("Intersection with zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(zone));
         if (!eina_rectangle_intersection(&area, zone))
           {
              WRN("Attempted to refresh a zone that is not visible.");
              return;
           }
      }
-   DBG("Refreshing zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
+   //DBG("Refreshing zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
 
    /* Pre-calculate loop invariants */
    x2 = area.x + area.w;
