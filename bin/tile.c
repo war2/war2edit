@@ -367,15 +367,15 @@ tile_decompose(uint16_t  tile_code,
            case 0x00b0: code = TILE_HUMAN_WALL | TILE_WALL_OPEN; break;
            case 0x00a0: code = TILE_ORC_WALL | TILE_WALL_CLOSED; break;
            case 0x00c0: code = TILE_ORC_WALL | TILE_WALL_OPEN; break;
-           default: CRI("Unhandled tile: 0x%x", tile_code); return;
+           default: CRI("Unhandled tile: 0x%04x", tile_code); return;
           }
         *bl = code; *br = code; *tl = code; *tr = code;
      }
    else /* Boundry */
      {
         uint8_t pair[2];
-        uint16_t master = (tile_code & 0x0f00);
-        uint16_t spread = (tile_code & 0x00f0);
+        const uint16_t master = (tile_code & 0x0f00);
+        const uint16_t spread = (tile_code & 0x00f0);
 
         switch (master)
           {
