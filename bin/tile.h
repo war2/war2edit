@@ -75,6 +75,16 @@ tile_solid_is(uint8_t tl,
 }
 
 static inline Eina_Bool
+tile_dark_water_is(uint8_t tl,
+                   uint8_t tr,
+                   uint8_t bl,
+                   uint8_t br)
+{
+   return ((tl == TILE_WATER_DARK) && (tr == TILE_WATER_DARK) &&
+           (bl == TILE_WATER_DARK) && (br == TILE_WATER_DARK));
+}
+
+static inline Eina_Bool
 tile_water_is(uint8_t tl,
               uint8_t tr,
               uint8_t bl,
@@ -250,6 +260,9 @@ uint8_t tile_conflict_resolve_get(uint8_t t);
 
 #define TILE_WATER_IS(cptr) \
    tile_water_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
+
+#define TILE_DARK_WATER_IS(cptr) \
+   tile_dark_water_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_GROUND_IS(cptr) \
    tile_ground_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
