@@ -76,6 +76,8 @@ _place_selected_tile(Editor           *ed,
 {
    uint8_t component;
    uint8_t randomize = TILE_RANDOMIZE;
+   const Cell *const c = &(ed->cells[y][x]);
+   unsigned int i, passes;
 
    if ((x >= ed->pud->map_w) || (y >= ed->pud->map_h))
      return;
@@ -84,9 +86,23 @@ _place_selected_tile(Editor           *ed,
      randomize |= TILE_SPECIAL;
 
    component = _solid_component_get(action, tint);
-   bitmap_tile_set(ed, x, y, component, component,
-                   component, component, randomize, EINA_TRUE);
-   bitmap_tile_calculate(ed, x, y, NULL);
+
+   /*
+    * XXX This is a bit of a hack.
+    * Placing dark grass or forest in dark water will
+    * cause the center tile to be messed up.
+    * This can be easily solved by applying the same tile
+    * at the same point.
+    * This is not pretty, but is simple to fix.
+    * Maybe later, propose something better...
+    */
+   passes = (TILE_DARK_WATER_IS(c)) ? 2 : 1;
+   for (i = 0; i < passes; i++)
+     {
+        bitmap_tile_set(ed, x, y, component, component,
+                        component, component, randomize, EINA_TRUE);
+        bitmap_tile_calculate(ed, x, y, NULL);
+     }
 }
 
 static void
