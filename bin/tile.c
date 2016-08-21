@@ -492,10 +492,32 @@ tile_compatible_is(uint8_t tl,
 }
 
 uint8_t
-tile_conflict_resolve_get(uint8_t t)
+tile_conflict_resolve_get(uint8_t imposed,
+                          uint8_t conflict)
 {
-   EINA_SAFETY_ON_FALSE_RETURN_VAL(t < __TILE_LAST,  TILE_NONE);
-   return _tiles_conflicts[t & 0x0f];
+   imposed &= 0xf;
+   conflict &= 0xf;
+
+   EINA_SAFETY_ON_FALSE_RETURN_VAL(imposed < __TILE_LAST,  TILE_NONE);
+   EINA_SAFETY_ON_FALSE_RETURN_VAL(conflict < __TILE_LAST,  TILE_NONE);
+
+   /*
+    * Dark Water is a very annoying corner case.
+    * TILE_GROUND_LIGHT has two possible conflict resolution, and since
+    * we have a static table, we will always resolve with one solution.
+    * This will strongly displease dark water because it creates a new
+    * conflict instead of solving it.
+    * We therefore handle this specific case before trying out the
+    * resolution table.
+    */
+   if ((conflict == TILE_WATER_DARK) && (imposed == TILE_GROUND_LIGHT))
+     {
+        return TILE_WATER_LIGHT;
+     }
+   else
+     {
+        return _tiles_conflicts[imposed];
+     }
 }
 
 uint16_t

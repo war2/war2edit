@@ -922,14 +922,21 @@ _conflict_solve(uint8_t    imposed,
                 uint8_t    conflict,
                 Eina_Bool *result_is_conflict)
 {
+   //DBG("Solving conflict between imposed: 0x%02x and conflict: 0x%02x", imposed, conflict);
+
    /* If the imposed and potential conflictual fragments are compatible,
     * the potential conflict is not a conflict. Otherwise,
     * force a compatible tile */
    if (tile_fragments_compatible_are(imposed, conflict) == EINA_FALSE)
      {
         *result_is_conflict = EINA_TRUE;
-        return tile_conflict_resolve_get(imposed);
+        conflict = tile_conflict_resolve_get(imposed, conflict);
+        //DBG("Incompatible fragments, conflict resolution said 0x%02x", conflict);
      }
+   //else
+   //  {
+   //     DBG("Tiles are compatible together, 0x%02x is returned", conflict);
+   //  }
    return conflict;
 }
 
@@ -954,8 +961,10 @@ bitmap_tile_calculate(Editor           *ed,
 
 #define _TILE_RESOLVE(T, SUB, X, Y) \
    do { \
+      /*DBG("=== Solving Conflict for side %s (tile particle %s)", #T, #SUB);*/ \
       next[T].SUB = _conflict_solve(imposed, cells[Y][X].tile_ ## SUB, \
                                     &(next[T].conflict)); \
+      /*DBG("===\n");*/ \
    } while (0)
 
    if (x > 0)

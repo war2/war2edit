@@ -252,7 +252,8 @@ tile_compatible_is(uint8_t tl,
                    uint8_t bl,
                    uint8_t br);
 
-uint8_t tile_conflict_resolve_get(uint8_t t);
+uint8_t tile_conflict_resolve_get(uint8_t imposed,
+                                  uint8_t conflict);
 
 /* Helpers */
 #define TILE_SOLID_IS(cptr) \
