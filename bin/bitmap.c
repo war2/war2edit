@@ -401,6 +401,7 @@ _bitmap_resize_cb(void        *data,
 
 static void
 _mouse_move_cb(void        *data,
+               Evas        *evas EINA_UNUSED,
                Evas_Object *bmp  EINA_UNUSED,
                void        *info)
 {
@@ -452,6 +453,7 @@ _mouse_move_cb(void        *data,
 
 static void
 _mouse_down_cb(void        *data,
+               Evas        *evas EINA_UNUSED,
                Evas_Object *bmp  EINA_UNUSED,
                void        *info)
 {
@@ -482,6 +484,7 @@ _mouse_down_cb(void        *data,
 
 static void
 _mouse_up_cb(void        *data,
+             Evas        *evas EINA_UNUSED,
              Evas_Object *obj  EINA_UNUSED,
              void        *info EINA_UNUSED)
 {
@@ -1228,9 +1231,9 @@ bitmap_add(Editor *ed)
    evas_object_size_hint_min_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
    evas_object_size_hint_max_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
    elm_object_content_set(ed->scroller, o);
-   evas_object_smart_callback_add(o, "mouse,down", _mouse_down_cb, ed);
-   evas_object_smart_callback_add(o, "mouse,move", _mouse_move_cb, ed);
-   evas_object_smart_callback_add(o, "mouse,up", _mouse_up_cb, ed);
+   evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, ed);
+   evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_MOVE, _mouse_move_cb, ed);
+   evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_UP, _mouse_up_cb, ed);
    evas_object_propagate_events_set(o, EINA_FALSE);
    evas_object_pass_events_set(o, EINA_FALSE);
    evas_object_show(o);
