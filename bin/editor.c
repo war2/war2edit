@@ -311,7 +311,7 @@ editor_new(const char   *pud_file,
    else
      {
         len = snprintf(path, sizeof(path),
-                       "%s/themes/%s.edj", PACKAGE_DATA_DIR, theme);
+                       "%s/themes/%s.edj", elm_app_data_dir_get(), theme);
      }
    path[sizeof(path) - 1] = '\0';
    ed->edje_file = strndup(path, len);
