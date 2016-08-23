@@ -487,6 +487,44 @@ err_ret:
    return NULL;
 }
 
+static void
+_dismiss_cb(void        *data,
+            Evas_Object *obj  EINA_UNUSED,
+            void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   evas_object_del(ed->pop);
+   ed->pop = NULL;
+}
+
+static void _save_error(Editor *ed,  const char *message, ...) EINA_PRINTF(2,3);
+
+static void
+_save_error(Editor     *ed,
+            const char *message, ...)
+{
+   Evas_Object *b;
+   char msg[4096];
+   va_list args;
+
+   va_start(args, message);
+   vsnprintf(msg, sizeof(msg), message, args);
+   va_end(args);
+   msg[sizeof(msg) - 1] = '\0';
+
+   // I also want my logs on the console!!
+   CRI("%s", msg);
+
+   ed->pop = elm_popup_add(ed->win);
+   b = elm_button_add(ed->pop);
+   elm_object_text_set(b, "Oops, Ok");
+   elm_object_part_content_set(ed->pop, "button1", b);
+   evas_object_smart_callback_add(b, "clicked", _dismiss_cb, ed);
+
+   elm_object_text_set(ed->pop, msg);
+   evas_object_show(ed->pop);
+}
+
 Eina_Bool
 editor_save(Editor     *ed,
             const char *file)
@@ -495,7 +533,7 @@ editor_save(Editor     *ed,
    EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
    Eina_Bool chk;
-   Pud_Error err;
+   Pud_Error_Description err;
    Pud *pud = ed->pud; /* Save indirections... */
 
    /* Sync the hot changes to the Pud structure */
@@ -506,11 +544,46 @@ editor_save(Editor     *ed,
      }
 
    /* Verify it is ok */
-   err = pud_check(pud);
-   if (err != PUD_ERROR_NONE)
+   pud_check(pud, &err);
+   switch (err.type)
      {
-        CRI("Pud is not valid. Error: %i", err);
-        return EINA_FALSE;
+      case PUD_ERROR_NONE:
+         DBG("Consistancy check detected nothing wrong");
+         break;
+
+      case PUD_ERROR_TOO_MUCH_START_LOCATIONS:
+         _save_error(ed,
+                     "An extra start location was found at %u,%u (%s)",
+                     err.data.unit->x, err.data.unit->y,
+                     pud_color2str(err.data.unit->owner));
+         return EINA_FALSE;
+
+      case PUD_ERROR_EMPTY_PLAYER:
+         _save_error(ed,
+                     "Player %i (%s) has a start location but no units",
+                     err.data.player, pud_color2str(err.data.player));
+         return EINA_FALSE;
+
+      case PUD_ERROR_NO_START_LOCATION:
+         _save_error(ed,
+                     "Player %i (%s) has units but no start location",
+                     err.data.player, pud_color2str(err.data.player));
+         return EINA_FALSE;
+
+      case PUD_ERROR_NOT_ENOUGH_START_LOCATIONS:
+         _save_error(ed,
+                     "There is %u start locations. At least 2 are expected",
+                     err.data.count);
+         return EINA_FALSE;
+
+      case PUD_ERROR_NOT_INITIALIZED:
+         _save_error(ed, "Internal error. Please report error");
+         return EINA_FALSE;
+
+      case PUD_ERROR_UNDEFINED:
+      default:
+         CRI("Undefined error in consistancy check. Seems bad.");
+         return EINA_FALSE;
      }
 
    /* Attribute a filename to the pud itself if none where attributed
