@@ -40,11 +40,22 @@ _continue_load_cb(void        *data,
                   Evas_Object *obj  EINA_UNUSED,
                   void        *info EINA_UNUSED)
 {
-   Editor *const ed = data;
-   editor_load(ed, ed->save_file_tmp);
-   ed->save_file_tmp = NULL;
-   evas_object_del(ed->pop);
-   ed->pop = NULL;
+   Editor *const old_ed = data;
+   Editor *ed;
+
+   evas_object_del(old_ed->pop);
+   old_ed->pop = NULL;
+
+   ed = editor_new(old_ed->save_file_tmp, old_ed->debug);
+   old_ed->save_file_tmp = NULL;
+
+   if (EINA_UNLIKELY(!ed))
+     {
+        CRI("Could not reopen pud %s", old_ed->pud->filename);
+        return;
+     }
+
+   editor_free(old_ed);
 }
 
 static void
@@ -158,4 +169,3 @@ file_load_prompt(Editor *ed)
    _fs_show(ed);
    return EINA_TRUE;
 }
-
