@@ -241,11 +241,21 @@ editor_free(Editor *ed)
    free(ed);
 }
 
+static void
+_dismiss_cb(void        *data,
+            Evas_Object *obj  EINA_UNUSED,
+            void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   evas_object_del(ed->pop);
+   ed->pop = NULL;
+}
+
 void
 editor_error(Editor     *ed,
              const char *fmt, ...)
 {
-   Evas_Object *box, *e;
+   Evas_Object *b;
    char msg[4096];
    va_list args;
 
@@ -254,36 +264,14 @@ editor_error(Editor     *ed,
    va_end(args);
    msg[sizeof(msg) - 1] = '\0';
 
-   if (inwin_id_is(ed, INWIN_EDITOR_ERROR))
-     {
-        inwin_activate(ed);
-        return;
-     }
+   ed->pop = elm_popup_add(ed->win);
+   b = elm_button_add(ed->pop);
+   elm_object_text_set(b, "Oops, Ok");
+   elm_object_part_content_set(ed->pop, "button1", b);
+   evas_object_smart_callback_add(b, "clicked", _dismiss_cb, ed);
 
-   /* Info label */
-   e = elm_label_add(ed->win);
-   EINA_SAFETY_ON_NULL_GOTO(e, end);
-   elm_object_text_set(e, msg);
-   evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
-
-   /* Box to content the UI */
-   box = elm_box_add(ed->win);
-   EINA_SAFETY_ON_NULL_GOTO(box, end);
-   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_box_horizontal_set(box, EINA_FALSE);
-   elm_box_homogeneous_set(box, EINA_FALSE);
-   elm_box_pack_start(box, e);
-
-   inwin_set(ed, box, INWIN_EDITOR_ERROR, "Ok", NULL, NULL, NULL);
-   evas_object_show(box);
-   evas_object_show(e);
-
-   return;
-end:
-   CRI("Failed to generate error UI with message [%s]", msg);
-   editor_free(ed);
+   elm_object_text_set(ed->pop, msg);
+   evas_object_show(ed->pop);
 }
 
 
@@ -487,44 +475,6 @@ err_ret:
    return NULL;
 }
 
-static void
-_dismiss_cb(void        *data,
-            Evas_Object *obj  EINA_UNUSED,
-            void        *info EINA_UNUSED)
-{
-   Editor *const ed = data;
-   evas_object_del(ed->pop);
-   ed->pop = NULL;
-}
-
-static void _save_error(Editor *ed,  const char *message, ...) EINA_PRINTF(2,3);
-
-static void
-_save_error(Editor     *ed,
-            const char *message, ...)
-{
-   Evas_Object *b;
-   char msg[4096];
-   va_list args;
-
-   va_start(args, message);
-   vsnprintf(msg, sizeof(msg), message, args);
-   va_end(args);
-   msg[sizeof(msg) - 1] = '\0';
-
-   // I also want my logs on the console!!
-   CRI("%s", msg);
-
-   ed->pop = elm_popup_add(ed->win);
-   b = elm_button_add(ed->pop);
-   elm_object_text_set(b, "Oops, Ok");
-   elm_object_part_content_set(ed->pop, "button1", b);
-   evas_object_smart_callback_add(b, "clicked", _dismiss_cb, ed);
-
-   elm_object_text_set(ed->pop, msg);
-   evas_object_show(ed->pop);
-}
-
 Eina_Bool
 editor_save(Editor     *ed,
             const char *file)
@@ -552,32 +502,32 @@ editor_save(Editor     *ed,
          break;
 
       case PUD_ERROR_TOO_MUCH_START_LOCATIONS:
-         _save_error(ed,
-                     "An extra start location was found at %u,%u (%s)",
-                     err.data.unit->x, err.data.unit->y,
-                     pud_color2str(err.data.unit->owner));
+         EDITOR_ERROR(ed,
+                      "An extra start location was found at %u,%u (%s)",
+                      err.data.unit->x, err.data.unit->y,
+                      pud_color2str(err.data.unit->owner));
          return EINA_FALSE;
 
       case PUD_ERROR_EMPTY_PLAYER:
-         _save_error(ed,
-                     "Player %i (%s) has a start location but no units",
-                     err.data.player, pud_color2str(err.data.player));
+         EDITOR_ERROR(ed,
+                      "Player %i (%s) has a start location but no units",
+                      err.data.player + 1, pud_color2str(err.data.player));
          return EINA_FALSE;
 
       case PUD_ERROR_NO_START_LOCATION:
-         _save_error(ed,
-                     "Player %i (%s) has units but no start location",
-                     err.data.player, pud_color2str(err.data.player));
+         EDITOR_ERROR(ed,
+                      "Player %i (%s) has units but no start location",
+                      err.data.player + 1, pud_color2str(err.data.player));
          return EINA_FALSE;
 
       case PUD_ERROR_NOT_ENOUGH_START_LOCATIONS:
-         _save_error(ed,
-                     "There is %u start locations. At least 2 are expected",
-                     err.data.count);
+         EDITOR_ERROR(ed,
+                      "There is %u start locations. At least 2 are expected",
+                      err.data.count);
          return EINA_FALSE;
 
       case PUD_ERROR_NOT_INITIALIZED:
-         _save_error(ed, "Internal error. Please report error");
+         EDITOR_ERROR(ed, "Internal error. Please report error");
          return EINA_FALSE;
 
       case PUD_ERROR_UNDEFINED:
