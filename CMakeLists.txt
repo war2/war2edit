@@ -42,7 +42,7 @@ check_compiler_warnings(
     -Woverlength-strings
     -Wcast-align
 )
-add_definitions(${COMPILER_WARNINGS})
+add_definitions(${COMPILER_WARNINGS} -O0 -g) # FIXME
 
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
 set(PROJECT_URL "https://jeanguyomarch.github.io/war2edit/")
