@@ -527,12 +527,9 @@ editor_save(Editor     *ed,
          return EINA_FALSE;
 
       case PUD_ERROR_NOT_INITIALIZED:
-         EDITOR_ERROR(ed, "Internal error. Please report error");
-         return EINA_FALSE;
-
       case PUD_ERROR_UNDEFINED:
       default:
-         CRI("Undefined error in consistancy check. Seems bad.");
+         EDITOR_ERROR(ed, "Internal error 0x%x. Please report error", err.type);
          return EINA_FALSE;
      }
 
