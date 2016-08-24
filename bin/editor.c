@@ -287,6 +287,8 @@ editor_new(const char   *pud_file,
    const char theme[] = "default";
    int i, len;
 
+   DBG("Creating editor with path %s and debug flags 0x%x", pud_file, debug);
+
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
