@@ -893,13 +893,14 @@ _owner_to_string(uint8_t owner)
 {
    switch (owner)
      {
+      case PUD_OWNER_NOBODY:         /* Fall through */
       case PUD_OWNER_COMPUTER:       return STR_PUD_OWNER_COMPUTER;
       case PUD_OWNER_HUMAN:          return STR_PUD_OWNER_HUMAN;
       case PUD_OWNER_RESCUE_PASSIVE: return STR_PUD_OWNER_RESCUE_PASSIVE;
       case PUD_OWNER_RESCUE_ACTIVE:  return STR_PUD_OWNER_RESCUE_ACTIVE;
 
       default:
-         CRI("Unhandled value %x", owner);
+         CRI("Unhandled value 0x%x", owner);
          return NULL;
      }
 }
