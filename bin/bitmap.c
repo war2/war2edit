@@ -92,11 +92,12 @@ _place_selected_tile(Editor           *ed,
 {
    uint8_t component;
    uint8_t randomize = TILE_RANDOMIZE;
-   const Cell *const c = &(ed->cells[y][x]);
+   const Cell *c;
    unsigned int i, passes;
 
    if ((x >= ed->pud->map_w) || (y >= ed->pud->map_h))
      return;
+   c = &(ed->cells[y][x]);
 
    if (spread == EDITOR_SEL_SPREAD_SPECIAL)
      randomize |= TILE_SPECIAL;
