@@ -682,7 +682,7 @@ menu_map_properties_new(Editor      *ed,
    evas_object_show(f);
    b = elm_box_add(f); /* Box */
    elm_object_content_set(f, b);
-   elm_box_align_set(b, 0.0f, 0.0f);
+   elm_box_align_set(b, 0.0, 0.0);
    evas_object_show(b);
 
    /* Tileset item 1 (Forest) */
