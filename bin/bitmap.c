@@ -792,8 +792,8 @@ bitmap_selections_draw(Editor       *ed,
    if (x2 >= ed->pud->map_w) x2 = ed->pud->map_w - 1;
    if (y2 >= ed->pud->map_h) y2 = ed->pud->map_h - 1;
 
-   for (j = y1; j < y2; ++j)
-     for (i = x1; i < x2; ++i)
+   for (j = y1; j <= y2; ++j)
+     for (i = x1; i <= x2; ++i)
        {
           // TODO Pre-selections
 
