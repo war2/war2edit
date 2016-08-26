@@ -294,6 +294,74 @@ _cells_type_get(Cell         **cells,
    return res;
 }
 
+static Eina_Bool
+_resource_close_is(const Editor *ed,
+                   Pud_Unit      unit,
+                   int           x,
+                   int           y)
+{
+   const int nomansland = 6;
+   Eina_Bool gold;
+   int i, j;
+   int w, h;
+   const Cell *c;
+
+   switch (unit)
+     {
+      case PUD_UNIT_TOWN_HALL:
+      case PUD_UNIT_GREAT_HALL:
+      case PUD_UNIT_KEEP:
+      case PUD_UNIT_STRONGHOLD:
+      case PUD_UNIT_CASTLE:
+      case PUD_UNIT_FORTRESS:
+         gold = EINA_TRUE;
+         break;
+
+      case PUD_UNIT_ORC_SHIPYARD:
+      case PUD_UNIT_HUMAN_SHIPYARD:
+      case PUD_UNIT_ORC_REFINERY:
+      case PUD_UNIT_HUMAN_REFINERY:
+         gold = EINA_FALSE;
+         break;
+
+      default:
+            return EINA_FALSE;
+     }
+
+   sprite_tile_size_get(unit, (unsigned int*)(&w), (unsigned int*)(&h));
+   for (j = y - nomansland;
+        (j >= 0) && (j < (int)ed->pud->map_h) && (j < y + h + nomansland);
+        j++)
+     {
+        for (i = x - nomansland;
+             (i >= 0) && (i < (int)ed->pud->map_w) && (i < x + w + nomansland);
+             i++)
+          {
+             c = &(ed->cells[j][i]);
+             if (gold)
+               {
+                  if (c->unit_below == PUD_UNIT_GOLD_MINE)
+                    return EINA_TRUE;
+               }
+             else
+               {
+                  switch (c->unit_below)
+                    {
+                     case PUD_UNIT_OIL_PATCH:
+                     case PUD_UNIT_HUMAN_OIL_WELL:
+                     case PUD_UNIT_ORC_OIL_WELL:
+                        return EINA_TRUE;
+
+                     default:
+                        break;
+                    }
+               }
+          }
+     }
+
+   return EINA_FALSE;
+}
+
 void
 bitmap_cursor_state_evaluate(Editor       *ed,
                              unsigned int  x,
@@ -463,7 +531,11 @@ _mouse_move_cb(void        *data,
           }
 
         if (ed->sel_unit != PUD_UNIT_NONE)
-          bitmap_cursor_state_evaluate(ed, cx, cy);
+          {
+             bitmap_cursor_state_evaluate(ed, cx, cy);
+             if (_resource_close_is(ed, ed->sel_unit, cx, cy))
+               bitmap_cursor_enabled_set(ed, EINA_FALSE);
+          }
         else
           bitmap_cursor_enabled_set(ed, EINA_TRUE);
      }
