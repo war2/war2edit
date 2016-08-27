@@ -147,6 +147,9 @@ cell_anchor_pos_get(Cell         **cells,
 
    if (below)
      {
+        if ((c->unit_below == PUD_UNIT_NONE) &&
+            (c->start_location == CELL_NOT_START_LOCATION))
+          return NULL;
         if (c->anchor_below)
           {
              if (ax) *ax = x;
@@ -161,6 +164,7 @@ cell_anchor_pos_get(Cell         **cells,
      }
    else
      {
+        if (c->unit_above == PUD_UNIT_NONE) return NULL;
         if (c->anchor_above)
           {
              if (ax) *ax = x;

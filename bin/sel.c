@@ -147,7 +147,7 @@ sel_end(Editor *ed)
           {
              /* Selections for units below */
              anchor = cell_anchor_get(cells, i, j, EINA_TRUE);
-             if ((anchor->unit_below != PUD_UNIT_NONE) || (anchor->start_location != CELL_NOT_START_LOCATION))
+             if (anchor)
                {
                   if (inclusive)
                     {
@@ -170,7 +170,7 @@ sel_end(Editor *ed)
 
              /* Selection for units above */
              anchor = cell_anchor_get(cells, i, j, EINA_FALSE);
-             if (anchor->unit_above != PUD_UNIT_NONE)
+             if (anchor)
                {
                   if (inclusive)
                     {
@@ -198,9 +198,9 @@ sel_end(Editor *ed)
      for (i = ed->sel.rel1.x; i <= ed->sel.rel2.x; ++i)
        {
           anchor = cell_anchor_get(cells, i, j, EINA_TRUE);
-          anchor->selected_below &= (~SEL_MARK);
+          if (anchor) anchor->selected_below &= (~SEL_MARK);
           anchor = cell_anchor_get(cells, i, j, EINA_FALSE);
-          anchor->selected_above &= (~SEL_MARK);
+          if (anchor) anchor->selected_above &= (~SEL_MARK);
        }
 
    bitmap_refresh(ed, NULL); // FIXME BAD
