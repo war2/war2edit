@@ -56,8 +56,8 @@ sel_add(Editor *ed)
 
 void
 sel_start(Editor    *ed,
-          const int  x,
-          const int  y,
+          int        x,
+          int        y,
           Eina_Bool  inclusive)
 {
    unsigned int i, j;

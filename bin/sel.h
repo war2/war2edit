@@ -26,10 +26,10 @@
 Evas_Object *sel_add(Editor * ed);
 
 void
-sel_start(Editor * ed,
-          const int        x,
-          const int        y,
-          Eina_Bool        inclusive);
+sel_start(Editor    *ed,
+          int        x,
+          int        y,
+          Eina_Bool  inclusive);
 
 void
 sel_update(Editor * ed,
