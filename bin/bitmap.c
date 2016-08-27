@@ -1387,7 +1387,7 @@ bitmap_add(Editor *ed)
 
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
-   bitmap_cursor_visibility_set(ed, EINA_TRUE);
+   bitmap_cursor_visibility_set(ed, EINA_FALSE);
    bitmap_cursor_enabled_set(ed, EINA_TRUE);
 
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
