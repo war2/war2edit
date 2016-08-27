@@ -535,6 +535,11 @@ _mouse_move_cb(void        *data,
              bitmap_cursor_state_evaluate(ed, cx, cy);
              if (_resource_close_is(ed, ed->sel_unit, cx, cy))
                bitmap_cursor_enabled_set(ed, EINA_FALSE);
+             if (pud_unit_oil_well_is(ed->sel_unit))
+               {
+                  if ((cx % 2 == 0) || (cy % 2 == 0))
+                    bitmap_cursor_enabled_set(ed, EINA_FALSE);
+               }
           }
         else
           bitmap_cursor_enabled_set(ed, EINA_TRUE);
