@@ -537,7 +537,14 @@ _mouse_move_cb(void        *data,
                bitmap_cursor_enabled_set(ed, EINA_FALSE);
              if (pud_unit_oil_well_is(ed->sel_unit))
                {
+                  /* Oil patches must be on ODD cells */
                   if ((cx % 2 == 0) || (cy % 2 == 0))
+                    bitmap_cursor_enabled_set(ed, EINA_FALSE);
+               }
+             else if (pud_unit_boat_is(ed->sel_unit))
+               {
+                  /* Boats patches must be on EVEN cells */
+                  if ((cx % 2 != 0) || (cy % 2 != 0))
                     bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
           }
