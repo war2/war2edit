@@ -25,6 +25,16 @@
 #define ICON_WIDTH      50
 #define ICON_HEIGHT     50
 
+typedef enum
+{
+   SEG_TINT   = 0,
+   SEG_SPREAD = 1,
+   SEG_RADIUS = 2,
+   SEG_ACTION = 3,
+   SEG_RUNNER = 4,
+} Seg;
+
+
 /* Shortcuts, to index an array */
 enum
 {
@@ -60,6 +70,36 @@ static const uint16_t _selections[] = {
 };
 
 
+
+static void
+_enable_all_segments(Editor *ed)
+{
+   unsigned int i, c, j;
+   Elm_Object_Item *eoi;
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->segs); i++)
+     {
+        elm_object_disabled_set(ed->segs[i], EINA_FALSE);
+        c = (unsigned int)elm_segment_control_item_count_get(ed->segs[i]);
+        for (j = 0; j < c; j++)
+          {
+             eoi = elm_segment_control_item_get(ed->segs[i], j);
+             elm_object_item_disabled_set(eoi, EINA_FALSE);
+          }
+     }
+}
+
+static inline void
+_subitem_disable(const Editor *ed,
+                 Seg           segment,
+                 unsigned int  item)
+{
+   Elm_Object_Item *eoi;
+   eoi = elm_segment_control_item_get(ed->segs[segment], item);
+   elm_object_item_disabled_set(eoi, EINA_TRUE);
+}
+
+
 /*============================================================================*
  *                                  Callbacks                                 *
  *============================================================================*/
@@ -69,7 +109,7 @@ _seg_changed_cb(void        *data,
                 Evas_Object *obj,
                 void        *info EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
    Editor_Sel sel;
    Elm_Object_Item *eoi;
 
@@ -77,15 +117,43 @@ _seg_changed_cb(void        *data,
    sel = *((uint16_t *)elm_object_item_data_get(eoi));
 
    editor_tb_sel_set(ed, sel);
-   if (editor_sel_action_get(ed) == EDITOR_SEL_ACTION_SELECTION)
-     bitmap_cursor_visibility_set(ed, EINA_FALSE);
-   else
+   DBG("GUI func");
+
+   _enable_all_segments(ed);
+   /* FIXME - remove this when circular brush is implemented */
+   _subitem_disable(ed, SEG_SPREAD, 1);
+
+   bitmap_cursor_visibility_set(ed, EINA_TRUE);
+   switch (editor_sel_action_get(ed))
      {
+      case EDITOR_SEL_ACTION_SELECTION:
+         bitmap_cursor_visibility_set(ed, EINA_FALSE);
+         break;
+
+      case EDITOR_SEL_ACTION_ORC_WALLS:
+      case EDITOR_SEL_ACTION_HUMAN_WALLS:
+         editor_tb_sel_set(ed, EDITOR_SEL_RADIUS_SMALL);
+         elm_object_disabled_set(ed->segs[SEG_RADIUS], EINA_TRUE);
+         elm_object_disabled_set(ed->segs[SEG_SPREAD], EINA_TRUE);
+         /* Fall through */
+
+      case EDITOR_SEL_ACTION_TREES:
+      case EDITOR_SEL_ACTION_ROCKS:
+         editor_tb_sel_set(ed, EDITOR_SEL_TINT_LIGHT);
+         elm_object_disabled_set(ed->segs[SEG_TINT], EINA_TRUE);
+         /* Fall through */
+
+      case EDITOR_SEL_ACTION_WATER:
+         editor_tb_sel_set(ed, EDITOR_SEL_SPREAD_NORMAL);
+         //_subitem_disable(ed, SEG_SPREAD, 2);
+         break;
+
+      default:
         bitmap_cursor_visibility_set(ed, EINA_TRUE);
         bitmap_cursor_size_set(ed, 1, 1);
+        break;
      }
 
-   // TODO Reset stuff
    /* Safely unset the unit selection */
    menu_unit_selection_reset(ed);
 }
@@ -193,7 +261,6 @@ Eina_Bool
 toolbar_add(Editor      *ed,
             Evas_Object *box)
 {
-   Evas_Object *s[5];
    Elm_Object_Item *eoi;
    unsigned int i;
    char path[PATH_MAX];
@@ -209,55 +276,51 @@ toolbar_add(Editor      *ed,
    } while (0)
 
    /* Tint segment */
-   s[0] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[0], "light.png", TL);
-   SEG_IT_ADD(s[0], "dark.png", TD);
-   _segment_size_autoset(s[0], 2);
+   ed->segs[0] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[0], "light.png", TL);
+   SEG_IT_ADD(ed->segs[0], "dark.png", TD);
+   _segment_size_autoset(ed->segs[0], 2);
 
    /* Spread segmen,t */
-   s[1] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[1], "sel_squared.png", SN);
-   SEG_IT_ADD(s[1], "sel_circular.png", SC);
-   SEG_IT_ADD(s[1], "sel_sparkle.png", SS);
-   _segment_size_autoset(s[1], 3);
+   ed->segs[1] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[1], "sel_squared.png", SN);
+   SEG_IT_ADD(ed->segs[1], "sel_circular.png", SC);
+   SEG_IT_ADD(ed->segs[1], "sel_sparkle.png", SS);
+   _segment_size_autoset(ed->segs[1], 3);
 
    /* Radius segment */
-   s[2] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[2], "brush_small.png", RS);
-   SEG_IT_ADD(s[2], "brush_medium.png", RM);
-   SEG_IT_ADD(s[2], "brush_big.png", RB);
-   _segment_size_autoset(s[2], 3);
+   ed->segs[2] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[2], "brush_small.png", RS);
+   SEG_IT_ADD(ed->segs[2], "brush_medium.png", RM);
+   SEG_IT_ADD(ed->segs[2], "brush_big.png", RB);
+   _segment_size_autoset(ed->segs[2], 3);
 
    /* Action segment */
-   s[3] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(s[3], "selection.png", AS);
-   SEG_IT_ADD(s[3], "water.png", AW);
-   SEG_IT_ADD(s[3], "ground.png", AN);
-   SEG_IT_ADD(s[3], "grass.png", AC);
-   SEG_IT_ADD(s[3], "trees.png", AT);
-   SEG_IT_ADD(s[3], "rocks.png", AR);
-   SEG_IT_ADD(s[3], "human_walls.png", AH);
-   SEG_IT_ADD(s[3], "orc_walls.png", AO);
-   _segment_size_autoset(s[3], 8);
+   ed->segs[3] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[3], "selection.png", AS);
+   SEG_IT_ADD(ed->segs[3], "water.png", AW);
+   SEG_IT_ADD(ed->segs[3], "ground.png", AN);
+   SEG_IT_ADD(ed->segs[3], "grass.png", AC);
+   SEG_IT_ADD(ed->segs[3], "trees.png", AT);
+   SEG_IT_ADD(ed->segs[3], "rocks.png", AR);
+   SEG_IT_ADD(ed->segs[3], "human_walls.png", AH);
+   SEG_IT_ADD(ed->segs[3], "orc_walls.png", AO);
+   _segment_size_autoset(ed->segs[3], 8);
 
    /* Run segment */
-   s[4] = SEG_ADD(_run_cb);
-   elm_object_disabled_set(s[4], ipc_disabled_get());
-   SEG_IT_ADD(s[4], "efl.png", 0);
-   _segment_size_autoset(s[4], 1);
+   ed->segs[4] = SEG_ADD(_run_cb);
+   elm_object_disabled_set(ed->segs[4], ipc_disabled_get());
+   SEG_IT_ADD(ed->segs[4], "efl.png", 0);
+   _segment_size_autoset(ed->segs[4], 1);
 
    /* Always select the first item */
-   for (i = 0; i < EINA_C_ARRAY_LENGTH(s); i++)
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->segs); i++)
      {
         if (i == 4) continue; /* Skip run button */
 
-        eoi = elm_segment_control_item_get(s[i], 0);
+        eoi = elm_segment_control_item_get(ed->segs[i], 0);
         elm_segment_control_item_selected_set(eoi, EINA_TRUE);
      }
-
-   /* Keep track of the action and runner segments */
-   ed->actions = s[3];
-   ed->runner = s[4];
 
    return EINA_TRUE;
 }
@@ -267,7 +330,7 @@ toolbar_actions_segment_unselect(const Editor *ed)
 {
    Elm_Object_Item *eoi;
 
-   eoi = elm_segment_control_item_selected_get(ed->actions);
+   eoi = elm_segment_control_item_selected_get(ed->segs[SEG_ACTION]);
    elm_segment_control_item_selected_set(eoi, EINA_FALSE);
 }
 
@@ -278,7 +341,6 @@ toolbar_runner_segment_selected_set(Editor    *ed,
    Elm_Object_Item *eoi;
 
    /* Reset selection on button */
-   eoi = elm_segment_control_item_selected_get(ed->runner);
+   eoi = elm_segment_control_item_selected_get(ed->segs[SEG_RUNNER]);
    elm_segment_control_item_selected_set(eoi, select);
-
 }

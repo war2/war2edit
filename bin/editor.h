@@ -86,11 +86,10 @@ struct _Editor
    Cell        **cells;
 
    /* === Toolbar === */
-   Evas_Object  *actions;
+   Evas_Object  *segs[5];
    Editor_Sel    tb_sel;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
-   Evas_Object  *runner;
    char *edje_file;
 
    Bitmap  bitmap;
