@@ -91,7 +91,7 @@ _radio_cb(void        *data,
          CRI("Unhandled type 0x%x", u->type);
          return;
      }
-
+   // FIXME CHANGE RACE IF NEEDED
    bitmap_refresh(u->ed, NULL); // XXX Not cool
 }
 
@@ -123,6 +123,34 @@ _radio_add(Evas_Object *parent,
 
    return o;
 }
+
+static void
+_res_edit_cb(void        *data,
+             Evas_Object *obj,
+             void        *info EINA_UNUSED)
+{
+   Udata *const u = data;
+   const char *text;
+   int len;
+   char *ptr;
+   unsigned long int res;
+
+   text = elm_object_text_get(obj);
+   len = strlen(text);
+
+   res = strtoul(text, &ptr, 10);
+   if ((res == 0) || (ptr != text + len) || (res > 490000) || (res < 2500))
+     {
+        ERR("Invalid value %lu (text: \"%s\")", res, text);
+        // TODO Visual info
+     }
+   else
+     {
+        DBG("Resource value is %lu", res);
+        u->c->alter_below = res / 2500;
+     }
+}
+
 
 static Evas_Object *
 _player_ctor(Evas_Object *vbox,
@@ -167,6 +195,37 @@ _player_ctor(Evas_Object *vbox,
    return f;
 }
 
+static Evas_Object *
+_res_ctor(Evas_Object *vbox,
+          Udata       *u)
+{
+   Evas_Object *f, *e;
+   char buf[32];
+
+   f = elm_frame_add(vbox);
+   elm_object_text_set(f, "Natural Resources");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(f);
+
+   e = elm_entry_add(f);
+   evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_entry_single_line_set(e, EINA_TRUE);
+   elm_entry_editable_set(e, EINA_TRUE);
+   elm_entry_scrollable_set(e, EINA_TRUE);
+   evas_object_show(e);
+
+   snprintf(buf, sizeof(buf), "%u", u->c->alter_below * 2500);
+   buf[sizeof(buf) - 1] = '\0';
+
+   evas_object_smart_callback_add(e, "changed,user", _res_edit_cb, u);
+   elm_object_content_set(f, e);
+   elm_object_text_set(e, buf);
+
+   return f;
+}
+
 
 static Evas_Object *
 _provide_unit_handler(Editor *ed,
@@ -177,8 +236,9 @@ _provide_unit_handler(Editor *ed,
    const char wdg_group[] = "war2edit/unitselector/widget";
    Evas_Object *lay, *vbox, *o, *f;
    Eina_Bool chk;
-   const Ctor ctor[1] = {
-      _player_ctor
+   const Ctor ctor[2] = {
+      _player_ctor,
+      _res_ctor,
    };
    enum {
       CTOR_NONE = 0,
