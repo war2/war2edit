@@ -54,7 +54,7 @@ struct _Cell
 
 #define CELL_NOT_START_LOCATION 0x0f
 
-Cell **cell_matrix_new(const unsigned int w, const unsigned int h);
+Cell **cell_matrix_new(unsigned int w, unsigned int h);
 void cell_matrix_free(Cell **cells);
 void cell_dump(Cell *cell, FILE *stream);
 Cell *cell_anchor_get(Cell         **cells,
