@@ -1227,14 +1227,14 @@ menu_starting_properties_new(Editor      *ed,
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
-   _pack_label(t, 1, 0, "Player 1 (RED)");
-   _pack_label(t, 2, 0, "Player 2 (BLUE)");
-   _pack_label(t, 3, 0, "Player 3 (GREEN)");
-   _pack_label(t, 4, 0, "Player 4 (VIOLET)");
-   _pack_label(t, 5, 0, "Player 5 (ORANGE)");
-   _pack_label(t, 6, 0, "Player 6 (BLACK)");
-   _pack_label(t, 7, 0, "Player 7 (WHITE)");
-   _pack_label(t, 8, 0, "Player 8 (YELLOW)");
+   _pack_label(t, 1, 0, STR_PLAYER_1);
+   _pack_label(t, 2, 0, STR_PLAYER_2);
+   _pack_label(t, 3, 0, STR_PLAYER_3);
+   _pack_label(t, 4, 0, STR_PLAYER_4);
+   _pack_label(t, 5, 0, STR_PLAYER_5);
+   _pack_label(t, 6, 0, STR_PLAYER_6);
+   _pack_label(t, 7, 0, STR_PLAYER_7);
+   _pack_label(t, 8, 0, STR_PLAYER_8);
 
    /* Gold */
    _pack_label(t, 0, 1, "Gold");
