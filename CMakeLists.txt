@@ -79,6 +79,7 @@ pkg_check_modules(ELEMENTARY elementary>=${EFL_VERSION} REQUIRED)
 pkg_check_modules(CAIRO cairo REQUIRED)
 pkg_check_modules(LIBPUD pud REQUIRED)
 pkg_check_modules(LIBWAR2 war2 REQUIRED)
+pkg_check_modules(LZMA liblzma REQUIRED)
 
 add_subdirectory(bin)
 add_subdirectory(data)

@@ -170,9 +170,11 @@ _click_handle(Editor *ed,
         orient = sprite_info_random_get();
 
         bitmap_cursor_size_get(ed, &w, &h);
+        snapshot_push(ed);
         type = bitmap_unit_set(ed, ed->sel_unit, ed->sel_player,
                                orient, x, y, w, h,
                                editor_alter_defaults_get(ed, ed->sel_unit));
+        snapshot_push_done(ed);
         editor_unit_ref(ed, x, y, type);
         minimap_render_unit(ed, x, y, ed->sel_unit);
         bitmap_cursor_enabled_set(ed, EINA_FALSE);
@@ -208,6 +210,7 @@ _click_handle(Editor *ed,
              z = 0;
           }
 
+        snapshot_push(ed);
         for (j = -z; j <= z; j++)
           for (i = -z; i <= z; i++)
             {
@@ -215,6 +218,7 @@ _click_handle(Editor *ed,
                                     editor_sel_spread_get(ed),
                                     editor_sel_tint_get(ed), x + i, y + j);
             }
+        snapshot_push_done(ed);
      }
 }
 
@@ -1288,7 +1292,7 @@ bitmap_tile_set(Editor    *ed,
 {
    Cell *c = &(ed->cells[y][x]);
    uint16_t tile;
-   Eina_Bool same;
+   Eina_Bool same, chk;
 
    /* Are we replacing the tile by an equivalent one? */
    same = ((c->tile_tl == tl) && (c->tile_tr == tr) &&
@@ -1310,7 +1314,10 @@ bitmap_tile_set(Editor    *ed,
         tile |= (c->tile & 0x000f);
      }
 
-   return _bitmap_full_tile_set(ed, x, y, tile);
+   chk = _bitmap_full_tile_set(ed, x, y, tile);
+   if (EINA_UNLIKELY(!chk))
+     WRN("Failed to full set a tile");
+   return chk;
 }
 
 Eina_Bool

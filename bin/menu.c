@@ -316,11 +316,12 @@ _delete_cb(void        *data,
 }
 
 static void
-_undo_cb(void        *data EINA_UNUSED,
+_undo_cb(void        *data,
          Evas_Object *obj  EINA_UNUSED,
          void        *evt  EINA_UNUSED)
 {
-   // TODO
+   Editor *const ed = data;
+   snapshot_rollback(ed, -1);
 }
 
 static void

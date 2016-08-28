@@ -29,6 +29,7 @@
 #include <Eina.h>
 #include <cairo.h>
 #include <Elementary.h>
+#include <lzma.h>
 
 typedef struct _Cell Cell;
 typedef struct _Editor Editor;
@@ -77,7 +78,7 @@ Eina_Bool main_in_tree_is(void);
 #include "toolbar.h"
 #include "ipc.h"
 #include "cell.h"
-#include "undo.h"
+#include "snapshot.h"
 #include "file.h"
 #include "menu.h"
 #include "inwin.h"

@@ -252,7 +252,7 @@ editor_free(Editor *ed)
    minimap_del(ed);
    eina_array_free(ed->orc_menus);
    eina_array_free(ed->human_menus);
-   undo_del(ed);
+   snapshot_del(ed);
    free(ed->edje_file);
    free(ed);
 }
@@ -428,8 +428,6 @@ editor_new(const char   *pud_file,
                               (void *)(uintptr_t)PUD_PLAYER_NEUTRAL,
                               NULL, ELM_GENLIST_ITEM_GROUP,
                               NULL, NULL);
-
-   undo_add(ed);
 
    /* Add inwin */
    inwin_add(ed);
@@ -733,13 +731,11 @@ editor_load(Editor     *ed,
    texture_tileset_open(pud->era);
    sprite_buildings_open(pud->era);
 
-   if (!ed->bitmap.img)
+   WRN("Pass here");
+   if (EINA_UNLIKELY(!bitmap_add(ed)))
      {
-        if (EINA_UNLIKELY(!bitmap_add(ed)))
-          {
-             CRI("Failed to create bitmap");
-             return EINA_FALSE;
-          }
+        CRI("Failed to create bitmap");
+        return EINA_FALSE;
      }
 
    minimap_add(ed);
@@ -761,6 +757,7 @@ editor_load(Editor     *ed,
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
+   snapshot_add(ed);
    bitmap_refresh(ed, NULL);
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
 

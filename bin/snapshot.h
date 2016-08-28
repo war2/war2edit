@@ -20,12 +20,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __UNDO_H__
-#define __UNDO_H__
+#ifndef __SNAPSHOT_H__
+#define __SNAPSHOT_H__
 
-Eina_Bool undo_add(Editor *ed);
-void undo_del(Editor *ed);
-void undo_menu_connect(Editor *ed, Elm_Object_Item *undo, Elm_Object_Item *redo);
-void undo_push(Editor *ed, const char *message);
+Eina_Bool snapshot_add(Editor *ed);
+void snapshot_del(Editor *ed);
 
-#endif /* ! __UNDO_H__ */
+void snapshot_pop(Editor *ed);
+void snapshot_rollback(Editor *ed, int offset);
+void snapshot_push(Editor *ed);
+void snapshot_push_done(Editor *ed);
+Eina_Bool snapshot_force_push(Editor *ed);
+
+#endif /* ! __SNAPSHOT_H__ */

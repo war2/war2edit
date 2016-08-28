@@ -59,6 +59,15 @@ fail:
 }
 
 void
+cell_matrix_copy(Cell         **src,
+                 Cell         **dst,
+                 unsigned int   w,
+                 unsigned int   h)
+{
+   memcpy(dst[0], src[0], w * h * sizeof(Cell));
+}
+
+void
 cell_matrix_free(Cell **cells)
 {
    if (cells)
@@ -177,4 +186,13 @@ cell_anchor_pos_get(Cell         **cells,
         if (ay) *ay = ry;
         return &(cells[ry][rx]);
      }
+}
+
+void
+cell_matrix_bindump(Cell **cells,
+                    unsigned int w,
+                    unsigned int h,
+                    FILE *stream)
+{
+   fwrite(cells[0], w * h, sizeof(Cell), stream);
 }

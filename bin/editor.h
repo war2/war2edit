@@ -131,7 +131,13 @@ struct _Editor
    Eina_Array  *orc_menus;
    Eina_Array  *human_menus;
 
-   Eina_Array *undo;
+   struct {
+      Eina_Inlist *items;
+      unsigned int changes;
+      Ecore_Timer *timer;
+      uint8_t *buffer;
+      size_t buf_len;
+   } snapshot;
 
    Elm_Object_Item *gen_group_players[8];
    Elm_Object_Item *gen_group_neutral;

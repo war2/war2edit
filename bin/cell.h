@@ -25,7 +25,7 @@
 
 struct _Cell
 {
-   uint16_t     alter_below;
+   uint16_t     alter_below; // FIXME _bits are sufficient
    unsigned int tile : 12;
    unsigned int unit_below : 7;
    unsigned int unit_above : 7;
@@ -67,5 +67,17 @@ Cell *cell_anchor_pos_get(Cell         **cells,
                           unsigned int  *ax,
                           unsigned int  *ay,
                           Eina_Bool      below);
+
+void
+cell_matrix_copy(Cell         **src,
+                 Cell         **dst,
+                 unsigned int   w,
+                 unsigned int   h);
+
+void
+cell_matrix_bindump(Cell **cells,
+                    unsigned int w,
+                    unsigned int h,
+                    FILE *stream);
 
 #endif /* ! _CELL_H_ */

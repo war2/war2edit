@@ -57,8 +57,8 @@ add_executable(war2edit
    prefs.h
    ipc.c
    ipc.h
-   undo.c
-   undo.h
+   snapshot.c
+   snapshot.h
    unitselector.c
    unitselector.h
    str.h
@@ -76,6 +76,7 @@ target_include_directories(war2edit
    PUBLIC ${LIBPUD_INCLUDE_DIRS}
    PUBLIC ${LIBWAR2_INCLUDE_DIRS}
    PUBLIC ${CAIRO_INCLUDE_DIRS}
+   PUBLIC ${LZMA_INCLUDE_DIRS}
 )
 
 target_link_libraries(war2edit
@@ -88,6 +89,7 @@ target_link_libraries(war2edit
    ${LIBPUD_LIBRARIES}
    ${LIBWAR2_LIBRARIES}
    ${CAIRO_LIBRARIES}
+   ${LZMA_LIBRARIES}
 )
 add_dependencies(
    war2edit
