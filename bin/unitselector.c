@@ -361,13 +361,14 @@ unitselector_add(Editor *ed EINA_UNUSED)
    return EINA_TRUE;
 }
 
-Evas_Object *
+static Evas_Object *
 _unitselector_add(Editor       *ed,
-                  Cell         *c,
-                  unsigned int  cx EINA_UNUSED,
-                  unsigned int  cy EINA_UNUSED)
+                  unsigned int  x,
+                  unsigned int  y)
 {
    Evas_Object *vbox, *o;
+   unsigned int cx, cy;
+   Cell *c;
    //int px, py, sx, sy, rx, ry, cell_w, cell_h, cx1, cy1, cw, ch;
    //unsigned int w, h;
    //
@@ -394,17 +395,21 @@ _unitselector_add(Editor       *ed,
    elm_box_homogeneous_set(vbox, EINA_FALSE);
    evas_object_show(vbox);
 
-
-   if (c->unit_below != PUD_UNIT_NONE)
+   c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_TRUE);
+   if (c && (c->unit_below != PUD_UNIT_NONE))
      {
+        DBG("BELOW");
         o = _provide_unit_handler(ed, vbox, c, UNIT_BELOW);
         elm_box_pack_end(vbox, o);
      }
-   if (c->unit_above != PUD_UNIT_NONE)
+   c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_FALSE);
+   if (c && (c->unit_above != PUD_UNIT_NONE))
      {
+        DBG("ABOVE");
         o = _provide_unit_handler(ed, vbox, c, UNIT_ABOVE);
         elm_box_pack_end(vbox, o);
      }
+   c = &(ed->cells[y][x]);
    if (c->start_location != CELL_NOT_START_LOCATION)
      {
         o = _provide_unit_handler(ed, vbox, c, UNIT_START_LOCATION);
@@ -419,15 +424,9 @@ unitselector_show(Editor       *ed,
                   unsigned int  x,
                   unsigned int  y)
 {
-   Cell *c;
-   unsigned int cx, cy;
-
-   c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_TRUE);
-   if (!c) return;
-
-   ed->unitselector.x = cx;
-   ed->unitselector.y = cy;
-   inwin_set(ed, _unitselector_add(ed, c, cx, cy),
+   ed->unitselector.x = x;
+   ed->unitselector.y = y;
+   inwin_set(ed, _unitselector_add(ed, x, y),
              INWIN_UNITSELECTOR,
              "Close", NULL, NULL, NULL);
 }
