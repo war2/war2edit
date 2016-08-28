@@ -114,6 +114,7 @@ inwin_dismiss(Editor *ed)
 void
 inwin_activate(Editor *ed)
 {
+   bitmap_cursor_visibility_set(ed, EINA_FALSE);
    elm_win_inwin_activate(ed->inwin.obj);
    evas_object_show(ed->inwin.obj);
 }

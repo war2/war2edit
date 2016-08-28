@@ -434,6 +434,8 @@ editor_new(const char   *pud_file,
    /* Add inwin */
    inwin_add(ed);
 
+   unitselector_add(ed);
+
    /* Show window */
    evas_object_show(ed->win);
 
@@ -596,12 +598,12 @@ editor_sync(Editor *ed)
    Pud *pud = ed->pud;
    Cell **cells = ed->cells;
    const Cell *c;
-   struct _Pud_Unit *u;
+   Pud_Unit_Data *u;
    void *tmp;
 
    /* We never known th exact amount of units because they are modified
     * on the fly. Here, we stop edition to sync */
-   tmp = realloc(pud->units, pud->units_count * sizeof(struct _Pud_Unit));
+   tmp = realloc(pud->units, pud->units_count * sizeof(*u));
    if (EINA_UNLIKELY(!tmp))
      {
         CRI("Failed to realloc(%u) units", pud->units_count);
@@ -701,7 +703,7 @@ editor_load(Editor     *ed,
 
    unsigned int i, j, sw, sh;
    const Pud *pud;
-   struct _Pud_Unit *u;
+   Pud_Unit_Data *u;
    uint16_t tile;
    uint8_t bl, br, tl, tr, seed;
 

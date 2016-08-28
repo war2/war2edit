@@ -570,11 +570,11 @@ _mouse_down_cb(void        *data,
    int cx, cy;
    int ox, oy;
 
+   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
+   bitmap_coords_to_cells(ed, ev->canvas.x - ox, ev->canvas.y - oy, &cx, &cy);
+
    if (ev->button == 1) /* Left button */
      {
-        evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
-        bitmap_coords_to_cells(ed, ev->canvas.x - ox, ev->canvas.y - oy, &cx, &cy);
-
         if (ed->debug)
           {
              Cell *c = &(ed->cells[cy][cx]);
@@ -590,6 +590,10 @@ _mouse_down_cb(void        *data,
                        evas_key_modifier_is_set(ev->modifiers, "Shift"));
           }
         _click_handle(ed, cx, cy);
+     }
+   else if (ev->button == 3) /* Right button */
+     {
+        unitselector_show(ed, cx, cy);
      }
 }
 

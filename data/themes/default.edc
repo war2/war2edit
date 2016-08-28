@@ -52,4 +52,77 @@ collections {
          }
       }
    }
+
+   group { "war2edit/unitselector/sel";
+      parts {
+         rect { "pretty";
+            desc { "default";
+               color: 0 0 124 124;
+            }
+         }
+      }
+   }
+
+   group { "war2edit/unitselector/widget";
+      images {
+         image: "placeholder.png" COMP;
+      }
+      parts {
+         image { "war2edit.unitselector.icon"; nomouse;
+            desc { "default";
+               rel2.relative: 0.0 0.0;
+               max: 46 38;
+               min: 46 38;
+               fixed: 1 1;
+               align: 0.0 0.0;
+               image.normal: "placeholder.png";
+            }
+         }
+         text { "war2edit.unitselector.name"; nomouse;
+            desc { "default";
+               text { font: "Sans"; size: 12;
+                  align: 0.5 0.5;
+                  text: "UNIT NAME";
+               }
+               rel1 {
+                  to: "war2edit.unitselector.icon";
+                  relative: 1.0 0.0;
+                  offset: 5 0;
+               }
+               rel2 {
+                  to_y: "war2edit.unitselector.icon";
+                  relative: 1.0 0.5;
+               }
+            }
+         }
+         text { "war2edit.unitselector.info"; nomouse;
+            desc { "default";
+               text { font: "Sans"; size: 8;
+                  align: 0.5 0.5;
+                  text: "UNIT Text";
+               }
+               rel1 {
+                  to_x: "war2edit.unitselector.icon";
+                  to_y: "war2edit.unitselector.name";
+                  relative: 1.0 1.0;
+                  offset: 5 0;
+               }
+               rel2 {
+                  to_x: "war2edit.unitselector.name";
+                  to_y: "war2edit.unitselector.icon";
+                  relative: 1.0 1.0;
+               }
+               align: 0.0 1.0;
+            }
+         }
+         swallow { "war2edit.unitselector.contents";
+            desc { "default";
+               rel1 {
+                  to: "war2edit.unitselector.icon";
+                  relative: 0.0 1.0;
+               }
+            }
+         }
+      }
+   }
 }

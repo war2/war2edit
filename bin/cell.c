@@ -178,4 +178,3 @@ cell_anchor_pos_get(Cell         **cells,
         return &(cells[ry][rx]);
      }
 }
-

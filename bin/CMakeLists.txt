@@ -59,6 +59,8 @@ add_executable(war2edit
    ipc.h
    undo.c
    undo.h
+   unitselector.c
+   unitselector.h
    str.h
    war2edit.h
 )

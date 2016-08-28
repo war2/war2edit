@@ -85,6 +85,7 @@ Eina_Bool main_in_tree_is(void);
 #include "bitmap.h"
 #include "editor.h"
 #include "minimap.h"
+#include "unitselector.h"
 #include "sel.h"
 
 #endif /* ! _WAR2EDIT_H_ */
