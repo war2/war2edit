@@ -930,22 +930,25 @@ editor_name_set(Editor     *ed,
 }
 
 uint16_t
-editor_alter_defaults_get(const Editor   *ed,
+editor_alter_defaults_get(const Editor   *ed    EINA_UNUSED,
                           const Pud_Unit  unit)
 {
-   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, 0x00);
+   switch (unit)
+     {
+      case PUD_UNIT_GOLD_MINE:
+         return 24;
 
-   // TODO lookup defaults (editor)
-   if ((unit == PUD_UNIT_GOLD_MINE) || (unit == PUD_UNIT_OIL_PATCH))
-     {
-        return 2500;
+      case PUD_UNIT_OIL_PATCH:
+      case PUD_UNIT_HUMAN_OIL_WELL:
+      case PUD_UNIT_ORC_OIL_WELL:
+         return 10;
+
+      case PUD_UNIT_CRITTER:
+         return 0;
+
+      default:
+         return 1;
      }
-   else if (unit == PUD_UNIT_CRITTER)
-     {
-        return 0;
-     }
-   else
-     return 1;
 }
 
 void
