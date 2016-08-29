@@ -317,7 +317,7 @@ _provide_unit_handler(Editor *ed,
          return NULL;
      }
 
- 
+
    for (i = 0; i < EINA_C_ARRAY_LENGTH(ctor); i++)
      {
         if ((ctor_taken >> i) & 0x1)
@@ -369,6 +369,7 @@ _unitselector_add(Editor       *ed,
    Evas_Object *vbox, *o;
    unsigned int cx, cy;
    Cell *c;
+
    //int px, py, sx, sy, rx, ry, cell_w, cell_h, cx1, cy1, cw, ch;
    //unsigned int w, h;
    //
@@ -424,6 +425,18 @@ unitselector_show(Editor       *ed,
                   unsigned int  x,
                   unsigned int  y)
 {
+   const Cell *c;
+
+   c = &(ed->cells[y][x]);
+
+   /* No unit on the cell - do nothing */
+   if ((c->unit_above == PUD_UNIT_NONE) &&
+       (c->unit_below == PUD_UNIT_NONE) &&
+       (c->start_location == CELL_NOT_START_LOCATION))
+     {
+        return;
+     }
+
    ed->unitselector.x = x;
    ed->unitselector.y = y;
    inwin_set(ed, _unitselector_add(ed, x, y),
