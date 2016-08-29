@@ -86,7 +86,7 @@ snapshot_force_push(Editor *ed)
    lzma_ret ret;
    size_t size = 0;
 
-   ret = lzma_easy_encoder(&stream, 9 | LZMA_PRESET_EXTREME, LZMA_CHECK_CRC64);
+   ret = lzma_easy_encoder(&stream, 1, LZMA_CHECK_CRC64);
    if (EINA_UNLIKELY(ret != LZMA_OK))
      {
         CRI("Failed to initialize LZMA stream");
