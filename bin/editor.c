@@ -323,6 +323,7 @@ editor_new(const char   *pud_file,
      }
    path[sizeof(path) - 1] = '\0';
    ed->edje_file = strndup(path, len);
+   INF("Edje file is %s", ed->edje_file);
    EINA_SAFETY_ON_NULL_GOTO(ed->edje_file, err_free);
 
    // FIXME cleanup on error + set max size
