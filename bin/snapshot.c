@@ -58,6 +58,13 @@ snapshot_free(Snapshot *shot)
    free(shot);
 }
 
+static inline void
+_undo_menu_disabled_set(Editor    *ed,
+                        Eina_Bool  disable)
+{
+   elm_object_item_disabled_set(ed->snapshot.menu_undo, disable);
+}
+
 static Eina_Bool
 _snapshot_delayed_cb(void *data)
 {
@@ -66,6 +73,8 @@ _snapshot_delayed_cb(void *data)
    DBG("Doing snapshot");
    snapshot_force_push(ed);
    ed->snapshot.requests = 0;
+
+   _undo_menu_disabled_set(ed, EINA_FALSE);
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -165,6 +174,8 @@ snapshot_add(Editor *ed)
    ed->snapshot.buf_len = (1 << 14); /* 16KiB */
    ed->snapshot.buffer = malloc(ed->snapshot.buf_len);
 
+   _undo_menu_disabled_set(ed, EINA_TRUE);
+
    /* Create the initial snapshot */
    return snapshot_force_push(ed);
 
@@ -242,10 +253,14 @@ snapshot_rollback(Editor *ed,
         ed->snapshot.items = eina_inlist_remove(ed->snapshot.items, l);
         DBG("Deleting element N-%i", i); // FIXME FREE DATA????
         l = eina_inlist_last(ed->snapshot.items);
+        count--;
      }
 
+   if (count == 1)
+     _undo_menu_disabled_set(ed, EINA_TRUE);
+
    shot = EINA_INLIST_CONTAINER_GET(l, Snapshot);
-   DBG("Using snapshot %p. There is now %u elements", shot, eina_inlist_count(ed->snapshot.items));
+   DBG("Using snapshot %p. There is now %u elements", shot, count);
 
    ret = lzma_stream_decoder(&stream, UINT32_MAX, LZMA_CONCATENATED);
    if (ret != LZMA_OK)

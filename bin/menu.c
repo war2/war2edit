@@ -324,13 +324,13 @@ _undo_cb(void        *data,
    snapshot_rollback(ed, -1);
 }
 
-static void
-_redo_cb(void        *data EINA_UNUSED,
-         Evas_Object *obj  EINA_UNUSED,
-         void        *evt  EINA_UNUSED)
-{
-   // TODO
-}
+//static void
+//_redo_cb(void        *data EINA_UNUSED,
+//         Evas_Object *obj  EINA_UNUSED,
+//         void        *evt  EINA_UNUSED)
+//{
+//   // TODO
+//}
 
 static void
 _minimap_show_cb(void        *data,
@@ -384,8 +384,8 @@ menu_add(Editor *ed)
 
    /*==== EDIT MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Edit", NULL, NULL);
-   elm_menu_item_add(ed->menu, itm, NULL, "Undo", _undo_cb, ed);
-   elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed);
+   ed->snapshot.menu_undo = elm_menu_item_add(ed->menu, itm, NULL, "Undo", _undo_cb, ed);
+   //elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed); // TODO
    elm_menu_item_separator_add(ed->menu, itm);
    elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
 
