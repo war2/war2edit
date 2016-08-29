@@ -298,8 +298,10 @@ editor_new(const char   *pud_file,
    Editor *ed;
    char title[512];
    Evas_Object *o, *box, *t;
-   Eina_Bool open_pud = EINA_FALSE;
+   Eina_Bool open_pud = EINA_FALSE, chk;
    char path[PATH_MAX];
+   const char contents[] = "war2edit.main.contents";
+   const char group[] = "war2edit/main";
    const char theme[] = "default";
    int i, len;
 
@@ -350,6 +352,18 @@ editor_new(const char   *pud_file,
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
                            _focus_in_cb, ed);
 
+   o = ed->lay = elm_layout_add(ed->win);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   chk = elm_layout_file_set(o, ed->edje_file, group);
+   if (EINA_UNLIKELY(!chk))
+     {
+        CRI("Failed to set layout");
+        goto err_win_del;
+     }
+   evas_object_show(o);
+   elm_win_resize_object_add(ed->win, o);
+
    /* File selector */
    file_selector_add(ed);
 
@@ -360,7 +374,7 @@ editor_new(const char   *pud_file,
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_horizontal_set(o, EINA_FALSE);
-   elm_win_resize_object_add(ed->win, o);
+   elm_layout_content_set(ed->lay, contents, o);
    evas_object_show(o);
 
   /* Add a box to put widgets in it */

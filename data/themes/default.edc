@@ -21,6 +21,13 @@
  */
 
 collections {
+   group { "war2edit/main";
+      parts {
+         swallow { "war2edit.main.contents";
+         }
+      }
+   }
+
    group { "war2edit/cursor";
       images {
          image: "frame.png" COMP;
