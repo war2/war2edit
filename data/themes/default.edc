@@ -20,10 +20,49 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+externals {
+   external: "elm";
+}
+
 collections {
    group { "war2edit/main";
       parts {
          swallow { "war2edit.main.contents";
+            desc { "default";
+            }
+         }
+
+         external { "bg";
+            source: "elm/bg";
+            desc { "default"; /* aka. hidden */
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 1.0 0.2;
+               rel2.relative: 1.0 0.4;
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.relative: 0.7 0.2;
+            }
+         }
+         text { "war2edit.main.notif";
+            desc { "default";
+               rel.to: "bg";
+               text { font: "Sans"; size: 12;
+               }
+            }
+         }
+      }
+
+      programs {
+         program { signal: "war2edit,notif,show"; source: "war2edit";
+            action: STATE_SET "visible";
+            target: "bg";
+            transition: SINUSOIDAL 1.0;
+         }
+         program { signal: "war2edit,notif,hide"; source: "war2edit";
+            action: STATE_SET "default";
+            target: "bg";
+            transition: ACCELERATE 0.5;
          }
       }
    }

@@ -1015,3 +1015,30 @@ editor_focused_get(void)
 {
    return _focused;
 }
+
+static Eina_Bool
+_dismiss_notif_cb(void *data)
+{
+   Editor *const ed = data;
+
+   elm_layout_signal_emit(ed->lay, "war2edit,notif,hide", "war2edit");
+   return ECORE_CALLBACK_CANCEL;
+}
+
+void
+editor_notif_send(Editor *ed,
+                  const char *msg, ...)
+{
+   va_list args;
+   char buf[512];
+
+   va_start(args, msg);
+   vsnprintf(buf, sizeof(buf), msg, args);
+   va_end(args);
+   buf[sizeof(buf) - 1] = '\0';
+
+   elm_layout_text_set(ed->lay, "war2edit.main.notif", buf);
+   elm_layout_signal_emit(ed->lay, "war2edit,notif,show", "war2edit");
+
+   ecore_timer_add(5.0, _dismiss_notif_cb, ed);
+}

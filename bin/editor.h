@@ -234,6 +234,8 @@ editor_alter_defaults_get(const Editor *ed,
 Eina_Bool editor_sync(Editor *ed);
 void editor_view_update(Editor *ed);
 
+void editor_notif_send(Editor *ed, const char *msg, ...) EINA_PRINTF(2,3);
+
 void
 editor_tb_sel_set(Editor *ed,
                   Editor_Sel       sel);
