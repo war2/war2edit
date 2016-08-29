@@ -59,18 +59,15 @@ snapshot_free(Snapshot *shot)
 }
 
 static Eina_Bool
-_timer_cb(void *data)
+_snapshot_delayed_cb(void *data)
 {
    Editor *const ed = data;
 
-   if (ed->snapshot.changes)
-     {
-        DBG("%u changes are pending, adding snapshot", ed->snapshot.changes);
+   DBG("Doing snapshot");
+   snapshot_force_push(ed);
+   ed->snapshot.requests = 0;
 
-        snapshot_force_push(ed);
-        ed->snapshot.changes = 0;
-     }
-   return ECORE_CALLBACK_RENEW;
+   return ECORE_CALLBACK_CANCEL;
 }
 
 Eina_Bool
@@ -165,9 +162,8 @@ snapshot_add(Editor *ed)
    ed->snapshot.items = NULL;
 
    /* FIXME meh */
-   ed->snapshot.buf_len = (1 << 14); /* 16 */
+   ed->snapshot.buf_len = (1 << 14); /* 16KiB */
    ed->snapshot.buffer = malloc(ed->snapshot.buf_len);
-   ed->snapshot.timer = ecore_timer_add(5.0, _timer_cb, ed);
 
    /* Create the initial snapshot */
    return snapshot_force_push(ed);
@@ -177,9 +173,8 @@ snapshot_add(Editor *ed)
 void
 snapshot_del(Editor *ed)
 {
-   Snapshot *shot;
+//   Snapshot *shot;
 
-   if (ed->snapshot.timer) ecore_timer_del(ed->snapshot.timer);
    free(ed->snapshot.buffer);
 //XXX   EINA_INLIST_FREE(ed->snapshot.items, shot)
 //XXX      snapshot_free(shot);
@@ -193,36 +188,44 @@ snapshot_menu_connect(Editor          *ed   EINA_UNUSED,
 }
 
 void
-snapshot_push(Editor *ed)
+snapshot_push(Editor *ed EINA_UNUSED)
 {
-   ed->snapshot.changes++;
-   DBG("Notifying pushes (%u)", ed->snapshot.changes);
 }
 
 void
-snapshot_push_done(Editor *ed EINA_UNUSED)
+snapshot_push_done(Editor *ed)
 {
    /*
     * I have the feeling one day there will be synchro plroblem...
     * And this function might help
     */
-
-   DBG("Done doing changes");
+   if (++ed->snapshot.requests == 1)
+     {
+        ecore_timer_add(3.0, _snapshot_delayed_cb, ed);
+     }
+   DBG("Trigerring snapshot");
 }
 
-void
+Eina_Bool
 snapshot_rollback(Editor *ed,
                   int offset)
 {
    unsigned int count;
    int i;
 
+   if (offset >= 0)
+     {
+        CRI("Rollback means get back in version, forever. "
+            "You can advance in a rollback.");
+        return EINA_FALSE;
+     }
+
    /* Cannot snapshot when the list is empty */
    count = eina_inlist_count(ed->snapshot.items);
    if (count <= 1)
      {
         DBG("No elements in stack. Cannot snapshot");
-        return;
+        return EINA_FALSE;
      }
 
    Eina_Inlist *l;
@@ -232,21 +235,23 @@ snapshot_rollback(Editor *ed,
 
    DBG("snapshot with %u elements", count);
 
-   /* Pop compressed blob */
    l = eina_inlist_last(ed->snapshot.items);
+   /* Pop compressed blob */
    for (i = 0; i < abs(offset); i++)
      {
-        l = (offset < 0) ? l->prev : l->next;
+        ed->snapshot.items = eina_inlist_remove(ed->snapshot.items, l);
+        DBG("Deleting element N-%i", i); // FIXME FREE DATA????
+        l = eina_inlist_last(ed->snapshot.items);
      }
 
    shot = EINA_INLIST_CONTAINER_GET(l, Snapshot);
-   DBG("Using snapshot %p", shot);
+   DBG("Using snapshot %p. There is now %u elements", shot, eina_inlist_count(ed->snapshot.items));
 
    ret = lzma_stream_decoder(&stream, UINT32_MAX, LZMA_CONCATENATED);
    if (ret != LZMA_OK)
      {
         CRI("Failed to create LZMA decoder");
-        return;
+        return EINA_FALSE;
      }
 
    stream.avail_in = shot->size;
@@ -270,9 +275,7 @@ snapshot_rollback(Editor *ed,
    else
      CRI("Something went wrong: 0x%x", ret);
    lzma_end(&stream);
-   
-   ed->snapshot.items = eina_inlist_remove(ed->snapshot.items, l);
-   snapshot_free(shot);
 
    bitmap_refresh(ed, NULL);
+   return EINA_TRUE;
 }

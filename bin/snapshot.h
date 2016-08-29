@@ -27,7 +27,7 @@ Eina_Bool snapshot_add(Editor *ed);
 void snapshot_del(Editor *ed);
 
 void snapshot_pop(Editor *ed);
-void snapshot_rollback(Editor *ed, int offset);
+Eina_Bool snapshot_rollback(Editor *ed, int offset);
 void snapshot_push(Editor *ed);
 void snapshot_push_done(Editor *ed);
 Eina_Bool snapshot_force_push(Editor *ed);

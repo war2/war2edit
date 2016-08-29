@@ -133,10 +133,10 @@ struct _Editor
 
    struct {
       Eina_Inlist *items;
-      unsigned int changes;
       Ecore_Timer *timer;
       uint8_t *buffer;
       size_t buf_len;
+      int requests;
    } snapshot;
 
    Elm_Object_Item *gen_group_players[8];
