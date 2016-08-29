@@ -228,6 +228,7 @@ sel_del(Editor *ed)
    unsigned int i, j;
    Cell *c;
 
+   snapshot_push(ed);
    for (j = 0; j < ed->pud->map_h; ++j)
      for (i = 0; i < ed->pud->map_w; ++i)
        {
@@ -242,5 +243,6 @@ sel_del(Editor *ed)
           if ((c->anchor_above) && (c->selected_above == SEL_SET))
             bitmap_unit_del_at(ed, i, j, UNIT_ABOVE);
        }
+   snapshot_push_done(ed);
    bitmap_refresh(ed, NULL); // FIXME BAD
 }
