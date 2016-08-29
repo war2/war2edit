@@ -32,23 +32,25 @@ collections {
             }
          }
 
+         /*=== Notifications ===*/
          external { "bg";
             source: "elm/bg";
             desc { "default"; /* aka. hidden */
-               rel.to: "war2edit.main.contents";
-               rel1.relative: 1.0 0.2;
-               rel2.relative: 1.0 0.4;
-            }
-            desc { "visible";
-               inherit: "default";
-               rel1.relative: 0.7 0.2;
+               rel.to: "war2edit.main.notif";
             }
          }
          text { "war2edit.main.notif";
             desc { "default";
-               rel.to: "bg";
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 1.0 0.15;
+               rel2.relative: 1.0 0.15;
+               min: 1 32;
                text { font: "Sans"; size: 12;
                }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.relative: 0.7 0.15;
             }
          }
       }
@@ -56,12 +58,12 @@ collections {
       programs {
          program { signal: "war2edit,notif,show"; source: "war2edit";
             action: STATE_SET "visible";
-            target: "bg";
+            target: "war2edit.main.notif";
             transition: SINUSOIDAL 1.0;
          }
          program { signal: "war2edit,notif,hide"; source: "war2edit";
             action: STATE_SET "default";
-            target: "bg";
+            target: "war2edit.main.notif";
             transition: ACCELERATE 0.5;
          }
       }
