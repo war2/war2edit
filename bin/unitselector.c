@@ -399,14 +399,12 @@ _unitselector_add(Editor       *ed,
    c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_TRUE);
    if (c && (c->unit_below != PUD_UNIT_NONE))
      {
-        DBG("BELOW");
         o = _provide_unit_handler(ed, vbox, c, UNIT_BELOW);
         elm_box_pack_end(vbox, o);
      }
    c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_FALSE);
    if (c && (c->unit_above != PUD_UNIT_NONE))
      {
-        DBG("ABOVE");
         o = _provide_unit_handler(ed, vbox, c, UNIT_ABOVE);
         elm_box_pack_end(vbox, o);
      }
