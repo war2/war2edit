@@ -112,6 +112,7 @@ struct _Editor
    } unitselector;
 
    struct {
+      Elm_Object_Item *menu;
       Evas_Object *obj;
       int          x;
       int          y;

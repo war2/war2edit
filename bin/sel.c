@@ -50,6 +50,7 @@ sel_add(Editor *ed)
    ed->sel.active = EINA_FALSE;
 
    ed->sel.obj = o;
+   sel_menu_disabled_set(ed, EINA_TRUE);
 
    return o;
 }
@@ -203,6 +204,8 @@ sel_end(Editor *ed)
           if (anchor) anchor->selected_above &= (~SEL_MARK);
        }
 
+   if (ed->sel.selections > 0)
+     sel_menu_disabled_set(ed, EINA_FALSE);
    bitmap_refresh(ed, NULL); // FIXME BAD
 
    evas_object_hide(ed->sel.obj);
@@ -244,5 +247,13 @@ sel_del(Editor *ed)
             bitmap_unit_del_at(ed, i, j, UNIT_ABOVE);
        }
    snapshot_push_done(ed);
+   sel_menu_disabled_set(ed, EINA_TRUE);
    bitmap_refresh(ed, NULL); // FIXME BAD
+}
+
+void
+sel_menu_disabled_set(Editor    *ed,
+                      Eina_Bool  disable)
+{
+   elm_object_item_disabled_set(ed->sel.menu, disable);
 }

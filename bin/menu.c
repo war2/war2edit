@@ -387,7 +387,7 @@ menu_add(Editor *ed)
    ed->snapshot.menu_undo = elm_menu_item_add(ed->menu, itm, NULL, "Undo", _undo_cb, ed);
    //elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed); // TODO
    elm_menu_item_separator_add(ed->menu, itm);
-   elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
+   ed->sel.menu = elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
 
    /*==== VIEW MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "View", NULL, NULL);
