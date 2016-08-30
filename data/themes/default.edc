@@ -32,15 +32,48 @@ collections {
             }
          }
 
-         /*=== Notifications ===*/
-         external { "bg";
+         rect { "event_catcher";
+            desc { "default";
+               rel.to: "war2edit.main.contents";
+               rel2.relative: 0.0 0.0;
+               color: 0 0 0 0;
+               visible: 0;
+            }
+            desc { "active";
+               inherit: "default";
+               visible: 1;
+               rel2.relative: 1.0 1.0;
+            }
+         }
+
+         /*=== Unitselector ===*/
+         external { "bg1";
             source: "elm/bg";
+            desc { "default";
+               rel.to: "war2edit.main.unitselector";
+            }
+         }
+         swallow { "war2edit.main.unitselector";
             desc { "default"; /* aka. hidden */
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 0.25 0.0;
+               rel2.relative: 0.75 0.0;
+            }
+            desc { "visible";
+               inherit: "default";
+               rel2.relative: 0.75 0.3;
+            }
+         }
+
+         /*=== Notifications ===*/
+         external { "bg2";
+            source: "elm/bg";
+            desc { "default";
                rel.to: "war2edit.main.notif";
             }
          }
          text { "war2edit.main.notif";
-            desc { "default";
+            desc { "default"; /* aka. hidden */
                rel.to: "war2edit.main.contents";
                rel1.relative: 1.0 0.15;
                rel2.relative: 1.0 0.15;
@@ -64,6 +97,30 @@ collections {
          program { signal: "war2edit,notif,hide"; source: "war2edit";
             action: STATE_SET "default";
             target: "war2edit.main.notif";
+            transition: ACCELERATE 0.5;
+         }
+
+         program { signal: "mouse,down,*"; source: "event_catcher";
+            action: SIGNAL_EMIT "war2edit,unitselector,event" "war2edit";
+         }
+         program { signal: "war2edit,unitselector,show"; source: "war2edit";
+            action: STATE_SET "active";
+            target: "event_catcher";
+            after: "unitselector,real,show";
+         }
+         program { name: "unitselector,real,show";
+            action: STATE_SET "visible";
+            target: "war2edit.main.unitselector";
+            transition: SINUSOIDAL 1.0;
+         }
+         program { signal: "war2edit,unitselector,hide"; source: "war2edit";
+            action: STATE_SET "default";
+            target: "event_catcher";
+            after: "unitselector,real,hide";
+         }
+         program { name: "unitselector,real,hide";
+            action: STATE_SET "default";
+            target: "war2edit.main.unitselector";
             transition: ACCELERATE 0.5;
          }
       }

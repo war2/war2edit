@@ -346,50 +346,65 @@ _provide_unit_handler(Editor *ed,
 Eina_Bool
 unitselector_add(Editor *ed EINA_UNUSED)
 {
-//   const char sel_group[] = "war2edit/unitselector/sel";
-//   Eina_Bool chk;
-//   Evas_Object *o;
-//
-//   o = ed->unitselector.sel = elm_layout_add(ed->win);
-//   chk = elm_layout_file_set(o, ed->edje_file, sel_group);
-//   if (EINA_UNLIKELY(!chk))
-//     {
-//        CRI("Failed to set edje file from %s for group %s", ed->edje_file, sel_group);
-//        return EINA_FALSE;
-//     }
-//
    return EINA_TRUE;
+}
+
+static Edje_Object *
+_sel_add(Editor *ed,
+         unsigned int cx,
+         unsigned int cy,
+         unsigned int w,
+         unsigned int h)
+{
+   int px, py, sx, sy, rx, ry, cell_w, cell_h, cx1, cy1, cw, ch;
+   Edje_Object *o;
+   Eina_Bool chk;
+   const char group[] = "war2edit/unitselector/sel";
+
+   bitmap_cells_to_coords(ed, cx, cy, &px, &py);
+   elm_interface_scrollable_content_region_get(ed->scroller, &sx, &sy, NULL, NULL);
+   evas_object_geometry_get(ed->scroller, &rx, &ry, NULL, NULL);
+   bitmap_cell_size_get(ed, &cell_w, &cell_h);
+
+   cx1 = rx - sx + (cx * cell_w);
+   cy1 = ry - sy + (cy * cell_h);
+   cw = w * cell_w;
+   ch = h * cell_h;
+
+   o = edje_object_add(ed->lay);
+   chk = edje_object_file_set(o, ed->edje_file, group);
+   if (EINA_UNLIKELY(!chk))
+     {
+        CRI("Failed to set edje object layout");
+        evas_object_del(o);
+        return NULL;
+     }
+   evas_object_smart_member_add(o, elm_layout_edje_get(ed->lay));
+
+   evas_object_resize(o, cw, ch);
+   evas_object_move(o, cx1, cy1);
+   evas_object_show(o);
+
+   return o;
 }
 
 static Evas_Object *
 _unitselector_add(Editor       *ed,
+                  Evas_Object  *parent,
                   unsigned int  x,
                   unsigned int  y)
 {
-   Evas_Object *vbox, *o;
+   Evas_Object *vbox, *o, *scr;
    unsigned int cx, cy;
    Cell *c;
 
-   //int px, py, sx, sy, rx, ry, cell_w, cell_h, cx1, cy1, cw, ch;
-   //unsigned int w, h;
-   //
-   //w = c->spread_x_below;
-   //h = c->spread_y_below;
-   //
-   //bitmap_cells_to_coords(ed, cx, cy, &px, &py);
-   //elm_interface_scrollable_content_region_get(ed->scroller, &sx, &sy, NULL, NULL);
-   //evas_object_geometry_get(ed->scroller, &rx, &ry, NULL, NULL);
-   //bitmap_cell_size_get(ed, &cell_w, &cell_h);
-   //
-   //cx1 = rx - sx + (cx * cell_w);
-   //cy1 = ry - sy + (cy * cell_h);
-   //cw = w * cell_w;
-   //ch = h * cell_h;
-   //evas_object_resize(ed->unitselector.sel, cw, ch);
-   //evas_object_move(ed->unitselector.sel, cx1, cy1);
-   //evas_object_show(ed->unitselector.sel);
 
-   vbox = elm_box_add(ed->inwin.obj);
+   scr = elm_scroller_add(parent);
+   evas_object_size_hint_weight_set(scr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(scr, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(scr);
+
+   vbox = elm_box_add(scr);
    evas_object_size_hint_weight_set(vbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(vbox, EVAS_HINT_FILL, 0.0);
    elm_box_horizontal_set(vbox, EINA_FALSE);
@@ -401,21 +416,51 @@ _unitselector_add(Editor       *ed,
      {
         o = _provide_unit_handler(ed, vbox, c, UNIT_BELOW);
         elm_box_pack_end(vbox, o);
+        ed->unitselector.sel[0] = _sel_add(ed, cx, cy,
+                                           c->spread_x_below,
+                                           c->spread_y_below);
      }
    c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_FALSE);
    if (c && (c->unit_above != PUD_UNIT_NONE))
      {
         o = _provide_unit_handler(ed, vbox, c, UNIT_ABOVE);
         elm_box_pack_end(vbox, o);
+        ed->unitselector.sel[1] = _sel_add(ed, cx, cy,
+                                           c->spread_x_above,
+                                           c->spread_y_above);
      }
    c = &(ed->cells[y][x]);
    if (c->start_location != CELL_NOT_START_LOCATION)
      {
         o = _provide_unit_handler(ed, vbox, c, UNIT_START_LOCATION);
         elm_box_pack_end(vbox, o);
+        ed->unitselector.sel[2] = _sel_add(ed, cx, cy, 1, 1);
      }
+   elm_object_content_set(scr, vbox);
+   evas_object_smart_member_add(scr, elm_layout_edje_get(ed->lay));
 
-   return vbox;
+   return scr;
+}
+
+static void
+_unitselector_event_cb(void        *data,
+                       Evas_Object *obj      EINA_UNUSED,
+                       const char  *emission EINA_UNUSED,
+                       const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Evas_Object *o;
+   unsigned int i;
+
+   elm_layout_signal_emit(ed->lay, "war2edit,unitselector,hide", "war2edit");
+   o = elm_layout_content_unset(ed->lay, "war2edit.main.unitselector");
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->unitselector.sel); i++)
+     {
+        evas_object_del(ed->unitselector.sel[i]);
+        ed->unitselector.sel[i] = NULL;
+     }
+   evas_object_del(o);
 }
 
 void
@@ -424,6 +469,9 @@ unitselector_show(Editor       *ed,
                   unsigned int  y)
 {
    const Cell *c;
+   Evas_Object *o;
+   const char part[] = "war2edit.main.unitselector";
+   unsigned int i;
 
    c = &(ed->cells[y][x]);
 
@@ -437,7 +485,16 @@ unitselector_show(Editor       *ed,
 
    ed->unitselector.x = x;
    ed->unitselector.y = y;
-   inwin_set(ed, _unitselector_add(ed, x, y),
-             INWIN_UNITSELECTOR,
-             "Close", NULL, NULL, NULL);
+
+   o = _unitselector_add(ed, ed->lay, x, y);
+
+   elm_layout_content_set(ed->lay, part, o);
+   elm_layout_signal_emit(ed->lay, "war2edit,unitselector,show", "war2edit");
+   elm_layout_signal_callback_add(ed->lay,
+                                  "war2edit,unitselector,event", "war2edit",
+                                  _unitselector_event_cb, ed);
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->unitselector.sel); i++)
+     {
+        evas_object_stack_below(ed->unitselector.sel[i], o);
+     }
 }

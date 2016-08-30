@@ -107,7 +107,7 @@ struct _Editor
    } minimap;
 
    struct {
-      //Evas_Object *sel;
+      Evas_Object *sel[3];
       unsigned int x, y;
    } unitselector;
 
