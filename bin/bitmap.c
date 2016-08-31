@@ -1394,6 +1394,7 @@ bitmap_add(Editor *ed)
 
    /* Cursor */
    o = ed->bitmap.cursor = edje_object_add(e);
+   evas_object_smart_member_add(o, ed->lay);
    evas_object_pass_events_set(o, EINA_TRUE);
    evas_object_propagate_events_set(o, EINA_FALSE);
    chk = edje_object_file_set(o, ed->edje_file, group);
