@@ -158,7 +158,6 @@ snapshot_force_push(Editor *ed)
             eina_inlist_count(ed->snapshot.items), shot);
      }
 
-   editor_notif_send(ed, "Snapshot is available");
    return EINA_TRUE;
 
 fail:

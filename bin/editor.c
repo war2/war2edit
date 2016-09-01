@@ -587,6 +587,7 @@ editor_save(Editor     *ed,
         return EINA_FALSE;
      }
 
+   editor_notif_send(ed, "Saved");
    INF("Map has been saved to \"%s\"", file);
    return EINA_TRUE;
 
