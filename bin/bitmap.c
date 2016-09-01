@@ -950,7 +950,9 @@ bitmap_unit_set(Editor       *ed,
      }
    else if ((unit == PUD_UNIT_GOLD_MINE) ||
             (unit == PUD_UNIT_OIL_PATCH) ||
-            (unit == PUD_UNIT_CRITTER))
+            (unit == PUD_UNIT_CRITTER)   ||
+            (unit == PUD_UNIT_CIRCLE_OF_POWER) ||
+            (unit == PUD_UNIT_DARK_PORTAL))
      {
         /* Gold mine, Critter and Oil patch are ALWAYS neutral */
         color = PUD_PLAYER_NEUTRAL;
