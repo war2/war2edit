@@ -744,7 +744,7 @@ editor_load(Editor     *ed,
 
    pud = ed->pud;
 
-   texture_tileset_open(pud->era);
+   atlas_open(pud->era);
    sprite_buildings_open(pud->era);
 
    WRN("Pass here");

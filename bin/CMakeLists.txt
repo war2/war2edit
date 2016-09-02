@@ -31,8 +31,8 @@ add_executable(war2edit
    log.h
    bitmap.c
    bitmap.h
-   texture.c
-   texture.h
+   atlas.c
+   atlas.h
    sprite.c
    sprite.h
    file.c

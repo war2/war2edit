@@ -73,7 +73,7 @@ Eina_Bool main_in_tree_is(void);
 #include "prefs.h"
 #include "log.h"
 #include "tile.h"
-#include "texture.h"
+#include "atlas.h"
 #include "mainconfig.h"
 #include "toolbar.h"
 #include "ipc.h"

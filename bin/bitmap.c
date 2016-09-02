@@ -1028,14 +1028,14 @@ bitmap_tile_draw(Editor       *ed,
    cairo_surface_t *atlas;
    unsigned int ox, oy, px, py;
 
-   atlas = texture_atlas_get(ed->pud->era);
+   atlas = atlas_texture_get(ed->pud->era);
    if (EINA_UNLIKELY(!atlas))
      {
         ERR("Failed to get atlas for era %s", pud_era2str(ed->pud->era));
         return;
      }
 
-   if (EINA_UNLIKELY(!texture_access_test(ed->cells[y][x].tile, atlas, &ox, &oy)))
+   if (EINA_UNLIKELY(!atlas_texture_access_test(ed->cells[y][x].tile, atlas, &ox, &oy)))
      {
         ERR("Cannot map tile texture 0x%04x", ed->cells[y][x].tile);
         return;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Jean Guyomarc'h
+ * Copyright (c) 2016 Jean Guyomarc'h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,16 +20,39 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _TEXTURE_H_
-#define _TEXTURE_H_
+#ifndef __ATLAS_H__
+#define __ATLAS_H__
 
 #define TEXTURE_WIDTH  32
 #define TEXTURE_HEIGHT 32
 
-Eina_Bool texture_init(void);
-void texture_shutdown(void);
-Eina_Bool texture_tileset_open(Pud_Era era);
-Eina_Bool texture_access_test(uint16_t tile, cairo_surface_t *atlas, unsigned int *x_off, unsigned int *y_off);
-cairo_surface_t *texture_atlas_get(Pud_Era era);
+typedef enum
+{
+   ATLAS_TILES_FOREST           = 0,
+   ATLAS_TILES_WINTER           = 1,
+   ATLAS_TILES_WASTELAND        = 2,
+   ATLAS_TILES_SWAMP            = 3,
+   ATLAS_ICONS_FOREST           = 4,
+   ATLAS_ICONS_WINTER           = 5,
+   ATLAS_ICONS_WASTELAND        = 6,
+   ATLAS_ICONS_SWAMP            = 7,
 
-#endif /* ! _TEXTURE_H_ */
+   __ATLAS_LAST /* Sentinel */
+} Atlas;
+
+
+Eina_Bool atlas_init(void);
+void atlas_shutdown(void);
+Eina_Bool atlas_open(Atlas atlas);
+void atlas_close(Atlas atlas);
+cairo_surface_t *atlas_get(Atlas atlas);
+
+cairo_surface_t *atlas_texture_get(Pud_Era era);
+cairo_surface_t *atlas_icon_get(Pud_Era era);
+Eina_Bool
+atlas_texture_access_test(uint16_t         tile,
+                          cairo_surface_t *atlas,
+                          unsigned int    *x_off,
+                          unsigned int    *y_off);
+
+#endif /* ! __ATLAS_H__ */

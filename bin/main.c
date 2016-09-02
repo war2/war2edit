@@ -56,7 +56,7 @@ static const Module _modules[] =
 #define MODULE(name_) { #name_, name_ ## _init, name_ ## _shutdown }
    MODULE(log),
    MODULE(ipc),
-   MODULE(texture),
+   MODULE(atlas),
    MODULE(sprite),
    MODULE(menu),
    MODULE(prefs),
