@@ -297,7 +297,7 @@ editor_new(const char   *pud_file,
 {
    Editor *ed;
    char title[512];
-   Evas_Object *o, *box, *t;
+   Evas_Object *o, *box;
    Eina_Bool open_pud = EINA_FALSE, chk;
    char path[PATH_MAX];
    const char contents[] = "war2edit.main.contents";
@@ -378,16 +378,6 @@ editor_new(const char   *pud_file,
    elm_layout_content_set(ed->lay, contents, o);
    evas_object_show(o);
 
-  /* Add a box to put widgets in it */
-   t = elm_table_add(o);
-   EINA_SAFETY_ON_NULL_GOTO(t, err_win_del);
-   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_table_homogeneous_set(t, EINA_TRUE);
-   elm_box_pack_end(o, t);
-   evas_object_show(t);
-
-
    /* Get the main menu */
    menu_add(ed);
 
@@ -411,19 +401,10 @@ editor_new(const char   *pud_file,
    evas_object_size_hint_align_set(ed->scroller, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_KEY_DOWN, _key_down_cb, ed);
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
-   elm_table_pack(t, ed->scroller, 0, 0, 10, 1);
+   elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
 
-   /* Right panel (for debugging) */
-   ed->rpanel = elm_panel_add(ed->win);
-   elm_panel_orient_set(ed->rpanel, ELM_PANEL_ORIENT_RIGHT);
-   evas_object_size_hint_weight_set(ed->rpanel, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(ed->rpanel, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_panel_hidden_set(ed->rpanel, EINA_TRUE);
-   elm_table_pack(t, ed->rpanel, 7, 0, 3, 1);
-   evas_object_show(ed->rpanel);
-
-   /* Units genlist */
+#if 0
    o = ed->units_genlist = elm_genlist_add(ed->rpanel);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -443,6 +424,7 @@ editor_new(const char   *pud_file,
                               (void *)(uintptr_t)PUD_PLAYER_NEUTRAL,
                               NULL, ELM_GENLIST_ITEM_GROUP,
                               NULL, NULL);
+#endif
 
    /* Add inwin */
    inwin_add(ed);
