@@ -466,19 +466,16 @@ _bitmap_autoresize(Editor *ed)
 {
    int x, y, w, h;
 
+   unitselector_hide(ed);
+
    evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
    elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
 
    if (w > ed->bitmap.max_w) w = ed->bitmap.max_w;
    if (h > ed->bitmap.max_h) h = ed->bitmap.max_h;
 
-   evas_object_move(ed->bitmap.img, x, y);
    evas_object_move(ed->bitmap.clip, x, y);
-
-   evas_object_resize(ed->bitmap.img, w, h);
    evas_object_resize(ed->bitmap.clip, w, h);
-
-   evas_object_image_data_update_add(ed->bitmap.img, 0, 0, w, h);
 }
 
 static void

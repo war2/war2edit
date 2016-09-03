@@ -530,6 +530,12 @@ _unitselector_event_cb(void        *data,
                        const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
+   unitselector_hide(ed);
+}
+
+void
+unitselector_hide(Editor *ed)
+{
    Evas_Object *o;
    unsigned int i;
 

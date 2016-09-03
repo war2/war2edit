@@ -25,5 +25,6 @@
 
 Eina_Bool unitselector_add(Editor *ed);
 void unitselector_show(Editor *ed, unsigned int x, unsigned int y);
+void unitselector_hide(Editor *ed);
 
 #endif /* ! __UNITSELECTOR_H__ */
