@@ -25,81 +25,6 @@
 static Eina_Hash *_values = NULL;
 #define PUD_DATA "war2edit/pud"
 
-typedef uint32_t (*Prescalor_Cb)(uint32_t val);
-
-typedef struct
-{
-   Prescalor_Cb operation;
-   Prescalor_Cb inverse;
-} Prescalor;
-
-typedef enum
-{
-   POINTER_TYPE_BYTE,
-   POINTER_TYPE_WORD,
-   POINTER_TYPE_LONG
-} Pointer_Type;
-
-typedef struct
-{
-   union {
-      uint8_t      *byte_ptr;
-      uint16_t     *word_ptr;
-      uint32_t     *long_ptr;
-   } ptr;
-
-   Pointer_Type type;
-
-} Pointer;
-
-typedef struct
-{
-   uint32_t     start;
-   uint32_t     end;
-} Range;
-
-typedef struct
-{
-   Elm_Validator_Regexp *re;
-   Pointer               bind;
-   Range                 range;
-   Prescalor             prescalor;
-} Validator;
-
-
-static void _validator_init(Validator *val);
-
-static Validator *
-_validator_new(void)
-{
-   Validator *val;
-
-   val = calloc(1, sizeof(*val));
-   if (EINA_UNLIKELY(!val))
-     {
-        CRI("Failed to allocate memory");
-        return NULL;
-     }
-
-   _validator_init(val);
-
-   return val;
-}
-
-static void
-_validator_init(Validator *val)
-{
-   /* Digits only, and at least one */
-   val->re = elm_validator_regexp_new("^[0-9]+$", NULL);
-}
-
-static void EINA_UNUSED
-_validator_free(Validator *val)
-{
-   elm_validator_regexp_free(val->re);
-   free(val);
-}
-
 
 /*============================================================================*
  *                                 Private API                                *
@@ -653,7 +578,7 @@ _frame_add(Evas_Object *parent,
 
    f = elm_frame_add(parent);
    elm_object_text_set(f, text);
-   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_show(f);
 
@@ -1087,61 +1012,36 @@ menu_player_properties_new(Editor      *ed,
  *============================================================================*/
 
 static void
-_validator_cb(void           *data,
-              const Eo_Event *desc)
+_validate_res_cb(void        *data,
+                 Evas_Object *obj,
+                 void        *info EINA_UNUSED)
 {
-   Validator *val = data;
-   Elm_Validate_Content *vc = desc->info;
-   unsigned long int numeric;
-   const char *str;
+   uint16_t *const bind = data;
+   const char *text;
+   unsigned long int val;
+   char *ptr;
 
-   elm_validator_regexp_helper(val->re, desc);
-
-   /* Trim leading zeros */
-   str = vc->text;
-   while ((*str == '0') && (*str != '\0')) str++;
-
-   /* Avoid overflows */
-   if (strlen(str) <= 10)
+   text = elm_object_text_get(obj);
+   val = strtoul(text, &ptr, 10);
+   if ((text + strlen(text) != ptr) || (val > UINT16_MAX))
      {
-        numeric = strtoul(str, NULL, 10);
-        if ((numeric >= val->range.start) && (numeric <= val->range.end))
-          {
-             if (val->prescalor.inverse)
-               numeric = val->prescalor.inverse(numeric);
-             switch (val->bind.type)
-               {
-                case POINTER_TYPE_BYTE:
-                   *(val->bind.ptr.byte_ptr) = (uint8_t)numeric;
-                   break;
-
-                case POINTER_TYPE_WORD:
-                   *(val->bind.ptr.word_ptr) = (uint16_t)numeric;
-                   break;
-
-                case POINTER_TYPE_LONG:
-                   *(val->bind.ptr.long_ptr) = (uint32_t)numeric;
-                   break;
-               }
-          }
+        elm_layout_signal_emit(obj, "validation,default,fail", "elm");
+     }
+   else
+     {
+        elm_layout_signal_emit(obj, "validation,default,pass", "elm");
+        *bind = val;
      }
 }
 
 static void
-_pack_range_entry(Evas_Object  *table,
-                  unsigned int  row,
-                  unsigned int  col,
-                  uint32_t      start,
-                  uint32_t      end,
-                  void         *bind,
-                  Pointer_Type  type,
-                  Prescalor_Cb  operation,
-                  Prescalor_Cb  inverse)
+_pack_resource_entry(Evas_Object *table,
+                     unsigned int row,
+                     unsigned int col,
+                     uint16_t     *bind)
 {
    Evas_Object *o;
-   Validator *val;
-   char buf[8];
-   uint32_t value;
+   char buf[32];
 
    o = elm_entry_add(table);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -1151,70 +1051,14 @@ _pack_range_entry(Evas_Object  *table,
    elm_entry_editable_set(o, EINA_TRUE);
    evas_object_show(o);
 
-   // FIXME Leak val
-   val = _validator_new();
-   val->range.start = start;
-   val->range.end = end;
-   val->bind.type = type;
-   val->bind.ptr.byte_ptr = bind;
-   val->prescalor.operation = operation;
-   val->prescalor.inverse = inverse;
+   snprintf(buf, sizeof(buf), "%u", *bind);
+   buf[sizeof(buf) - 1] = '\0';
 
-#if defined(EFL_VERSION_1_19) /* 1.19 or higher */
-   efl_event_callback_add(o, ELM_ENTRY_EVENT_VALIDATE, _validator_cb, val);
-#elif defined(EFL_VERSION_1_18)
-   eo_event_callback_add(o, ELM_ENTRY_EVENT_VALIDATE, _validator_cb, val);
-#else
-# warning No Automatic validation available
-#endif
+   elm_object_text_set(o, buf);
 
-   switch (val->bind.type)
-     {
-      case POINTER_TYPE_BYTE: value = *(val->bind.ptr.byte_ptr); break;
-      case POINTER_TYPE_WORD: value = *(val->bind.ptr.word_ptr); break;
-      case POINTER_TYPE_LONG: value = *(val->bind.ptr.long_ptr); break;
-     }
-
-   if (val->prescalor.operation) value = val->prescalor.operation(value);
-   snprintf(buf, sizeof(buf), "%u", value);
-   elm_entry_entry_set(o, buf);
-
+   evas_object_smart_callback_add(o, "changed,user", _validate_res_cb, bind);
    elm_table_pack(table, o, col, row, 1, 1);
 }
-
-static inline void
-_pack_byte_entry(Evas_Object *table,
-                 unsigned int  row,
-                 unsigned int  col,
-                 uint8_t      *bind)
-{
-   _pack_range_entry(table, row, col, 0, UINT8_MAX, bind, POINTER_TYPE_BYTE,
-                     NULL, NULL);
-}
-
-static inline void
-_pack_word_entry(Evas_Object *table,
-                 unsigned int  row,
-                 unsigned int  col,
-                 uint16_t     *bind)
-{
-   _pack_range_entry(table, row, col, 0, UINT16_MAX, bind, POINTER_TYPE_WORD,
-                     NULL, NULL);
-}
-
-static uint32_t _x10(uint32_t val) { return val * 10; }
-static uint32_t _d10(uint32_t val) { return val / 10; }
-
-static inline void
-_pack_build_cost_entry(Evas_Object  *table,
-                       unsigned int  row,
-                       unsigned int  col,
-                       uint8_t      *bind)
-{
-   _pack_range_entry(table, row, col, 0, UINT8_MAX, bind, POINTER_TYPE_BYTE,
-                     _x10, _d10);
-}
-
 
 Evas_Object *
 menu_starting_properties_new(Editor      *ed,
@@ -1240,17 +1084,17 @@ menu_starting_properties_new(Editor      *ed,
    /* Gold */
    _pack_label(t, 0, 1, "Gold");
    for (i = 0; i < 8; ++i)
-     _pack_word_entry(t, i + 1, 1, &(ed->pud->sgld.players[i]));
+     _pack_resource_entry(t, i + 1, 1, &(ed->pud->sgld.players[i]));
 
    /* Lumber */
    _pack_label(t, 0, 2, "Lumber");
    for (i = 0; i < 8; ++i)
-     _pack_word_entry(t, i + 1, 2, &(ed->pud->slbr.players[i]));
+     _pack_resource_entry(t, i + 1, 2, &(ed->pud->slbr.players[i]));
 
    /* Oil */
    _pack_label(t, 0, 3, "Oil");
    for (i = 0; i < 8; ++i)
-     _pack_word_entry(t, i + 1, 3, &(ed->pud->soil.players[i]));
+     _pack_resource_entry(t, i + 1, 3, &(ed->pud->soil.players[i]));
 
    return f;
 }
