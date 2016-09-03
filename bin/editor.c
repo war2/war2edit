@@ -348,7 +348,7 @@ editor_new(const char   *pud_file,
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
    evas_object_event_callback_add(ed->win, EVAS_CALLBACK_RESIZE,
                                   _win_resize_cb, ed);
-   evas_object_resize(ed->win, 640, 480);
+   evas_object_resize(ed->win, 960, 480);
    evas_event_callback_add(evas_object_evas_get(ed->win),
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
                            _focus_in_cb, ed);
