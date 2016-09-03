@@ -417,7 +417,7 @@ menu_add(Editor *ed)
    i = elm_menu_item_add(ed->menu, itm, NULL, "Human Land", NULL, NULL);
    eina_array_push(ed->human_menus, i);
    RADIO_ADD_HUMAN(PUD_UNIT_PEASANT);
-   RADIO_ADD_HUMAN(PUD_UNIT_INFANTRY);
+   RADIO_ADD_HUMAN(PUD_UNIT_FOOTMAN);
    RADIO_ADD_HUMAN(PUD_UNIT_ARCHER);
    RADIO_ADD_HUMAN(PUD_UNIT_KNIGHT);
    RADIO_ADD_HUMAN(PUD_UNIT_BALLISTA);

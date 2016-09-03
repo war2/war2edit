@@ -744,10 +744,10 @@ editor_load(Editor     *ed,
 
    pud = ed->pud;
 
-   atlas_open(pud->era);
+   atlas_texture_open(pud->era);
+   atlas_icon_open(pud->era);
    sprite_buildings_open(pud->era);
 
-   WRN("Pass here");
    if (EINA_UNLIKELY(!bitmap_add(ed)))
      {
         CRI("Failed to create bitmap");

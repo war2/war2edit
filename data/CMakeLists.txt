@@ -38,6 +38,15 @@ install(
 
 install(
    FILES
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/icons/forest.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/icons/winter.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/icons/wasteland.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/sprites/icons/swamp.png
+   DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/icons
+)
+
+install(
+   FILES
    ${CMAKE_CURRENT_SOURCE_DIR}/sprites/units/units.eet
    DESTINATION share/${CMAKE_PROJECT_NAME}/sprites/units
 )

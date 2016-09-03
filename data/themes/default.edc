@@ -169,18 +169,14 @@ collections {
    }
 
    group { "war2edit/unitselector/widget";
-      images {
-         image: "placeholder.png" COMP;
-      }
       parts {
-         image { "war2edit.unitselector.icon"; nomouse;
+         swallow { "war2edit.unitselector.icon"; nomouse;
             desc { "default";
                rel2.relative: 0.0 0.0;
                max: 46 38;
                min: 46 38;
                fixed: 1 1;
                align: 0.0 0.0;
-               image.normal: "placeholder.png";
             }
          }
          text { "war2edit.unitselector.name"; nomouse;

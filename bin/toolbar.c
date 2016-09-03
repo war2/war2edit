@@ -22,8 +22,8 @@
 
 #include "war2edit.h"
 
-#define ICON_WIDTH      50
-#define ICON_HEIGHT     50
+#define TB_ICON_WIDTH      50
+#define TB_ICON_HEIGHT     50
 
 typedef enum
 {
@@ -247,10 +247,10 @@ static void
 _segment_size_autoset(Evas_Object  *seg,
                       unsigned int  count)
 {
-   const unsigned int w = count * ICON_WIDTH;
+   const unsigned int w = count * TB_ICON_WIDTH;
 
-   evas_object_size_hint_min_set(seg, w, ICON_HEIGHT);
-   evas_object_size_hint_max_set(seg, w, ICON_HEIGHT);
+   evas_object_size_hint_min_set(seg, w, TB_ICON_HEIGHT);
+   evas_object_size_hint_max_set(seg, w, TB_ICON_HEIGHT);
 }
 
 /*============================================================================*

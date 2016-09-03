@@ -30,10 +30,10 @@ static const char * _atlases_files[__ATLAS_LAST] =
    [ATLAS_TILES_WINTER]         = "tiles/winter.png",
    [ATLAS_TILES_WASTELAND]      = "tiles/wasteland.png",
    [ATLAS_TILES_SWAMP]          = "tiles/swamp.png",
-   [ATLAS_ICONS_FOREST]         = "icons/forest.png",
-   [ATLAS_ICONS_WINTER]         = "icons/winter.png",
-   [ATLAS_ICONS_WASTELAND]      = "icons/wasteland.png",
-   [ATLAS_ICONS_SWAMP]          = "icons/swamp.png",
+   [ATLAS_ICONS_FOREST]         = "sprites/icons/forest.png",
+   [ATLAS_ICONS_WINTER]         = "sprites/icons/winter.png",
+   [ATLAS_ICONS_WASTELAND]      = "sprites/icons/wasteland.png",
+   [ATLAS_ICONS_SWAMP]          = "sprites/icons/swamp.png",
 };
 
 
@@ -165,6 +165,20 @@ atlas_texture_get(Pud_Era era)
 cairo_surface_t *
 atlas_icon_get(Pud_Era era)
 {
-   EINA_SAFETY_ON_TRUE_RETURN_VAL((unsigned) era >= PUD_ERA_SWAMP, NULL);
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((unsigned) era > PUD_ERA_SWAMP, NULL);
    return _atlases[era + 4];
+}
+
+Eina_Bool
+atlas_texture_open(Pud_Era era)
+{
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((unsigned) era > PUD_ERA_SWAMP, EINA_FALSE);
+   return atlas_open((Atlas)era);
+}
+
+Eina_Bool
+atlas_icon_open(Pud_Era era)
+{
+   EINA_SAFETY_ON_TRUE_RETURN_VAL((unsigned) era > PUD_ERA_SWAMP, EINA_FALSE);
+   return atlas_open(era + 4);
 }

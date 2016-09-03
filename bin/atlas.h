@@ -25,6 +25,8 @@
 
 #define TEXTURE_WIDTH  32
 #define TEXTURE_HEIGHT 32
+#define ICON_WIDTH 46
+#define ICON_HEIGHT 38
 
 typedef enum
 {
@@ -54,5 +56,8 @@ atlas_texture_access_test(uint16_t         tile,
                           cairo_surface_t *atlas,
                           unsigned int    *x_off,
                           unsigned int    *y_off);
+
+Eina_Bool atlas_texture_open(Pud_Era era);
+Eina_Bool atlas_icon_open(Pud_Era era);
 
 #endif /* ! __ATLAS_H__ */

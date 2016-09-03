@@ -25,17 +25,21 @@
 typedef struct
 {
    Editor *ed;
+   Evas_Object *lay;
    Cell *c;
    Unit type;
+   Pud_Unit unit;
 } Udata;
 
 typedef Evas_Object *(*Ctor)(Evas_Object *vbox, Udata *u);
 
 
 static Udata *
-udata_new(Editor *ed,
-          Cell   *c,
-          Unit    type)
+udata_new(Editor      *ed,
+          Evas_Object *lay,
+          Cell        *c,
+          Unit         type,
+          Pud_Unit     unit)
 {
    Udata *u;
 
@@ -47,8 +51,10 @@ udata_new(Editor *ed,
      }
 
    u->ed = ed;
+   u->lay = lay;
    u->c = c;
    u->type = type;
+   u->unit = unit;
    return u;
 }
 
@@ -56,6 +62,74 @@ static void
 udata_free(Udata *u)
 {
    free(u);
+}
+
+static void
+_free_surf_cb(void        *data,
+         Evas        *e    EINA_UNUSED,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *info EINA_UNUSED)
+{
+   cairo_surface_t *const surf = data;
+   cairo_surface_destroy(surf);
+}
+
+static Eina_Bool
+_update_icon(Editor      *ed,
+             Evas_Object *lay,
+             Pud_Player   col,
+             Pud_Unit     unit)
+{
+   cairo_surface_t *atlas, *surf;
+   cairo_t *cr;
+   unsigned char *px;
+   Evas_Object *im;
+   unsigned i;
+   const char part[] = "war2edit.unitselector.icon";
+   const cairo_format_t format = CAIRO_FORMAT_ARGB32;
+   int x, y;
+   Pud_Icon icon;
+
+
+   atlas = atlas_icon_get(ed->pud->era);
+   if (EINA_UNLIKELY(!atlas))
+     {
+        CRI("Failed to get icon atlas for era 0x%x", ed->pud->era);
+        return EINA_FALSE;
+     }
+
+   icon = pud_unit_icon_get(unit);
+   x = 0;
+   y = -1 * icon * ICON_HEIGHT;
+   surf = cairo_image_surface_create(format, ICON_WIDTH, ICON_HEIGHT);
+   cr = cairo_create(surf);
+   cairo_set_source_surface(cr, atlas, x, y);
+   cairo_mask_surface(cr, atlas, x, y);
+   cairo_fill(cr);
+   cairo_surface_flush(surf);
+   px = cairo_image_surface_get_data(surf);
+   for (i = 0; i < ICON_WIDTH * ICON_HEIGHT * 4; i += 4)
+     {
+        war2_sprites_color_convert(PUD_PLAYER_RED, col,
+                                   px[i + 2], px[i + 1], px[i + 0],
+                                   &px[i + 2], &px[i + 1], &px[i + 0]);
+
+     }
+   cairo_destroy(cr);
+
+   /* We may want to update the image */
+   im = elm_layout_content_unset(lay, part);
+   if (im) evas_object_del(im);
+
+   im = evas_object_image_filled_add(evas_object_evas_get(lay));
+   evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
+   evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
+   evas_object_image_data_set(im, px);
+   evas_object_show(im);
+   elm_layout_content_set(lay, part, im);
+   evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
+
+   return EINA_TRUE;
 }
 
 static void
@@ -91,6 +165,8 @@ _radio_cb(void        *data,
          CRI("Unhandled type 0x%x", u->type);
          return;
      }
+
+   _update_icon(u->ed, u->lay, sel, u->unit);
    // FIXME CHANGE RACE IF NEEDED
    bitmap_refresh(u->ed, NULL); // XXX Not cool
 }
@@ -226,7 +302,6 @@ _res_ctor(Evas_Object *vbox,
    return f;
 }
 
-
 static Evas_Object *
 _provide_unit_handler(Editor *ed,
                       Evas_Object *parent,
@@ -236,6 +311,7 @@ _provide_unit_handler(Editor *ed,
    const char wdg_group[] = "war2edit/unitselector/widget";
    Evas_Object *lay, *vbox, *o, *f;
    Eina_Bool chk;
+   Pud_Player player;
    const Ctor ctor[2] = {
       _player_ctor,
       _res_ctor,
@@ -294,6 +370,7 @@ _provide_unit_handler(Editor *ed,
            }
          desc = "Bottom Layer Unit";
          unit = c->unit_below;
+         player = c->player_below;
          break;
 
       case UNIT_START_LOCATION:
@@ -302,12 +379,14 @@ _provide_unit_handler(Editor *ed,
          else
            unit = PUD_UNIT_ORC_START;
          desc = "Player Start Location";
+         player = c->start_location;
          break;
 
       case UNIT_ABOVE:
          desc = "Top Layer Unit";
          ctor_taken |= CTOR_PLAYER;
          unit = c->unit_above;
+         player = c->player_above;
          break;
 
       case UNIT_NONE:
@@ -318,12 +397,14 @@ _provide_unit_handler(Editor *ed,
      }
 
 
+   _update_icon(ed, lay, player, unit);
+
    for (i = 0; i < EINA_C_ARRAY_LENGTH(ctor); i++)
      {
         if ((ctor_taken >> i) & 0x1)
           {
              /* FIXME Where do we free this? And check for return */
-             u = udata_new(ed, (Cell *)c, unit_type);
+             u = udata_new(ed, lay, (Cell *)c, unit_type, unit);
              o = ctor[i](vbox, u);
              evas_object_event_callback_add(o, EVAS_CALLBACK_FREE, _free_cb, u);
              elm_box_pack_end(vbox, o);
