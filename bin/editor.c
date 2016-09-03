@@ -353,6 +353,9 @@ editor_new(const char   *pud_file,
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
                            _focus_in_cb, ed);
 
+   /* Get the main menu */
+   menu_add(ed);
+
    o = ed->lay = elm_layout_add(ed->win);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -369,17 +372,13 @@ editor_new(const char   *pud_file,
    file_selector_add(ed);
 
    /* Add a box to put widgets in it */
-   o = elm_box_add(ed->win);
+   o = ed->mainbox = elm_box_add(ed->lay);
    EINA_SAFETY_ON_NULL_GOTO(o, err_win_del);
-   ed->mainbox = o;
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_horizontal_set(o, EINA_FALSE);
    elm_layout_content_set(ed->lay, contents, o);
    evas_object_show(o);
-
-   /* Get the main menu */
-   menu_add(ed);
 
    /* Toolbar */
    box = elm_box_add(ed->win);
@@ -390,9 +389,8 @@ editor_new(const char   *pud_file,
    elm_box_horizontal_set(box, EINA_TRUE);
    elm_box_homogeneous_set(box, EINA_FALSE);
    evas_object_show(box);
-   elm_box_pack_start(o, box);
    toolbar_add(ed, box);
-
+   elm_layout_content_set(ed->lay, "war2edit.main.toolbar", box);
 
    /* Scroller */
    ed->scroller = elm_scroller_add(ed->win);

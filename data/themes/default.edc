@@ -27,8 +27,19 @@ externals {
 collections {
    group { "war2edit/main";
       parts {
+         swallow { "war2edit.main.toolbar";
+            desc { "default";
+               rel2.relative: 0.0 0.0;
+               align: 0.0 0.0;
+            }
+         }
          swallow { "war2edit.main.contents";
             desc { "default";
+               rel1 {
+                  to: "war2edit.main.toolbar";
+                  relative: 0.0 1.0;
+               }
+               align: 0.0 0.0;
             }
          }
 
