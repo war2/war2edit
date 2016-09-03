@@ -208,7 +208,7 @@ tile_wall_is(uint8_t tl,
              uint8_t br EINA_UNUSED)
 {
    /* Wall tiles always contain 4 walls */
-   return ((tl & 0x10) || (tl & 0x20));
+   return ((tl & TILE_WALL_OPEN) || (tl & TILE_WALL_CLOSED));
 }
 
 static inline Eina_Bool
