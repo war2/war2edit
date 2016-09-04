@@ -3,8 +3,6 @@
 set -e
 set -u
 
-WIDTH=100
-HEIGHT=100
 OUT_DIR="$(dirname "$0")/../"
 INKSCAPE="$(which inkscape)"
 
@@ -16,6 +14,13 @@ inkscape_export() {
    file="$1"
    out="$OUT_DIR/$(echo "$file" | cut -d '.' -f 1)"
 
+   if [ x"$file" = x"war2edit.svg" ]; then
+      WIDTH=1024
+      HEIGHT=1024
+   else
+      WIDTH=100
+      HEIGHT=100
+   fi
    "$INKSCAPE" \
       --export-width="$WIDTH" \
       --export-height="$HEIGHT" \
