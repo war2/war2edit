@@ -592,7 +592,7 @@ editor_sync(Editor *ed)
    if (EINA_UNLIKELY(!tmp))
      {
         CRI("Failed to realloc(%u) units", pud->units_count);
-        return EINA_FALSE;
+        goto fail;
      }
    else
      pud->units = tmp;
@@ -608,7 +608,7 @@ editor_sync(Editor *ed)
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
                        CRI("Attempt to overflow units");
-                       return EINA_FALSE;
+                       goto fail;
                     }
 
                   u = &(pud->units[i++]);
@@ -623,7 +623,7 @@ editor_sync(Editor *ed)
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
                        CRI("Attempt to overflow units");
-                       return EINA_FALSE;
+                       goto fail;
                     }
 
                   u = &(pud->units[i++]);
@@ -638,7 +638,7 @@ editor_sync(Editor *ed)
                   if (EINA_UNLIKELY(i >= pud->units_count))
                     {
                        CRI("Attempt to overflow units");
-                       return EINA_FALSE;
+                       goto fail;
                     }
 
                   u = &(pud->units[i++]);
@@ -667,17 +667,21 @@ editor_sync(Editor *ed)
      {
         CRI("Only %u tiles have been synced. Expected %u",
             k, pud->tiles);
-        return EINA_FALSE;
+        goto fail;
      }
 
    if (EINA_UNLIKELY(i != pud->units_count))
      {
         CRI("File may have been corrupted. %i units have been written."
             " Expected %i", i, pud->units_count);
-        return EINA_FALSE;
+        goto fail;
      }
 
    return EINA_TRUE;
+
+fail:
+   EDITOR_ERROR(ed, "Failed to synchronize PUD file. Please open console for details.");
+   return EINA_FALSE;
 }
 
 Eina_Bool
