@@ -1397,10 +1397,10 @@ bitmap_tile_set(Editor    *ed,
            (c->tile_bl == bl) && (c->tile_br == br));
 
    /* Set tile internals */
-   if (tl != TILE_NONE) c->tile_tl = tl;
-   if (tr != TILE_NONE) c->tile_tr = tr;
-   if (bl != TILE_NONE) c->tile_bl = bl;
-   if (br != TILE_NONE) c->tile_br = br;
+   c->tile_tl = tl;
+   c->tile_tr = tr;
+   c->tile_bl = bl;
+   c->tile_br = br;
 
    tile = tile_calculate(c->tile_tl, c->tile_tr,
                          c->tile_bl, c->tile_br,
