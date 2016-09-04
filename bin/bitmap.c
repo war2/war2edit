@@ -1268,7 +1268,10 @@ _bitmap_full_tile_set(Editor   *ed,
                  TILE_WALKABLE_IS(c)) ||
                 (pud_unit_building_is(c->unit_below) &&
                  TILE_GRASS_IS(c))))))
-          bitmap_unit_del_at(ed, x, y, UNIT_BELOW);
+          {
+             bitmap_unit_del_at(ed, x, y, UNIT_BELOW);
+             bitmap_refresh(ed, NULL); // XXX
+          }
      }
 
    c->tile = tile;
