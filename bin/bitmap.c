@@ -1495,10 +1495,11 @@ bitmap_add(Editor *ed)
    evas_object_smart_member_add(o, ed->lay);
    evas_object_pass_events_set(o, EINA_TRUE);
    evas_object_propagate_events_set(o, EINA_FALSE);
-   chk = edje_object_file_set(o, ed->edje_file, group);
+   chk = edje_object_file_set(o, main_edje_file_get(), group);
    if (EINA_UNLIKELY(!chk))
      {
-        ERR("Failed to set edje with file %s, group %s", ed->edje_file, group);
+        ERR("Failed to set edje with file %s, group %s",
+            main_edje_file_get(), group);
         /* FIXME dealloc */
         return EINA_FALSE;
      }

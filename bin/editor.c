@@ -253,7 +253,6 @@ editor_free(Editor *ed)
    eina_array_free(ed->orc_menus);
    eina_array_free(ed->human_menus);
    snapshot_del(ed);
-   free(ed->edje_file);
    free(ed);
 }
 
@@ -299,11 +298,9 @@ editor_new(const char   *pud_file,
    char title[512];
    Evas_Object *o, *box;
    Eina_Bool open_pud = EINA_FALSE, chk;
-   char path[PATH_MAX];
    const char contents[] = "war2edit.main.contents";
    const char group[] = "war2edit/main";
-   const char theme[] = "default";
-   int i, len;
+   int i;
 
    DBG("Creating editor with path %s and debug flags 0x%x", pud_file, debug);
 
@@ -313,20 +310,7 @@ editor_new(const char   *pud_file,
    ed->debug = debug;
    ed->zoom = 1.0;
 
-   /* Get theme */
-   if (main_in_tree_is())
-     len = snprintf(path, sizeof(path), "%s/themes/%s.edj", BUILD_DATA_DIR, theme);
-   else
-     {
-        len = snprintf(path, sizeof(path),
-                       "%s/themes/%s.edj", elm_app_data_dir_get(), theme);
-     }
-   path[sizeof(path) - 1] = '\0';
-   ed->edje_file = strndup(path, len);
-   INF("Edje file is %s", ed->edje_file);
-   EINA_SAFETY_ON_NULL_GOTO(ed->edje_file, err_free);
-
-   // FIXME cleanup on error + set max size
+     // FIXME cleanup on error + set max size
    ed->orc_menus = eina_array_new(4);
    ed->human_menus = eina_array_new(4);
 
@@ -359,7 +343,7 @@ editor_new(const char   *pud_file,
    o = ed->lay = elm_layout_add(ed->win);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   chk = elm_layout_file_set(o, ed->edje_file, group);
+   chk = elm_layout_file_set(o, main_edje_file_get(), group);
    if (EINA_UNLIKELY(!chk))
      {
         CRI("Failed to set layout");

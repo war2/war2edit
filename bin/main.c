@@ -24,6 +24,7 @@
 #include <Ecore_Getopt.h>
 
 static Eina_Bool _in_tree = EINA_FALSE;
+static char *_edje_file = NULL;
 
 static const Ecore_Getopt _options =
 {
@@ -63,6 +64,24 @@ static const Module _modules[] =
    MODULE(editor)
 #undef MODULE
 };
+
+static Eina_Bool
+_edje_get(const char *theme)
+{
+   char path[PATH_MAX];
+   int len;
+
+   if (!theme) theme = "default";
+
+   len = snprintf(path, sizeof(path), "%s/themes/%s.edj",
+                  elm_app_data_dir_get(), theme);
+   path[sizeof(path) - 1] = '\0';
+
+   _edje_file =  strndup(path, len);
+   INF("Edje file is %s", _edje_file);
+
+   return (_edje_file == NULL) ? EINA_FALSE : EINA_TRUE;
+}
 
 EAPI_MAIN int
 elm_main(int    argc,
@@ -131,6 +150,12 @@ elm_main(int    argc,
          }
      }
 
+   if (EINA_UNLIKELY(!_edje_get(NULL)))
+     {
+        CRI("Failed to get edje theme");
+        goto modules_shutdown;
+     }
+
    /* Open editors for each specified files */
    for (i = args; i < argc; ++i)
      {
@@ -160,6 +185,11 @@ modules_shutdown:
    for (--mod_ptr; mod_ptr >= _modules; --mod_ptr)
      mod_ptr->shutdown();
 end:
+   if (_edje_file)
+     {
+        free(_edje_file);
+        _edje_file = NULL;
+     }
    return ret;
 }
 ELM_MAIN()
@@ -168,4 +198,10 @@ Eina_Bool
 main_in_tree_is(void)
 {
    return _in_tree;
+}
+
+const char *
+main_edje_file_get(void)
+{
+   return _edje_file;
 }

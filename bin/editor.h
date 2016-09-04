@@ -91,7 +91,6 @@ struct _Editor
    Editor_Sel    tb_sel;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;
-   char *edje_file;
 
    Bitmap  bitmap;
 

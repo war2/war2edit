@@ -68,6 +68,7 @@ typedef struct
 
 
 Eina_Bool main_in_tree_is(void);
+const char *main_edje_file_get(void);
 
 #include "str.h"
 #include "prefs.h"

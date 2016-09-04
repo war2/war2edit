@@ -333,10 +333,11 @@ _provide_unit_handler(Editor *ed,
    evas_object_show(f);
 
    lay = elm_layout_add(f);
-   chk = elm_layout_file_set(lay, ed->edje_file, wdg_group);
+   chk = elm_layout_file_set(lay, main_edje_file_get(), wdg_group);
    if (EINA_UNLIKELY(!chk))
      {
-        CRI("Failed to set edje file from %s for group %s", ed->edje_file, wdg_group);
+        CRI("Failed to set edje file from %s for group %s",
+            main_edje_file_get(), wdg_group);
         evas_object_del(lay);
         return NULL;
      }
@@ -453,7 +454,7 @@ _sel_add(Editor *ed,
    ch = h * cell_h;
 
    o = edje_object_add(ed->lay);
-   chk = edje_object_file_set(o, ed->edje_file, group);
+   chk = edje_object_file_set(o, main_edje_file_get(), group);
    if (EINA_UNLIKELY(!chk))
      {
         CRI("Failed to set edje object layout");
