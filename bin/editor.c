@@ -1008,3 +1008,9 @@ editor_notif_send(Editor *ed,
 
    ecore_timer_add(5.0, _dismiss_notif_cb, ed);
 }
+
+unsigned int
+editors_count(void)
+{
+   return eina_list_count(_editors);
+}

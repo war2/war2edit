@@ -236,6 +236,7 @@ void editor_view_update(Editor *ed);
 
 void editor_notif_send(Editor *ed, const char *msg, ...) EINA_PRINTF(2,3);
 
+unsigned int editors_count(void);
 void
 editor_tb_sel_set(Editor *ed,
                   Editor_Sel       sel);
