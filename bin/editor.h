@@ -241,6 +241,7 @@ void
 editor_tb_sel_set(Editor *ed,
                   Editor_Sel       sel);
 
+void editor_units_recount(Editor *ed);
 void editor_handle_delete(Editor *ed);
 
 Editor *editor_focused_get(void);

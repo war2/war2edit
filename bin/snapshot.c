@@ -291,6 +291,7 @@ snapshot_rollback(Editor *ed,
      CRI("Something went wrong: 0x%x", ret);
    lzma_end(&stream);
 
+   editor_units_recount(ed);
    bitmap_refresh(ed, NULL);
    return EINA_TRUE;
 }

@@ -755,6 +755,25 @@ editor_load(Editor     *ed,
    return EINA_TRUE;
 }
 
+void
+editor_units_recount(Editor *ed)
+{
+   unsigned int count = 0, i, j;
+   const Cell *c;
+
+   for (j = 0; j < ed->pud->map_h; j++)
+     for (i = 0; i < ed->pud->map_w; i++)
+       {
+          c = &(ed->cells[j][i]);
+          if (c->anchor_above) count++;
+          if (c->anchor_below) count++;
+          if (c->start_location != CELL_NOT_START_LOCATION) count++;
+       }
+
+   DBG("Recounting units... before: %u, now: %u", ed->pud->units_count, count);
+   ed->pud->units_count = count;
+}
+
 Eina_Bool
 editor_unit_ref(Editor       *ed,
                 unsigned int  x,
