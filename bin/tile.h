@@ -177,8 +177,10 @@ tile_grass_is(uint8_t tl,
               uint8_t bl,
               uint8_t br)
 {
-   return (tile_solid_is(tl, tr, bl, br) &&
-           ((tl == TILE_GRASS_LIGHT) || (tl == TILE_GRASS_DARK)));
+   return (((tl == TILE_GRASS_LIGHT) || (tl == TILE_GRASS_DARK)) &&
+           ((tr == TILE_GRASS_LIGHT) || (tr == TILE_GRASS_DARK)) &&
+           ((br == TILE_GRASS_LIGHT) || (br == TILE_GRASS_DARK)) &&
+           ((bl == TILE_GRASS_LIGHT) || (bl == TILE_GRASS_DARK)));
 }
 
 static inline Eina_Bool
