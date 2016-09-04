@@ -74,11 +74,11 @@ _edje_get(const char *theme)
    if (!theme) theme = "default";
 
    len = snprintf(path, sizeof(path), "%s/themes/%s.edj",
-                  elm_app_data_dir_get(), theme);
+                  main_in_tree_is() ? BUILD_DATA_DIR : elm_app_data_dir_get(),
+                  theme);
    path[sizeof(path) - 1] = '\0';
 
    _edje_file =  strndup(path, len);
-   INF("Edje file is %s", _edje_file);
 
    return (_edje_file == NULL) ? EINA_FALSE : EINA_TRUE;
 }
@@ -141,6 +141,12 @@ elm_main(int    argc,
    elm_app_compile_data_dir_set(PACKAGE_DATA_DIR);
    elm_app_info_set(elm_main, "war2edit", "sprites/units/units.eet");
 
+   if (EINA_UNLIKELY(!_edje_get(NULL)))
+     {
+        EINA_LOG_CRIT("Failed to get edje theme");
+        goto end;
+     }
+
    for (mod_ptr = _modules; mod_ptr != mod_end; ++mod_ptr)
      {
        if (EINA_UNLIKELY(EINA_FALSE == mod_ptr->init()))
@@ -150,11 +156,6 @@ elm_main(int    argc,
          }
      }
 
-   if (EINA_UNLIKELY(!_edje_get(NULL)))
-     {
-        CRI("Failed to get edje theme");
-        goto modules_shutdown;
-     }
 
    /* Open editors for each specified files */
    for (i = args; i < argc; ++i)
