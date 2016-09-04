@@ -67,11 +67,11 @@ _solid_component_get(Editor_Sel action,
          break;
 
       case EDITOR_SEL_ACTION_HUMAN_WALLS:
-         component = TILE_HUMAN_WALL;
+         component = TILE_HUMAN_WALL | TILE_WALL_CLOSED;
          break;
 
       case EDITOR_SEL_ACTION_ORC_WALLS:
-         component = TILE_ORC_WALL;
+         component = TILE_ORC_WALL | TILE_WALL_CLOSED;
          break;
 
       default:
@@ -80,6 +80,92 @@ _solid_component_get(Editor_Sel action,
      }
 
    return component;
+}
+
+static inline Eina_Bool
+_wall_same_race_is(uint8_t w1,
+                   uint8_t w2)
+{
+   return ((w1 & ~TILE_WALL_MASK) == (w2 & ~TILE_WALL_MASK));
+}
+
+static inline uint8_t
+_wall_open(uint8_t wall)
+{
+   wall &= ~TILE_WALL_MASK;
+   return wall | TILE_WALL_OPEN;
+}
+
+static inline uint8_t
+_wall_close(uint8_t wall)
+{
+   wall &= ~TILE_WALL_MASK;
+   return wall | TILE_WALL_CLOSED;
+}
+
+static void
+_calculate_wall_at(Editor       *ed,
+                   unsigned int  x,
+                   unsigned int  y)
+{
+   Eina_Rectangle zone;
+   Cell *c, *bc;
+
+   /*
+    *   TL
+    * BR  TR
+    *   BL
+    */
+
+   bc = &(ed->cells[y][x]);
+
+#define _WALL_SET(X, Y, W1, W2) \
+   do { \
+      c = &(ed->cells[Y][X]); \
+      if (tile_wall_is(c->tile_tl, c->tile_tr, c->tile_bl, c->tile_br)) { \
+         if (_wall_same_race_is(bc->tile_ ## W1, c->tile_ ## W2)) { \
+            c->tile_ ## W2 = _wall_open(c->tile_ ## W2); \
+            bc->tile_ ## W1 = _wall_open(bc->tile_ ## W1); \
+         } else { \
+            c->tile_ ## W2 = _wall_close(c->tile_ ## W2); \
+         } \
+         bitmap_tile_set(ed, X, Y, c->tile_tl, c->tile_tr, \
+                         c->tile_bl, c->tile_br, 0, EINA_TRUE); \
+      } \
+   } while (0)
+
+   if (x > 0)
+     {
+        _WALL_SET(x - 1, y, br, tr);
+     }
+   if (x < ed->pud->map_w)
+     {
+        _WALL_SET(x + 1, y, tr, br);
+     }
+   if (y > 0)
+     {
+        _WALL_SET(x, y - 1, tl, bl);
+     }
+   if (y < ed->pud->map_h)
+     {
+        _WALL_SET(x, y + 1, bl, tl);
+     }
+
+   bitmap_tile_set(ed, x, y, bc->tile_tl, bc->tile_tr,
+                   bc->tile_bl, bc->tile_br, 0, EINA_TRUE);
+
+   EINA_RECTANGLE_SET(&zone, x - 1, y - 1, 3, 3);
+   bitmap_refresh(ed, &zone);
+}
+
+static void
+_place_wall(Editor       *ed,
+            unsigned int  x,
+            unsigned int  y,
+            uint8_t       wall)
+{
+   bitmap_tile_set(ed, x, y, wall, wall, wall, wall, 0, EINA_TRUE);
+   _calculate_wall_at(ed, x, y);
 }
 
 static void
@@ -103,6 +189,15 @@ _place_selected_tile(Editor           *ed,
      randomize |= TILE_SPECIAL;
 
    component = _solid_component_get(action, tint);
+   if (tile_wall_is(component, component, component, component))
+     {
+        _place_selected_tile(ed, EDITOR_SEL_ACTION_GRASS,
+                             EDITOR_SEL_SPREAD_NORMAL,
+                             EDITOR_SEL_TINT_LIGHT,
+                             x, y);
+        _place_wall(ed, x, y, component);
+        return;
+     }
 
    /*
     * XXX This is a bit of a hack.
@@ -276,8 +371,8 @@ _cells_type_get(Cell         **cells,
                 unsigned int   oy,
                 unsigned int   w,
                 unsigned int   h,
-                Eina_Bool    (*iterator)(const uint8_t, const uint8_t,
-                                         const uint8_t, const uint8_t),
+                Eina_Bool    (*iterator)(uint8_t, uint8_t,
+                                         uint8_t, uint8_t),
                 Eina_Bool    (*operator)(Eina_Bool, Eina_Bool))
 {
    unsigned int i, j;
@@ -1219,6 +1314,8 @@ bitmap_tile_calculate(Editor           *ed,
      {
         if ((next[k].valid) && (next[k].prop & current_prop))
           {
+             if (tile_wall_has(next[k].tl, next[k].tr, next[k].bl, next[k].br))
+               continue;
              ok &= bitmap_tile_set(ed, next[k].x, next[k].y,
                                    next[k].tl, next[k].tr,
                                    next[k].bl, next[k].br,

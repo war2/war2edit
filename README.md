@@ -30,9 +30,7 @@ TODO & BUGS
 - [ ] Undo/Redo
 - [ ] Oil Patch can be placed too close to land
 - [ ] Oil Patch and Gold Mines must prevent collectors to be placed too close
-- [ ] Walls must be implemented (currently broken)
 - [ ] DOSBox/Boxer fancy selection panel
-- [ ] Gold Mine and Oil Patches values must be editable
 
 
 

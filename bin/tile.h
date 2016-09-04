@@ -43,6 +43,8 @@ typedef enum
 
    TILE_WALL_OPEN       = (1 << 5),
    TILE_WALL_CLOSED     = (1 << 6),
+   TILE_WALL_MASK       = (TILE_WALL_OPEN | TILE_WALL_CLOSED),
+
    TILE_SPECIAL         = (1 << 7),
 
    /* Special value. Has nothing to do with the rest of the enum */
@@ -238,6 +240,16 @@ tile_deep_water_is(uint8_t tl,
            ((br == TILE_WATER_LIGHT) || (br == TILE_WATER_DARK)));
 }
 
+static inline Eina_Bool
+tile_wall_has(uint8_t tl,
+              uint8_t tr,
+              uint8_t bl,
+              uint8_t br)
+{
+   const uint8_t mask = TILE_WALL_OPEN | TILE_WALL_CLOSED;
+   return ((tl & mask) || (tr & mask) || (bl & mask) || (br & mask));
+}
+
 uint16_t
 tile_calculate(uint8_t tl,
                uint8_t tr,
@@ -300,7 +312,6 @@ uint8_t tile_conflict_resolve_get(uint8_t imposed,
 
 #define TILE_WALL_IS(cptr) \
    tile_wall_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
-
 
 uint16_t
 tile_action_get(uint8_t tl,
