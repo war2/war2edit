@@ -267,6 +267,14 @@ _minimap_show_cb(void        *data,
 }
 
 static void
+_console_show_cb(void        *data EINA_UNUSED,
+                 Evas_Object *obj  EINA_UNUSED,
+                 void        *evt  EINA_UNUSED)
+{
+   log_console_show();
+}
+
+static void
 _prefs_dosbox_cb(void        *data,
                  Evas_Object *obj  EINA_UNUSED,
                  void        *evt  EINA_UNUSED)
@@ -317,6 +325,7 @@ menu_add(Editor *ed)
    /*==== VIEW MENU ====*/
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "View", NULL, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "Show Minimap", _minimap_show_cb, ed);
+   elm_menu_item_add(ed->menu, itm, NULL, "Show Console", _console_show_cb, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "DOSBox Preferences", _prefs_dosbox_cb, ed);
 
 

@@ -37,5 +37,6 @@ extern int _war2edit_log_dom;
 
 Eina_Bool log_init(void);
 void log_shutdown(void);
+void log_console_show(void);
 
 #endif /* ! _LOG_H_ */

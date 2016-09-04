@@ -25,6 +25,16 @@ externals {
 }
 
 collections {
+
+   group { "war2edit/logconsole";
+      parts {
+         swallow { "war2edit.logconsole.contents";
+            desc { "default";
+            }
+         }
+      }
+   }
+
    group { "war2edit/main";
       parts {
          swallow { "war2edit.main.toolbar";
