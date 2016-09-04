@@ -1244,9 +1244,8 @@ _bitmap_full_tile_set(Editor   *ed,
                       uint16_t  tile)
 {
    /* Safety checks */
-   EINA_SAFETY_ON_TRUE_RETURN_VAL((x < 0) || (y < 0) ||
-                                  (x >= (int)ed->pud->map_w) ||
-                                  (y >= (int)ed->pud->map_h),
+   EINA_SAFETY_ON_TRUE_RETURN_VAL(((unsigned int)x >= ed->pud->map_w) ||
+                                  ((unsigned int)y >= ed->pud->map_h),
                                   EINA_FALSE);
 
    Cell *c = &(ed->cells[y][x]);
