@@ -51,6 +51,13 @@ _win_del_cb(void        *data,
 {
    Editor *ed = data;
    editor_free(ed);
+
+   /*
+    * Because of the log window that is never closed, we need to query how
+    * many editors are still open. If none, let's just terminate.
+    */
+   if (editors_count() == 0)
+     elm_exit();
 }
 
 static void
