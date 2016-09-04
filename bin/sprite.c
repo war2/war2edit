@@ -159,7 +159,8 @@ sprite_get(Pud_Unit       unit,
    if (pud_unit_building_is(unit))
      {
         ef = _buildings[era];
-        snprintf(key, sizeof(key), "%s", pud_unit2str(unit, PUD_FALSE));
+        snprintf(key, sizeof(key), "%s/%s",
+                 pud_era2str(era), pud_unit2str(unit, PUD_FALSE));
         flip = EINA_FALSE;
      }
    else
@@ -219,6 +220,7 @@ sprite_get(Pud_Unit       unit,
      }
    if (flip_me) *flip_me = flip;
 
+   key[sizeof(key) - 1] = '\0';
    d = eina_hash_find(_sprites, key);
    if (d == NULL)
      {
