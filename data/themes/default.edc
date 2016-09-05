@@ -36,6 +36,10 @@ collections {
    }
 
    group { "war2edit/main";
+      images {
+         image: "toggle.png" COMP;
+      }
+
       parts {
          swallow { "war2edit.main.toolbar";
             desc { "default";
@@ -49,7 +53,63 @@ collections {
                   to: "war2edit.main.toolbar";
                   relative: 0.0 1.0;
                }
+
                align: 0.0 0.0;
+            }
+         }
+
+         external { "sidepanel_bg"; source: "elm/bg";
+            desc { "default";
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 1.0 0.0;
+               align: 1.0 0.0;
+            }
+            desc { "menu_toggled";
+               inherit: "default";
+               rel1.relative: 0.8 0.0;
+            }
+         }
+         swallow { "war2edit.main.sidepanel";
+            desc { "default";
+               rel.to: "sidepanel_bg";
+            }
+         }
+         external { "sidepanel_button"; source: "elm/button";
+            desc { "default";
+               rel.to: "war2edit.main.sidepanel";
+               rel2.relative: 0.0 0.0;
+               max: 25 25;
+               min: 25 25;
+               align: 1.0 0.0;
+               params {
+                  string: "icon" "document-close";
+               }
+               visible: 0;
+            }
+            desc { "menu_toggled";
+               inherit: "default";
+               visible: 1;
+            }
+         }
+
+         image { "toggle";
+            desc { "default";
+               image.normal: "toggle.png";
+               rel.to: "war2edit.main.sidepanel";
+               rel1 {
+                  relative: 1.0 0.5;
+               }
+               rel2 {
+                  relative: 1.0 0.5;
+               }
+               align: 1.0 0.5;
+               fixed: 1 1;
+               min: 30 64;
+               color: 51 153 255 124;
+            }
+            desc { "menu_toggled";
+               inherit: "default";
+               color: 51 153 255 0;
             }
          }
 
@@ -110,6 +170,21 @@ collections {
       }
 
       programs {
+         program { signal: "mouse,down,*"; source: "toggle";
+            action: STATE_SET "menu_toggled";
+            target: "toggle";
+            target: "sidepanel_button";
+            target: "sidepanel_bg";
+            transition: SINUSOIDAL 1.0;
+         }
+         program { signal: "mouse,down,*"; source: "sidepanel_button";
+            action: STATE_SET "default";
+            target: "toggle";
+            target: "sidepanel_button";
+            target: "sidepanel_bg";
+            transition: SINUSOIDAL 1.0;
+         }
+
          program { signal: "war2edit,notif,show"; source: "war2edit";
             action: STATE_SET "visible";
             target: "war2edit.main.notif";

@@ -142,8 +142,6 @@ struct _Editor
 
    Elm_Object_Item *gen_group_players[8];
    Elm_Object_Item *gen_group_neutral;
-   Eina_Inlist *player_units[8];
-   Eina_Inlist *neutral_units;
 
    /* === PUD specific === */
    Pud        *pud;

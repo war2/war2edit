@@ -22,14 +22,18 @@
 
 #include "war2edit.h"
 
+/*
+ * There will be one unit descriptor per unit.
+ * So, I prefer to optimize for size here...
+ * We get 2 bytes per unit, which is quite nice.
+ * We can also optimize by using a mempool, so
+ * we have zero fragmentation
+ */
 typedef struct
 {
-   EINA_INLIST;
-
-   /* 8 bytes alligned -> 16 bytes per element */
-   uint32_t  x    : 31;
-   uint32_t  y    : 31;
-   Unit      type : 2;
+   uint8_t x : 7;
+   uint8_t y : 7;
+   uint8_t type : 2;
 } Unit_Descriptor;
 
 
@@ -134,25 +138,40 @@ _spawn_cb(void         *data  EINA_UNUSED,
 
 static char *
 _text_get_cb(void        *data,
-             Evas_Object *obj  EINA_UNUSED,
+             Evas_Object *obj,
              const char  *part EINA_UNUSED)
 {
    Unit_Descriptor *const d = data;
+   Editor *ed;
+   const Cell *c;
    char buf[256];
    int bytes;
+   Pud_Unit u;
+
+   ed = evas_object_data_get(obj, "editor");
+   c = &(ed->cells[d->y][d->x]);
 
    switch (d->type)
      {
       case UNIT_BELOW:
+         u = c->unit_below;
+         break;
+
       case UNIT_ABOVE:
+         u = c->unit_above;
+         break;
+
       case UNIT_START_LOCATION:
-         bytes = snprintf(buf, sizeof(buf), "DO ME");
+         u = (c->start_location_human) ? PUD_UNIT_HUMAN_START : PUD_UNIT_ORC_START;
          break;
 
       case UNIT_NONE:
       default:
+         CRI("Invalid unit type 0x%x", d->type);
          return NULL;
      }
+
+   bytes = snprintf(buf, sizeof(buf), "%s", pud_unit2str(u, PUD_TRUE));
    buf[sizeof(buf) - 1] = '\0';
    return strndup(buf, bytes);
 }
@@ -170,7 +189,7 @@ _text_group_get_cb(void        *data,
      {
         int b;
 
-        b = snprintf(buf, sizeof(buf), "Player %i (", player);
+        b = snprintf(buf, sizeof(buf), "Player %i (", player + 1);
         bytes = snprintf(buf + b, sizeof(buf) - b, "%s)", pud_color2str(player));
         bytes += b;
         buf[b] -= 0x20; // Uppercase
@@ -214,6 +233,14 @@ _unit_descriptor_free(Unit_Descriptor *d)
      }
 }
 
+static void
+_del_cb(void        *data,
+        Evas_Object *obj  EINA_UNUSED)
+{
+   Unit_Descriptor *const ud = data;
+   _unit_descriptor_free(ud);
+}
+
 /*============================================================================*
  *                                 Public API                                 *
  *============================================================================*/
@@ -224,6 +251,7 @@ editor_init(void)
    _itc = elm_genlist_item_class_new();
    _itc->item_style = "default";
    _itc->func.text_get = _text_get_cb;
+   _itc->func.del = _del_cb;
 
    _itcg = elm_genlist_item_class_new();
    _itcg->item_style = "group_index";
@@ -393,12 +421,12 @@ editor_new(const char   *pud_file,
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
 
-#if 0
-   o = ed->units_genlist = elm_genlist_add(ed->rpanel);
+   o = ed->units_genlist = elm_genlist_add(ed->win);
+   evas_object_data_set(o, "editor", ed);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_layout_content_set(ed->lay, "war2edit.main.sidepanel", o);
    evas_object_show(o);
-   elm_object_content_set(ed->rpanel, ed->units_genlist);
 
    for (i = 0; i < (int) EINA_C_ARRAY_LENGTH(ed->gen_group_players); i++)
      {
@@ -413,7 +441,6 @@ editor_new(const char   *pud_file,
                               (void *)(uintptr_t)PUD_PLAYER_NEUTRAL,
                               NULL, ELM_GENLIST_ITEM_GROUP,
                               NULL, NULL);
-#endif
 
    /* Add inwin */
    inwin_add(ed);
@@ -684,14 +711,25 @@ fail:
    return EINA_FALSE;
 }
 
+static Unit
+_unit_to_type(Pud_Unit unit)
+{
+   if (pud_unit_flying_is(unit))
+     return UNIT_ABOVE;
+   else if (pud_unit_start_location_is(unit))
+     return UNIT_START_LOCATION;
+   else
+     return UNIT_BELOW;
+}
+
 Eina_Bool
 editor_load(Editor     *ed,
             const char *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
-   unsigned int i, j, sw, sh;
-   const Pud *pud;
+   unsigned int i, j, sw, sh, count;
+   Pud *pud;
    Pud_Unit_Data *u;
    uint16_t tile;
    uint8_t bl, br, tl, tr, seed;
@@ -729,6 +767,7 @@ editor_load(Editor     *ed,
         return EINA_FALSE;
      }
 
+
    minimap_add(ed);
 
    // TODO split the map into parts, and do a parallel load
@@ -751,6 +790,19 @@ editor_load(Editor     *ed,
    snapshot_add(ed);
    bitmap_refresh(ed, NULL);
    minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
+
+   count = pud->units_count;
+   pud->units_count = 0;
+   for (i = 0; i < count; i++)
+     {
+        const Pud_Unit_Data *const ud = &(pud->units[i]);
+        editor_unit_ref(ed, ud->x, ud->y, _unit_to_type(ud->type));
+     }
+   if (EINA_UNLIKELY(pud->units_count != count))
+     {
+        CRI("Failed to recount units");
+        return EINA_FALSE;
+     }
 
    return EINA_TRUE;
 }
@@ -819,17 +871,9 @@ editor_unit_ref(Editor       *ed,
      }
 
    if (player < 8)
-     {
-        ed->player_units[player] = eina_inlist_append(ed->player_units[player],
-                                                      EINA_INLIST_GET(d));
-        eoi = ed->gen_group_players[player];
-     }
+     eoi = ed->gen_group_players[player];
    else if (player == PUD_PLAYER_NEUTRAL)
-     {
-        ed->neutral_units = eina_inlist_append(ed->neutral_units,
-                                               EINA_INLIST_GET(d));
-        eoi = ed->gen_group_neutral;
-     }
+     eoi = ed->gen_group_neutral;
    else
      {
         ERR("Invalid player number %i at %u,%u (0x%x)",
@@ -837,11 +881,11 @@ editor_unit_ref(Editor       *ed,
         goto end;
      }
 
+   // FIXME FREE UD on delete callback
    elm_genlist_item_append(ed->units_genlist, _itc,
                            d, eoi, ELM_GENLIST_ITEM_NONE,
-                           NULL, d);
+                           NULL, ed);
 
-   //eoi = elm_genlist_item_append(ed->units_genlist, _itc);
    DBG("Add unit for player %i", player);
 
    ret = EINA_TRUE;
@@ -859,71 +903,37 @@ editor_unit_unref(Editor       *ed,
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
    if (EINA_UNLIKELY(ed->pud->units_count <= 0))
      {
-        CRI("Attempt to unref, but units count is already %i", ed->pud->units_count);
+        CRI("Attempt to unref, but units count is already %u", ed->pud->units_count);
         return EINA_FALSE;
      }
 
-   unsigned int player;
-   const Cell *c;
-   Eina_Inlist *l;
    Unit_Descriptor *d;
-   Eina_Bool ret = EINA_FALSE;
+   Elm_Object_Item *eoi;
 
-   c = &(ed->cells[y][x]);
-   switch (type)
+   DBG("Deleting unit: (%u, %u, 0x%x)", x, y, type);
+   for (eoi = elm_genlist_first_item_get(ed->units_genlist);
+        eoi != NULL;
+        eoi = elm_genlist_item_next_get(eoi))
      {
-      case UNIT_BELOW:
-         player = c->player_below;
-         break;
-
-      case UNIT_ABOVE:
-         player = c->player_above;
-         break;
-
-      case UNIT_START_LOCATION:
-         player = c->start_location;
-         break;
-
-      case UNIT_NONE:
-      default:
-         CRI("Invalid unit type 0x%x", type);
-         return EINA_FALSE;
+        d = elm_object_item_data_get(eoi);
+        /*
+         * This is so dirty!! For group items, we pass data as an integer
+         * value. If will never be greater than 0xf in those cases.
+         * It avoids to allocate memory, and has no chance to be assimilated
+         * as another address.
+         */
+        if (d > (Unit_Descriptor *)PUD_PLAYER_NEUTRAL)
+          {
+             if ((d->x == x) && (d->y == y) && (d->type == type))
+               {
+                  elm_object_item_del(eoi);
+                  break;
+               }
+          }
      }
 
-   if (player < 8)
-     {
-        EINA_INLIST_FOREACH_SAFE(ed->player_units[player], l, d)
-           if ((d->x == x) && (d->y == y) && (d->type == type))
-             {
-                ed->player_units[player] =
-                   eina_inlist_remove(ed->player_units[player], EINA_INLIST_GET(d));
-                _unit_descriptor_free(d);
-                break;
-             }
-     }
-   else if (player == PUD_PLAYER_NEUTRAL)
-     {
-        EINA_INLIST_FOREACH_SAFE(ed->neutral_units, l, d)
-           if ((d->x == x) && (d->y == y) && (d->type == type))
-             {
-                ed->neutral_units =
-                   eina_inlist_remove(ed->neutral_units, EINA_INLIST_GET(d));
-                _unit_descriptor_free(d);
-                break;
-             }
-     }
-   else
-     {
-        ERR("Invalid player number %i at %u,%u (0x%0x)",
-            player, x, y, type);
-        goto end;
-     }
-   DBG("Del unit for player %i", player);
-
-   ret = EINA_TRUE;
-end:
    ed->pud->units_count--;
-   return ret;
+   return EINA_TRUE;
 }
 
 void
