@@ -15,8 +15,8 @@ inkscape_export() {
    out="$OUT_DIR/$(echo "$file" | cut -d '.' -f 1)"
 
    if [ x"$file" = x"war2edit.svg" ]; then
-      WIDTH=1024
-      HEIGHT=1024
+      WIDTH=512
+      HEIGHT=512
    else
       WIDTH=100
       HEIGHT=100
