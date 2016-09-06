@@ -293,5 +293,6 @@ snapshot_rollback(Editor *ed,
 
    editor_units_recount(ed);
    bitmap_refresh(ed, NULL);
+   minimap_reload(ed);
    return EINA_TRUE;
 }

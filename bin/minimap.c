@@ -212,6 +212,19 @@ minimap_del(Editor *ed)
 }
 
 Eina_Bool
+minimap_reload(Editor *ed)
+{
+   unsigned int i, j;
+   Eina_Bool ret = EINA_TRUE;
+
+   for (j = 0; j < ed->pud->map_h; j++)
+     for (i = 0; i < ed->pud->map_w; i++)
+       ret &= minimap_update(ed, i, j);
+
+   return ret;
+}
+
+Eina_Bool
 minimap_update(Editor       *ed,
                unsigned int  x,
                unsigned int  y)

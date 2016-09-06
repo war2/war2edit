@@ -50,6 +50,7 @@ void minimap_shutdown(void);
 
 void minimap_show(void);
 Eina_Bool minimap_attach(Editor *ed);
+Eina_Bool minimap_reload(Editor *ed);
 
 typedef struct
 {
