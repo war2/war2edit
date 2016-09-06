@@ -23,8 +23,6 @@
 #ifndef _TILE_H_
 #define _TILE_H_
 
-#include "editor.h"
-
 typedef enum
 {
    TILE_NONE            = 0,

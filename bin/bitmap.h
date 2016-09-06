@@ -116,4 +116,7 @@ void bitmap_cursor_move(Editor *ed, int cx, int cy);
 
 void bitmap_cursor_visibility_set(Editor *ed, Eina_Bool visible);
 
+void
+bitmap_minimap_view_resize(Editor *ed);
+
 #endif /* ! _BITMAP_H_ */

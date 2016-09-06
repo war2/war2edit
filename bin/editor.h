@@ -93,17 +93,7 @@ struct _Editor
    Pud_Player    sel_player;
 
    Bitmap  bitmap;
-
-   // XXX Should minimap be shared for all instances??
-   struct {
-      Evas_Object    *win;
-      Evas_Object    *map;
-      Evas_Object    *rect;
-      unsigned char **data;
-      unsigned int    w;
-      unsigned int    h;
-      unsigned int    ratio;
-   } minimap;
+   Minimap_Data minimap;
 
    struct {
       Evas_Object *sel[3];
@@ -230,7 +220,6 @@ uint16_t
 editor_alter_defaults_get(const Editor *ed,
                           const Pud_Unit          unit);
 Eina_Bool editor_sync(Editor *ed);
-void editor_view_update(Editor *ed);
 
 void editor_notif_send(Editor *ed, const char *msg, ...) EINA_PRINTF(2,3);
 

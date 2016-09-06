@@ -61,6 +61,7 @@ static const Module _modules[] =
    MODULE(sprite),
    MODULE(menu),
    MODULE(prefs),
+   MODULE(minimap),
    MODULE(editor)
 #undef MODULE
 };

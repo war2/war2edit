@@ -65,15 +65,6 @@ _win_del_cb(void        *data,
 }
 
 static void
-_win_resize_cb(void        *data,
-               Evas        *e    EINA_UNUSED,
-               Evas_Object *obj  EINA_UNUSED,
-               void        *info EINA_UNUSED)
-{
-   editor_view_update(data);
-}
-
-static void
 _scroll_cb(void        *data,
            Evas_Object *obj  EINA_UNUSED,
            void        *info EINA_UNUSED)
@@ -83,7 +74,8 @@ _scroll_cb(void        *data,
    // FIXME BAAAAAAD!!!! when minimap changes the view,
    // it makes the scroller scroll, then this callback is called,
    // and it loops until bounce ends....
-   editor_view_update(ed);
+   minimap_attach(ed);
+   bitmap_minimap_view_resize(ed);
 }
 
 static void
@@ -121,7 +113,12 @@ _focus_in_cb(void        *data,
              Evas_Object *obj   EINA_UNUSED,
              void        *event EINA_UNUSED)
 {
-   _focused = data;
+   Editor *const ed = data;
+   _focused = ed;
+
+   /* Attach to the minimap */
+   if (ed->minimap.data)
+     minimap_attach(ed);
 }
 
 static void
@@ -402,8 +399,6 @@ editor_new(const char   *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed->win, err_free);
    elm_win_focus_highlight_enabled_set(ed->win, EINA_FALSE);
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
-   evas_object_event_callback_add(ed->win, EVAS_CALLBACK_RESIZE,
-                                  _win_resize_cb, ed);
    evas_object_resize(ed->win, 960, 480);
    evas_event_callback_add(evas_object_evas_get(ed->win),
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
@@ -804,8 +799,8 @@ editor_load(Editor     *ed,
         return EINA_FALSE;
      }
 
-
    minimap_add(ed);
+   minimap_attach(ed);
 
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)
@@ -826,7 +821,6 @@ editor_load(Editor     *ed,
      }
    snapshot_add(ed);
    bitmap_refresh(ed, NULL);
-   minimap_render(ed, 0, 0, pud->map_w, pud->map_h);
 
    count = pud->units_count;
    pud->units_count = 0;
@@ -903,8 +897,6 @@ editor_unit_ref(Editor       *ed,
    elm_genlist_item_append(ed->units_genlist, _itc,
                            d, eoi, ELM_GENLIST_ITEM_NONE,
                            _unit_show_cb, ed);
-
-   DBG("Add unit for player %i", player);
 
    ret = EINA_TRUE;
 end:
@@ -984,33 +976,6 @@ editor_alter_defaults_get(const Editor   *ed    EINA_UNUSED,
       default:
          return 1;
      }
-}
-
-void
-editor_view_update(Editor *ed)
-{
-   int rx, ry, rw, rh;
-   int cx, cy, cw, ch;
-   int cell_w = 0, cell_h = 0;
-   float wf, hf;
-
-   elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
-   bitmap_cell_size_get(ed, &cell_w, &cell_h);
-   /* Happens mostly at init time, when UI is unstable */
-   if (EINA_UNLIKELY((cell_w == 0) || (cell_h == 0)))
-     return;
-
-   wf = (float)cell_w;
-   hf = (float)cell_h;
-
-   cw = rintf((float)rw / wf);
-   ch = rintf((float)rh / hf);
-   cx = rintf((float)rx / wf);
-   cy = rintf((float)ry / hf);
-
- //  bitmap_refresh(ed, NULL);
-   minimap_view_move(ed, cx, cy, EINA_FALSE);
-   minimap_view_resize(ed, cw, ch);
 }
 
 void

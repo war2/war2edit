@@ -85,8 +85,8 @@ const char *main_edje_file_get(void);
 #include "inwin.h"
 #include "sprite.h"
 #include "bitmap.h"
-#include "editor.h"
 #include "minimap.h"
+#include "editor.h"
 #include "unitselector.h"
 #include "sel.h"
 
