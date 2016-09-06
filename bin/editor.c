@@ -185,6 +185,46 @@ _text_group_get_cb(void        *data,
    return strndup(buf, bytes);;
 }
 
+static void
+_free_surf_cb(void        *data,
+         Evas        *e    EINA_UNUSED,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *info EINA_UNUSED)
+{
+   cairo_surface_t *const surf = data;
+   cairo_surface_destroy(surf);
+}
+
+static Evas_Object *
+_content_get_cb(void        *data,
+                Evas_Object *obj,
+                const char  *part)
+{
+   Unit_Descriptor *const d = data;
+   Editor *ed;
+   Evas_Object *im = NULL;
+   cairo_surface_t *surf;
+   unsigned char *px;
+   Pud_Unit unit;
+   Pud_Player col;
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        ed = evas_object_data_get(obj, "editor");
+        cell_unit_get(&(ed->cells[d->y][d->x]), d->type, &unit, &col);
+        surf = atlas_icon_colorized_get(ed->pud->era,
+                                        pud_unit_icon_get(unit), col);
+        px = cairo_image_surface_get_data(surf);
+        im = evas_object_image_filled_add(evas_object_evas_get(obj));
+        evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
+        evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
+        evas_object_image_data_set(im, px);
+        evas_object_show(im);
+        evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
+     }
+   return im;
+}
+
 static Unit_Descriptor *
 _unit_descriptor_new(unsigned int x,
                      unsigned int y,
@@ -233,6 +273,7 @@ editor_init(void)
    _itc = elm_genlist_item_class_new();
    _itc->item_style = "default";
    _itc->func.text_get = _text_get_cb;
+   _itc->func.content_get = _content_get_cb;
    _itc->func.del = _del_cb;
 
    _itcg = elm_genlist_item_class_new();
