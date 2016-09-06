@@ -80,4 +80,10 @@ cell_matrix_bindump(Cell **cells,
                     unsigned int h,
                     FILE *stream);
 
+Eina_Bool
+cell_unit_get(const Cell *c,
+              Unit        type,
+              Pud_Unit   *unit,
+              Pud_Player *owner);
+
 #endif /* ! _CELL_H_ */

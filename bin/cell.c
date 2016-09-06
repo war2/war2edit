@@ -196,3 +196,39 @@ cell_matrix_bindump(Cell **cells,
 {
    fwrite(cells[0], w * h, sizeof(Cell), stream);
 }
+
+Eina_Bool
+cell_unit_get(const Cell *c,
+              Unit        type,
+              Pud_Unit   *unit,
+              Pud_Player *owner)
+{
+   Pud_Unit u;
+   Pud_Player p;
+
+   switch (type)
+     {
+      case UNIT_BELOW:
+         u = c->unit_below;
+         p = c->player_below;
+         break;
+
+      case UNIT_ABOVE:
+         u = c->unit_above;
+         p = c->player_above;
+         break;
+
+      case UNIT_START_LOCATION:
+         u = c->start_location_human ? PUD_UNIT_HUMAN_START : PUD_UNIT_ORC_START;
+         p = c->start_location;
+         break;
+
+      default:
+         CRI("Unhandled type 0x%x", type);
+         return EINA_FALSE;
+     }
+
+   if (unit) *unit = u;
+   if (owner) *owner = p;
+   return EINA_TRUE;
+}

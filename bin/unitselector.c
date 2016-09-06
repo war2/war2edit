@@ -230,20 +230,7 @@ _player_ctor(Evas_Object *vbox,
    for (i = PUD_PLAYER_RED; i <= PUD_PLAYER_YELLOW; i++)
      grp = _radio_add(t, grp, i, i & 0x3, i >> 2, u);
 
-   switch (u->type)
-     {
-      case UNIT_BELOW:
-         i = u->c->player_below;
-         break;
-
-      case UNIT_ABOVE:
-         i = u->c->player_above;
-         break;
-
-      default:
-         CRI("Unhandled type 0x%x", u->type);
-         return f;
-     }
+   cell_unit_get(u->c, u->type, NULL, &i);
 
    elm_radio_value_set(grp, i);
 

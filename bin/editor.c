@@ -151,25 +151,7 @@ _text_get_cb(void        *data,
    ed = evas_object_data_get(obj, "editor");
    c = &(ed->cells[d->y][d->x]);
 
-   switch (d->type)
-     {
-      case UNIT_BELOW:
-         u = c->unit_below;
-         break;
-
-      case UNIT_ABOVE:
-         u = c->unit_above;
-         break;
-
-      case UNIT_START_LOCATION:
-         u = (c->start_location_human) ? PUD_UNIT_HUMAN_START : PUD_UNIT_ORC_START;
-         break;
-
-      case UNIT_NONE:
-      default:
-         CRI("Invalid unit type 0x%x", d->type);
-         return NULL;
-     }
+   cell_unit_get(c, d->type, &u, NULL);
 
    bytes = snprintf(buf, sizeof(buf), "%s", pud_unit2str(u, PUD_TRUE));
    buf[sizeof(buf) - 1] = '\0';
@@ -850,25 +832,7 @@ editor_unit_ref(Editor       *ed,
      }
 
    c = &(ed->cells[y][x]);
-   switch (type)
-     {
-      case UNIT_BELOW:
-         player = c->player_below;
-         break;
-
-      case UNIT_ABOVE:
-         player = c->player_above;
-         break;
-
-      case UNIT_START_LOCATION:
-         player = c->start_location;
-         break;
-
-      case UNIT_NONE:
-      default:
-         CRI("Invalid unit type 0x%x", type);
-         return EINA_FALSE;
-     }
+   cell_unit_get(c, type, NULL, &player);
 
    if (player < 8)
      eoi = ed->gen_group_players[player];
