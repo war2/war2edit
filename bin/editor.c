@@ -263,6 +263,23 @@ _del_cb(void        *data,
    _unit_descriptor_free(ud);
 }
 
+static void
+_unit_show_cb(void        *data,
+              Evas_Object *obj  EINA_UNUSED,
+              void        *info)
+{
+   Editor *const ed = data;
+   Elm_Object_Item *const eoi = info;
+   const Unit_Descriptor *d;
+   int x, y, w, h;
+
+   d = elm_object_item_data_get(eoi);
+   bitmap_cells_to_coords(ed, d->x, d->y, &x, &y);
+
+   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
+   elm_scroller_region_bring_in(ed->scroller, x - w/2, y - h/2, w, h);
+}
+
 /*============================================================================*
  *                                 Public API                                 *
  *============================================================================*/
@@ -886,10 +903,9 @@ editor_unit_ref(Editor       *ed,
         goto end;
      }
 
-   // FIXME FREE UD on delete callback
    elm_genlist_item_append(ed->units_genlist, _itc,
                            d, eoi, ELM_GENLIST_ITEM_NONE,
-                           NULL, ed);
+                           _unit_show_cb, ed);
 
    DBG("Add unit for player %i", player);
 
