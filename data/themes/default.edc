@@ -72,6 +72,11 @@ collections {
          swallow { "war2edit.main.sidepanel";
             desc { "default";
                rel.to: "sidepanel_bg";
+               visible: 0;
+            }
+            desc { "menu_toggled";
+               inherit: "default";
+               visible: 1;
             }
          }
          external { "sidepanel_button"; source: "elm/button";
@@ -175,6 +180,7 @@ collections {
             target: "toggle";
             target: "sidepanel_button";
             target: "sidepanel_bg";
+            target: "war2edit.main.sidepanel";
             transition: SINUSOIDAL 1.0;
          }
          program { signal: "mouse,down,*"; source: "sidepanel_button";
@@ -182,6 +188,7 @@ collections {
             target: "toggle";
             target: "sidepanel_button";
             target: "sidepanel_bg";
+            target: "war2edit.main.sidepanel";
             transition: SINUSOIDAL 1.0;
          }
 
