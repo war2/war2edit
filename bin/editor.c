@@ -249,10 +249,7 @@ _unit_descriptor_new(unsigned int x,
 static void
 _unit_descriptor_free(Unit_Descriptor *d)
 {
-   if (d)
-     {
-        free(d);
-     }
+   free(d);
 }
 
 static void
