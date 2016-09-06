@@ -80,42 +80,21 @@ _update_icon(Editor      *ed,
              Pud_Player   col,
              Pud_Unit     unit)
 {
-   cairo_surface_t *atlas, *surf;
-   cairo_t *cr;
+   cairo_surface_t *surf;
    unsigned char *px;
    Evas_Object *im;
-   unsigned i;
    const char part[] = "war2edit.unitselector.icon";
-   const cairo_format_t format = CAIRO_FORMAT_ARGB32;
-   int x, y;
-   Pud_Icon icon;
 
 
-   atlas = atlas_icon_get(ed->pud->era);
-   if (EINA_UNLIKELY(!atlas))
+   surf = atlas_icon_colorized_get(ed->pud->era,
+                                   pud_unit_icon_get(unit),
+                                   col);
+   if (EINA_UNLIKELY(!surf))
      {
-        CRI("Failed to get icon atlas for era 0x%x", ed->pud->era);
+        CRI("Failed to create icon");
         return EINA_FALSE;
      }
-
-   icon = pud_unit_icon_get(unit);
-   x = 0;
-   y = -1 * icon * ICON_HEIGHT;
-   surf = cairo_image_surface_create(format, ICON_WIDTH, ICON_HEIGHT);
-   cr = cairo_create(surf);
-   cairo_set_source_surface(cr, atlas, x, y);
-   cairo_mask_surface(cr, atlas, x, y);
-   cairo_fill(cr);
-   cairo_surface_flush(surf);
    px = cairo_image_surface_get_data(surf);
-   for (i = 0; i < ICON_WIDTH * ICON_HEIGHT * 4; i += 4)
-     {
-        war2_sprites_color_convert(PUD_PLAYER_RED, col,
-                                   px[i + 2], px[i + 1], px[i + 0],
-                                   &px[i + 2], &px[i + 1], &px[i + 0]);
-
-     }
-   cairo_destroy(cr);
 
    /* We may want to update the image */
    im = elm_layout_content_unset(lay, part);

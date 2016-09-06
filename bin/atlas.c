@@ -182,3 +182,45 @@ atlas_icon_open(Pud_Era era)
    EINA_SAFETY_ON_TRUE_RETURN_VAL((unsigned) era > PUD_ERA_SWAMP, EINA_FALSE);
    return atlas_open(era + 4);
 }
+
+cairo_surface_t *
+atlas_icon_colorized_get(Pud_Era    era,
+                         Pud_Icon   icon,
+                         Pud_Player color)
+{
+   const cairo_format_t format = CAIRO_FORMAT_ARGB32;
+   cairo_surface_t *atlas, *surf;
+   cairo_t *cr;
+   int x, y;
+   unsigned int i;
+   unsigned char *px;
+
+   atlas = atlas_icon_get(era);
+   if (EINA_UNLIKELY(!atlas))
+     {
+        CRI("Failed to get icon atlas for era 0x%x", era);
+        return NULL;
+     }
+
+   x = 0;
+   y = -1 * icon * ICON_HEIGHT;
+
+   surf = cairo_image_surface_create(format, ICON_WIDTH, ICON_HEIGHT);
+   cr = cairo_create(surf);
+   cairo_set_source_surface(cr, atlas, x, y);
+   cairo_mask_surface(cr, atlas, x, y);
+   cairo_fill(cr);
+   cairo_surface_flush(surf);
+   px = cairo_image_surface_get_data(surf);
+   for (i = 0; i < ICON_WIDTH * ICON_HEIGHT * 4; i += 4)
+     {
+        war2_sprites_color_convert(PUD_PLAYER_RED, color,
+                                   px[i + 2], px[i + 1], px[i + 0],
+                                   &px[i + 2], &px[i + 1], &px[i + 0]);
+
+     }
+   cairo_destroy(cr);
+   cairo_surface_flush(surf);
+
+   return surf;
+}

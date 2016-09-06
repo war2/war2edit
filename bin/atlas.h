@@ -60,4 +60,9 @@ atlas_texture_access_test(uint16_t         tile,
 Eina_Bool atlas_texture_open(Pud_Era era);
 Eina_Bool atlas_icon_open(Pud_Era era);
 
+cairo_surface_t *
+atlas_icon_colorized_get(Pud_Era    era,
+                         Pud_Icon   icon,
+                         Pud_Player color);
+
 #endif /* ! __ATLAS_H__ */
