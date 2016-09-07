@@ -561,7 +561,7 @@ bitmap_minimap_view_resize(Editor *ed)
 {
    int rx, ry, rw, rh;
    int cx, cy, cw, ch;
-   int cell_w = 0, cell_h = 0;
+   int cell_w, cell_h;
    float wf, hf;
 
    elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
@@ -1166,7 +1166,7 @@ bitmap_tile_draw(Editor       *ed,
    cairo_rectangle(ed->bitmap.cr, px, py, TEXTURE_WIDTH, TEXTURE_HEIGHT);
    cairo_fill(ed->bitmap.cr);
 
-   minimap_render(x, y, 1, 1);
+   minimap_render(ed, x, y, 1, 1);
 }
 
 enum

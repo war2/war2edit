@@ -74,7 +74,6 @@ _scroll_cb(void        *data,
    // FIXME BAAAAAAD!!!! when minimap changes the view,
    // it makes the scroller scroll, then this callback is called,
    // and it loops until bounce ends....
-   minimap_attach(ed);
    bitmap_minimap_view_resize(ed);
 }
 
@@ -115,10 +114,6 @@ _focus_in_cb(void        *data,
 {
    Editor *const ed = data;
    _focused = ed;
-
-   /* Attach to the minimap */
-   if (ed->minimap.data)
-     minimap_attach(ed);
 }
 
 static void
@@ -800,7 +795,6 @@ editor_load(Editor     *ed,
      }
 
    minimap_add(ed);
-   minimap_attach(ed);
 
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)
@@ -821,6 +815,8 @@ editor_load(Editor     *ed,
      }
    snapshot_add(ed);
    bitmap_refresh(ed, NULL);
+   minimap_show(ed);
+   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 
    count = pud->units_count;
    pud->units_count = 0;

@@ -41,6 +41,7 @@ collections {
       }
 
       parts {
+
          swallow { "war2edit.main.toolbar";
             desc { "default";
                rel2.relative: 0.0 0.0;
@@ -54,6 +55,21 @@ collections {
                   relative: 0.0 1.0;
                }
 
+               align: 0.0 0.0;
+            }
+         }
+
+         external { "minimap_bg"; source: "elm/bg";
+            desc { "default";
+               rel.to: "war2edit.main.minimap";
+               rel1.offset: -3 -3;
+               rel2.offset: +3 +3;
+            }
+         }
+         swallow { "war2edit.main.minimap";
+            desc { "default";
+               rel.to: "war2edit.main.contents";
+               rel2.relative: 0.0 0.0;
                align: 0.0 0.0;
             }
          }

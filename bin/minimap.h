@@ -27,13 +27,14 @@ Eina_Bool minimap_add(Editor *ed);
 void minimap_del(Editor *ed);
 Eina_Bool minimap_update(Editor *ed, unsigned int x, unsigned int y);
 void
-minimap_render(unsigned int  x,
+minimap_render(Editor *ed,
+               unsigned int  x,
                unsigned int  y,
                unsigned int  w,
                unsigned int  h);
 
 void
-minimap_render_unit(const Editor *ed,
+minimap_render_unit(Editor *ed,
                     unsigned int  x,
                     unsigned int  y,
                     Pud_Unit      u);
@@ -45,19 +46,7 @@ minimap_view_move(Editor    *ed,
                   Eina_Bool  clicked);
 
 void minimap_view_resize(Editor *ed, unsigned int w, unsigned int h);
-Eina_Bool minimap_init(void);
-void minimap_shutdown(void);
-
-void minimap_show(void);
-Eina_Bool minimap_attach(Editor *ed);
+void minimap_show(Editor *ed);
 Eina_Bool minimap_reload(Editor *ed);
-
-typedef struct
-{
-   unsigned char **data;
-   unsigned int ratio;
-   unsigned int w;
-   unsigned int h;
-} Minimap_Data;
 
 #endif /* ! _MINIMAP_H_ */

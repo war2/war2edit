@@ -93,7 +93,13 @@ struct _Editor
    Pud_Player    sel_player;
 
    Bitmap  bitmap;
-   Minimap_Data minimap;
+
+   struct {
+      unsigned char **data;
+      Evas_Object    *map;
+      Evas_Object    *rect;
+      unsigned int    ratio;
+   } minimap;
 
    struct {
       Evas_Object *sel[3];
