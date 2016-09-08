@@ -121,6 +121,7 @@ minimap_add(Editor *ed)
    o = ed->minimap.rect = evas_object_rectangle_add(evas);
    evas_object_color_set(o, 100, 100, 100, 100);
    evas_object_resize(o, 1, 1);
+   evas_object_pass_events_set(o, EINA_TRUE);
    evas_object_move(o, 0, 0);
    evas_object_show(o);
 
