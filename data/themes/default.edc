@@ -42,6 +42,13 @@ collections {
 
       parts {
 
+         rect { "left_bar";
+            desc { "default";
+               rel1.to: "war2edit.main.contents";
+               rel2.relative: 0.0 1.0;
+               visible: 0;
+            }
+         }
          swallow { "war2edit.main.toolbar";
             desc { "default";
                rel2.relative: 0.0 0.0;
@@ -54,7 +61,6 @@ collections {
                   to: "war2edit.main.toolbar";
                   relative: 0.0 1.0;
                }
-
                align: 0.0 0.0;
             }
          }
@@ -66,11 +72,49 @@ collections {
                rel2.offset: +3 +3;
             }
          }
+
          swallow { "war2edit.main.minimap";
             desc { "default";
                rel.to: "war2edit.main.contents";
-               rel2.relative: 0.0 0.0;
-               align: 0.0 0.0;
+               rel2.relative: 0.0 1.0;
+               align: 0.0 1.0;
+               rel2.offset: 0 -21;
+            }
+            desc { "minimap_hidden";
+               rel.to: "left_bar";
+               align: 1.0 1.0;
+               rel2.offset: -6 -21;
+            }
+         }
+         external { "minimap_close_btn"; source: "elm/icon";
+            desc { "default";
+               rel.to: "war2edit.main.minimap";
+               rel1.offset: +3 0;
+               fixed: 1 1;
+               align: 1.0 0.0;
+               min: 10 10;
+               max: 10 10;
+               params {
+                  string: "icon" "document-close";
+               }
+            }
+         }
+         external { "open_minimap"; source: "elm/button";
+            desc { "default";
+               rel.to: "left_bar";
+               rel2.offset: 0 -21-50;
+               align: 0.0 1.0;
+               fixed: 1 1;
+               min: 25 25;
+               max: 25 25;
+               params {
+                  string: "icon" "window-new";
+               }
+               visible: 0;
+            }
+            desc { "minimap_hidden";
+               inherit: "default";
+               visible: 1;
             }
          }
 
@@ -191,6 +235,26 @@ collections {
       }
 
       programs {
+         program { signal: "mouse,down,*"; source: "open_minimap";
+            action: STATE_SET "default";
+            target: "open_minimap";
+            target: "war2edit.main.minimap";
+            transition: ACCELERATE 0.5;
+            after: "minimap,open";
+         }
+         program { name: "minimap,open";
+            action: SIGNAL_EMIT "war2edit,minimap,show" "war2edit";
+         }
+         program { signal: "mouse,down,*"; source: "minimap_close_btn";
+            action: SIGNAL_EMIT "war2edit,minimap,hide" "war2edit";
+            after: "minimap,close";
+         }
+         program { name: "minimap,close";
+            action: STATE_SET "minimap_hidden";
+            target: "open_minimap";
+            target: "war2edit.main.minimap";
+            transition: ACCELERATE 0.5;
+         }
          program { signal: "mouse,down,*"; source: "toggle";
             action: STATE_SET "menu_toggled";
             target: "toggle";

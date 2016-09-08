@@ -56,6 +56,26 @@ _mouse_move_cb(void        *data EINA_UNUSED,
  //    minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
 }
 
+static void
+_show_cb(void        *data,
+         Evas_Object *obj      EINA_UNUSED,
+         const char  *emission EINA_UNUSED,
+         const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   evas_object_show(ed->minimap.rect);
+}
+
+static void
+_hide_cb(void        *data,
+         Evas_Object *obj      EINA_UNUSED,
+         const char  *emission EINA_UNUSED,
+         const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   evas_object_hide(ed->minimap.rect);
+}
+
 
 Eina_Bool
 minimap_add(Editor *ed)
@@ -124,6 +144,11 @@ minimap_add(Editor *ed)
    evas_object_pass_events_set(o, EINA_TRUE);
    evas_object_move(o, 0, 0);
    evas_object_show(o);
+
+   elm_layout_signal_callback_add(ed->lay, "war2edit,minimap,show", "war2edit",
+                                  _show_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,minimap,hide", "war2edit",
+                                  _hide_cb, ed);
 
    return EINA_TRUE;
 
