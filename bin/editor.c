@@ -1035,8 +1035,24 @@ editor_icon_image_new(Evas_Object *parent,
    unsigned char *px;
 
    surf = atlas_icon_colorized_get(era, icon, color);
+   if (EINA_UNLIKELY(!surf))
+     {
+        CRI("Failed to get surface for icon 0x%x, era 0x%x, color 0x%x",
+            icon, era, color);
+        goto fail;
+     }
    px = cairo_image_surface_get_data(surf);
+   if (EINA_UNLIKELY(!px))
+     {
+        CRI("Failed to get pixels from surface %p", surf);
+        goto fail;
+     }
    im = evas_object_image_filled_add(evas_object_evas_get(parent));
+   if (EINA_UNLIKELY(!px))
+     {
+        CRI("Failed to create evas_object_image");
+        goto fail;
+     }
    evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
    evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
    evas_object_image_data_set(im, px);
@@ -1045,4 +1061,6 @@ editor_icon_image_new(Evas_Object *parent,
 
    return im;
 
+fail:
+   return NULL;
 }
