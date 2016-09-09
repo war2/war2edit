@@ -177,16 +177,6 @@ _text_group_get_cb(void        *data,
    return strndup(buf, bytes);;
 }
 
-static void
-_free_surf_cb(void        *data,
-         Evas        *e    EINA_UNUSED,
-         Evas_Object *obj  EINA_UNUSED,
-         void        *info EINA_UNUSED)
-{
-   cairo_surface_t *const surf = data;
-   cairo_surface_destroy(surf);
-}
-
 static Evas_Object *
 _content_get_cb(void        *data,
                 Evas_Object *obj,
@@ -195,8 +185,6 @@ _content_get_cb(void        *data,
    Unit_Descriptor *const d = data;
    Editor *ed;
    Evas_Object *im = NULL;
-   cairo_surface_t *surf;
-   unsigned char *px;
    Pud_Unit unit;
    Pud_Player col;
 
@@ -204,15 +192,7 @@ _content_get_cb(void        *data,
      {
         ed = evas_object_data_get(obj, "editor");
         cell_unit_get(&(ed->cells[d->y][d->x]), d->type, &unit, &col);
-        surf = atlas_icon_colorized_get(ed->pud->era,
-                                        pud_unit_icon_get(unit), col);
-        px = cairo_image_surface_get_data(surf);
-        im = evas_object_image_filled_add(evas_object_evas_get(obj));
-        evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
-        evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
-        evas_object_image_data_set(im, px);
-        evas_object_show(im);
-        evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
+        im = editor_icon_image_new(obj, pud_unit_icon_get(unit), ed->pud->era, col);
      }
    return im;
 }
@@ -1032,4 +1012,37 @@ unsigned int
 editors_count(void)
 {
    return eina_list_count(_editors);
+}
+
+static void
+_free_surf_cb(void        *data,
+         Evas        *e    EINA_UNUSED,
+         Evas_Object *obj  EINA_UNUSED,
+         void        *info EINA_UNUSED)
+{
+   cairo_surface_t *const surf = data;
+   cairo_surface_destroy(surf);
+}
+
+Evas_Object *
+editor_icon_image_new(Evas_Object *parent,
+                      Pud_Icon     icon,
+                      Pud_Era      era,
+                      Pud_Player   color)
+{
+   Evas_Object *im;
+   cairo_surface_t *surf;
+   unsigned char *px;
+
+   surf = atlas_icon_colorized_get(era, icon, color);
+   px = cairo_image_surface_get_data(surf);
+   im = evas_object_image_filled_add(evas_object_evas_get(parent));
+   evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
+   evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
+   evas_object_image_data_set(im, px);
+   evas_object_show(im);
+   evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
+
+   return im;
+
 }

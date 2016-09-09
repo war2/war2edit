@@ -64,49 +64,21 @@ udata_free(Udata *u)
    free(u);
 }
 
-static void
-_free_surf_cb(void        *data,
-         Evas        *e    EINA_UNUSED,
-         Evas_Object *obj  EINA_UNUSED,
-         void        *info EINA_UNUSED)
-{
-   cairo_surface_t *const surf = data;
-   cairo_surface_destroy(surf);
-}
-
 static Eina_Bool
 _update_icon(Editor      *ed,
              Evas_Object *lay,
              Pud_Player   col,
              Pud_Unit     unit)
 {
-   cairo_surface_t *surf;
-   unsigned char *px;
    Evas_Object *im;
    const char part[] = "war2edit.unitselector.icon";
-
-
-   surf = atlas_icon_colorized_get(ed->pud->era,
-                                   pud_unit_icon_get(unit),
-                                   col);
-   if (EINA_UNLIKELY(!surf))
-     {
-        CRI("Failed to create icon");
-        return EINA_FALSE;
-     }
-   px = cairo_image_surface_get_data(surf);
 
    /* We may want to update the image */
    im = elm_layout_content_unset(lay, part);
    if (im) evas_object_del(im);
 
-   im = evas_object_image_filled_add(evas_object_evas_get(lay));
-   evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
-   evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
-   evas_object_image_data_set(im, px);
-   evas_object_show(im);
+   im = editor_icon_image_new(lay, pud_unit_icon_get(unit), ed->pud->era, col);
    elm_layout_content_set(lay, part, im);
-   evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
 
    return EINA_TRUE;
 }

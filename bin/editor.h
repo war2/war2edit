@@ -238,6 +238,11 @@ void editor_units_recount(Editor *ed);
 void editor_handle_delete(Editor *ed);
 
 Editor *editor_focused_get(void);
+Evas_Object *
+editor_icon_image_new(Evas_Object *parent,
+                      Pud_Icon     icon,
+                      Pud_Era      era,
+                      Pud_Player   color);
 
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \
