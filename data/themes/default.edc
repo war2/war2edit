@@ -119,10 +119,12 @@ collections {
                rel.to: "war2edit.main.contents";
                rel1.relative: 1.0 0.0;
                align: 1.0 0.0;
+               rel2.offset: -17 -17;
             }
             desc { "menu_toggled";
                inherit: "default";
                rel1.relative: 0.8 0.0;
+               rel1.offset: -17 0;
             }
          }
          swallow { "war2edit.main.sidepanel";
@@ -158,7 +160,7 @@ collections {
                rel.to: "war2edit.main.sidepanel";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
-               rel2.offset: -6 32;
+               rel2.offset: 9 32;
                rel1.offset: 0 32;
                align: 1.0 0.0;
                fixed: 1 1;
