@@ -320,6 +320,11 @@ minimap_view_resize(Editor       *ed,
                     unsigned int  w,
                     unsigned int  h)
 {
-   evas_object_resize(ed->minimap.rect,
-                      w * ed->minimap.ratio, h * ed->minimap.ratio);
+   w *= ed->minimap.ratio;
+   h *= ed->minimap.ratio;
+   if (w > ed->pud->map_w * ed->minimap.ratio)
+     w = ed->pud->map_w * ed->minimap.ratio;
+   if (h > ed->pud->map_h * ed->minimap.ratio)
+     h = ed->pud->map_h * ed->minimap.ratio;
+   evas_object_resize(ed->minimap.rect, w, h);
 }
