@@ -26,7 +26,6 @@ add_custom_command(
       -author ${CMAKE_SOURCE_DIR}/AUTHORS
       -license ${CMAKE_SOURCE_DIR}/COPYING
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/default.edc
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/toggle.png
 )
 add_custom_target(
    themes
