@@ -21,13 +21,10 @@ Build
 TODO & BUGS
 ===========
 
-- [ ] Overhaul minimap
 - [ ] Scaling of map
-- [ ] Different brush types
 - [ ] Implement properties editors
 - [ ] Help/About panel
 - [ ] Toggle extension mode
-- [ ] Undo/Redo
 - [ ] Oil Patch can be placed too close to land
 - [ ] Oil Patch and Gold Mines must prevent collectors to be placed too close
 - [ ] DOSBox/Boxer fancy selection panel
