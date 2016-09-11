@@ -1497,6 +1497,7 @@ menu_units_properties_new(Editor      *ed,
    elm_box_horizontal_set(b, EINA_TRUE);
    elm_object_content_set(f, b);
 
+   ed->pud->default_udta = 0;
 
    gen = mu->gen = elm_genlist_add(b);
    evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
