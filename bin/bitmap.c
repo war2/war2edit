@@ -664,6 +664,7 @@ _mouse_move_cb(void        *data,
                     bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
              else if (pud_unit_boat_is(ed->sel_unit) ||
+                      pud_unit_underwater_is(ed->sel_unit) ||
                       pud_unit_flying_is(ed->sel_unit))
                {
                   /* Boats patches must be on EVEN cells */
