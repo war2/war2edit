@@ -1171,7 +1171,6 @@ _unit_select_cb(void        *data,
 
    ed->menu_units->selected = u;
    mu = ed->menu_units;
-   DBG("Selecting 0x%x", u);
    c = &(ed->pud->unit_data[u]);
 
    elm_spinner_value_set(mu->range, c->range);
@@ -1183,6 +1182,13 @@ _unit_select_cb(void        *data,
    elm_spinner_value_set(mu->armor, c->armor);
    elm_spinner_value_set(mu->basic_damage, c->basic_damage);
    elm_spinner_value_set(mu->piercing_damage, c->piercing_damage);
+   elm_check_state_set(mu->has_magic, !!c->has_magic);
+   elm_check_state_set(mu->weapons_upgradable, !!c->weapons_upgradable);
+   elm_check_state_set(mu->armor_upgradable, !!c->armor_upgradable);
+
+   elm_check_state_pointer_set(mu->has_magic, &c->has_magic);
+   elm_check_state_pointer_set(mu->weapons_upgradable, &c->weapons_upgradable);
+   elm_check_state_pointer_set(mu->armor_upgradable, &c->armor_upgradable);
 
    // TODO fill ui with current pud value
 
@@ -1199,6 +1205,22 @@ _pack_ui(Editor *ed,
 
    _pack_label_right(table, 0, row, label);
    o = ctor(table, ed);
+   elm_table_pack(table, o, 1, row, 1, 1);
+
+   return o;
+}
+
+static Evas_Object *
+_pack_ui_check(Editor *ed EINA_UNUSED,
+               Evas_Object *table,
+               unsigned int row,
+               const char *label)
+{
+   Evas_Object *o;
+
+   _pack_label_right(table, 0, row, label);
+   o = elm_check_add(table);
+   evas_object_show(o);
    elm_table_pack(table, o, 1, row, 1, 1);
 
    return o;
@@ -1537,9 +1559,9 @@ menu_units_properties_new(Editor      *ed,
    mu->armor = _pack_ui(ed, t,  n++, "Armor", _armor_widget);
    mu->basic_damage = _pack_ui(ed, t, n++, "Basic Damage", _basic_damage_wdiget);
    mu->piercing_damage = _pack_ui(ed, t, n++, "Piercing Damage", _piercing_damage_wdiget);
-//   mu->has_magic = _pack_ui(ed, t, n++, "Has Magic");
-//   mu->weapons_upgradable = _pack_ui(ed, t, n++, "Weapons Upgradable");
-//   mu->armor_upgradable = _pack_ui(ed, t, n++, "Armor Upgradable");
+   mu->has_magic = _pack_ui_check(ed, t, n++, "Has Magic");
+   mu->weapons_upgradable = _pack_ui_check(ed, t, n++, "Weapons Upgradable");
+   mu->armor_upgradable = _pack_ui_check(ed, t, n++, "Armor Upgradable");
 
    elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
 
