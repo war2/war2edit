@@ -139,6 +139,8 @@ struct _Editor
    Elm_Object_Item *gen_group_players[8];
    Elm_Object_Item *gen_group_neutral;
 
+   Menu_Units *menu_units;
+
    /* === PUD specific === */
    Pud        *pud;
    uint8_t     sides[8]; /* Orc, Human */

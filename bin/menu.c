@@ -25,6 +25,9 @@
 static Eina_Hash *_values = NULL;
 #define PUD_DATA "war2edit/pud"
 
+static Elm_Genlist_Item_Class *_itc = NULL;
+
+
 
 /*============================================================================*
  *                                 Private API                                *
@@ -74,12 +77,39 @@ _radio_changed_common_do(Evas_Object *radio,
  *                                  Callbacks                                 *
  *============================================================================*/
 
+
+static char *
+_gen_units_text_get_cb(void        *data,
+                       Evas_Object *obj  EINA_UNUSED,
+                       const char  *part EINA_UNUSED)
+{
+   const Pud_Unit u = (Pud_Unit)((uintptr_t)data);
+   return strdup(pud_unit2str(u, EINA_TRUE));
+}
+
+static Evas_Object *
+_gen_units_icon_get_cb(void        *data,
+                       Evas_Object *obj,
+                       const char  *part)
+{
+   const Pud_Unit u = (Pud_Unit)((uintptr_t)data);
+   Evas_Object *im = NULL;
+   Editor *const ed = evas_object_data_get(obj, "editor");
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        im = editor_icon_image_new(obj, pud_unit_icon_get(u),
+                                   ed->pud->era, PUD_PLAYER_RED);
+     }
+   return im;
+}
+
 static void
 _win_del_cb(void        *data,
             Evas_Object *obj   EINA_UNUSED,
             void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
    editor_free(ed);
 }
 
@@ -180,17 +210,16 @@ _units_properties_cb(void        *data  EINA_UNUSED,
                      Evas_Object *obj   EINA_UNUSED,
                      void        *event EINA_UNUSED)
 {
-// TODO Uncomment when perf issue will be resolved
-//   Editor *ed = data;
-//
-//   if (inwin_id_is(ed, INWIN_UNITS_PROPERTIES))
-//     inwin_activate(ed);
-//   else
-//     {
-//        inwin_set(ed, menu_units_properties_new(ed, ed->inwin.obj),
-//                  INWIN_UNITS_PROPERTIES,
-//                  "Close", NULL, NULL, NULL);
-//     }
+   Editor *ed = data;
+
+   if (inwin_id_is(ed, INWIN_UNITS_PROPERTIES))
+     inwin_activate(ed);
+   else
+     {
+        inwin_set(ed, menu_units_properties_new(ed, ed->inwin.obj),
+                  INWIN_UNITS_PROPERTIES,
+                  "Close", NULL, NULL, NULL);
+     }
 }
 
 static void
@@ -501,7 +530,6 @@ menu_add(Editor *ed)
    elm_menu_item_add(ed->menu, itm, NULL, "Starting Properties...", _starting_properties_cb, ed);
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Units Properties...", _units_properties_cb, ed);
-   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
    i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
    elm_object_item_disabled_set(i, EINA_TRUE); // TODO
 
@@ -564,7 +592,6 @@ _table_add(Evas_Object *obj)
    evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_table_homogeneous_set(t, EINA_TRUE);
    elm_table_padding_set(t, 20, 6);
-   elm_object_content_set(obj, t);
    evas_object_show(t);
 
    return t;
@@ -716,6 +743,16 @@ menu_init(void)
 
 #undef ADD
 
+   _itc = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!_itc))
+     {
+        CRI("Failed to create genlist item class");
+        return EINA_FALSE; // FIXME Leak
+     }
+   _itc->item_style = "default";
+   _itc->func.text_get = _gen_units_text_get_cb;
+   _itc->func.content_get = _gen_units_icon_get_cb;
+
    return EINA_TRUE;
 }
 
@@ -723,6 +760,7 @@ void
 menu_shutdown(void)
 {
    eina_hash_free(_values);
+   elm_genlist_item_class_free(_itc);
 }
 
 /*============================================================================*
@@ -746,7 +784,7 @@ _hoversel_item_add(Evas_Object   *hoversel,
    elm_hoversel_item_add(hoversel, label, NULL, ELM_ICON_NONE, func, bind);
 }
 
-static void
+static Evas_Object *
 _pack_label(Evas_Object  *table,
             unsigned int  row,
             unsigned int  col,
@@ -759,6 +797,21 @@ _pack_label(Evas_Object  *table,
    elm_object_text_set(o, label);
    evas_object_show(o);
    elm_table_pack(table, o, col, row, 1, 1);
+
+   return o;
+}
+
+static Evas_Object *
+_pack_label_right(Evas_Object *table,
+                  unsigned int row,
+                  unsigned int col,
+                  const char   *label)
+{
+   Evas_Object *o;
+
+   o = _pack_label(table, col, row, label);
+   evas_object_size_hint_align_set(o, 1.0, EVAS_HINT_FILL);
+   return o;
 }
 
 static void
@@ -975,6 +1028,7 @@ menu_player_properties_new(Editor      *ed,
 
    f = _frame_add(parent, "Players Properties");
    t = _table_add(f);
+   elm_object_content_set(f, t);
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
@@ -1069,6 +1123,7 @@ menu_starting_properties_new(Editor      *ed,
 
    f = _frame_add(parent, "Starting Properties");
    t = _table_add(f);
+   elm_object_content_set(f, t);
 
    /* Players */
    _pack_label(t, 0, 0, "Player");
@@ -1100,124 +1155,392 @@ menu_starting_properties_new(Editor      *ed,
 }
 
 
-// FIXME Units properties is waaaaay to slow.
-// FIXME There is nothing much I can do, ELM does not scale well for massive UI
-//
-///*============================================================================*
-// *                              Units Properties                              *
-// *============================================================================*/
-//
-//static Evas_Object *
-//_menu_prop_genlist_get_cb(void        *data,
-//                          Evas_Object *obj,
-//                          const char  *part)
-//{
-//   Evas_Object *t;
-//   struct _unit_data *udta = data;
-//   unsigned int unit;
-//   const Pud *pud;
-//
-//   printf("Part: %s\n", part);
-//
-//   pud = evas_object_data_get(obj, PUD_DATA);
-//
-//   t = elm_table_add(obj);
-//   evas_object_size_hint_weight_set(t, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-//   evas_object_size_hint_align_set(t, EVAS_HINT_FILL, EVAS_HINT_FILL);
-//   elm_table_homogeneous_set(t, EINA_TRUE);
-//
-//
-//   unit = udta - &(pud->unit_data[0]);
-//   printf("Unit is %u\n", unit);
-//
-//   _pack_label(t, 0, 0, pud_unit2str(unit));
-//   _pack_range_entry(t, 0, 1, 0, 9, &(udta->sight),
-//                     POINTER_TYPE_LONG, NULL, NULL);
-//   _pack_word_entry(t, 0, 2, &(udta->hp));
-//   _pack_byte_entry(t, 0, 3, &(udta->build_time));
-//   _pack_build_cost_entry(t, 0, 4, &(udta->gold_cost));
-//   _pack_build_cost_entry(t, 0, 5, &(udta->lumber_cost));
-//   _pack_build_cost_entry(t, 0, 6, &(udta->oil_cost));
-//   _pack_byte_entry(t, 0, 7, &(udta->range));
-//   _pack_byte_entry(t, 0, 8, &(udta->computer_react_range));
-//   _pack_byte_entry(t, 0, 9, &(udta->human_react_range));
-//   _pack_byte_entry(t, 0, 10, &(udta->armor));
-//   _pack_byte_entry(t, 0, 11, &(udta->basic_damage));
-//   _pack_byte_entry(t, 0, 12, &(udta->piercing_damage));
-//   _pack_byte_entry(t, 0, 13, &(udta->decay_rate));
-//   _pack_byte_entry(t, 0, 14, &(udta->annoy));
-//    //    _pack_checkbox(t, 15, i + 1, &(udta->has_magic));
-//    //    _pack_checkbox(t, 16, i + 1, &(udta->weapons_upgradable));
-//    //    _pack_checkbox(t, 17, i + 1, &(udta->armor_upgradable));
-//
-//   evas_object_show(t);
-//   return t;
-//}
-//
-//static void
-//_unselect_cb(void        *data EINA_UNUSED,
-//             Evas_Object *obj,
-//             void        *evt)
-//{
-//   elm_genlist_item_selected_set(evt, EINA_FALSE);
-//}
-//
-//Evas_Object *
-//menu_units_properties_new(Editor      *ed,
-//                          Evas_Object *parent)
-//{
-//   Evas_Object *f, *gen, *s;
-//   Elm_Genlist_Item_Class *itc;
-//   Pud *pud = ed->pud;
-//   const unsigned int units = 110;
-//   unsigned int i;
-//   struct _unit_data *udta;
-//   Validator *validators, *v;
-//
-//   f = _frame_add(parent, "Units Properties");
-//   gen = elm_genlist_add(f);
-//   evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-//   evas_object_size_hint_align_set(gen, EVAS_HINT_FILL, EVAS_HINT_FILL);
-//   evas_object_show(gen);
-//   elm_object_content_set(f, gen);
-//
-//   itc = elm_genlist_item_class_new();
-//   itc->item_style = "full";
-//   itc->func.text_get = NULL;
-//   itc->func.content_get = _menu_prop_genlist_get_cb;
-//   itc->func.state_get = NULL;
-//   itc->func.del = NULL;
-//
-//   evas_object_data_set(gen, PUD_DATA, pud);
-//
-//
-//   /* Settings column */
-//   //_pack_label(t,  1, 0, "Sight");
-//   //_pack_label(t,  2, 0, "Hit Points");
-//   //_pack_label(t,  3, 0, "Build Time");
-//   //_pack_label(t,  4, 0, "Gold Cost");
-//   //_pack_label(t,  5, 0, "Lumber Cost");
-//   //_pack_label(t,  6, 0, "Oil Cost");
-//   //_pack_label(t,  7, 0, "Range");
-//   //_pack_label(t,  8, 0, "Computer Reaction Range");
-//   //_pack_label(t,  9, 0, "Human Reaction Range");
-//   //_pack_label(t, 10, 0, "Armor");
-//   //_pack_label(t, 11, 0, "Basic Damage");
-//   //_pack_label(t, 12, 0, "Piercing Damage");
-//   //_pack_label(t, 13, 0, "Decay Rate");
-//   //_pack_label(t, 14, 0, "Annoyance");
-//   //_pack_label(t, 15, 0, "Has Magic");
-//   //_pack_label(t, 16, 0, "Weapons Upgradable");
-//   //_pack_label(t, 17, 0, "Armor Upgradable");
-//
-//   for (i = 0; i < 11; ++i)
-//     {
-//        elm_genlist_item_append(gen, itc, &(pud->unit_data[i]), NULL,
-//                                ELM_GENLIST_ITEM_NONE, _unselect_cb, NULL);
-// //       udta = &(pud->unit_data[i]);
-//     }
-//
-//   elm_genlist_item_class_free(itc);
-//
-//   return f;
-//}
+/*============================================================================*
+ *                              Units Properties                              *
+ *============================================================================*/
+
+static void
+_unit_select_cb(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                void        *evt)
+{
+   Editor *const ed = data;
+   const Pud_Unit u = (Pud_Unit)((uintptr_t)elm_object_item_data_get(evt));
+   Menu_Units *mu;
+   Pud_Unit_Characteristics *c;
+
+   ed->menu_units->selected = u;
+   mu = ed->menu_units;
+   DBG("Selecting 0x%x", u);
+   c = &(ed->pud->unit_data[u]);
+
+   elm_spinner_value_set(mu->range, c->range);
+   elm_spinner_value_set(mu->sight, c->sight);
+   elm_spinner_value_set(mu->hp, c->hp);
+   elm_spinner_value_set(mu->lumber, c->lumber_cost * 10);
+   elm_spinner_value_set(mu->gold, c->gold_cost * 10);
+   elm_spinner_value_set(mu->oil, c->oil_cost * 10);
+   elm_spinner_value_set(mu->armor, c->armor);
+   elm_spinner_value_set(mu->basic_damage, c->basic_damage);
+   elm_spinner_value_set(mu->piercing_damage, c->piercing_damage);
+
+   // TODO fill ui with current pud value
+
+}
+
+static Evas_Object *
+_pack_ui(Editor *ed,
+         Evas_Object *table,
+         unsigned int row,
+         const char *label,
+         Evas_Object *(*ctor)(Evas_Object *o, Editor *ed))
+{
+   Evas_Object *o;
+
+   _pack_label_right(table, 0, row, label);
+   o = ctor(table, ed);
+   elm_table_pack(table, o, 1, row, 1, 1);
+
+   return o;
+}
+
+static Evas_Object *
+_common_spinner_add(Evas_Object *parent,
+                    Evas_Smart_Cb cb,
+                    void *cb_data)
+{
+   Evas_Object *o;
+
+   o = elm_spinner_add(parent);
+   elm_spinner_editable_set(o, EINA_TRUE);
+   elm_spinner_label_format_set(o, "%u");
+   elm_spinner_step_set(o, 1.0);
+   elm_spinner_wrap_set(o, EINA_FALSE);
+   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_smart_callback_add(o, "changed", cb, cb_data);
+   evas_object_show(o);
+
+   return o;
+}
+
+static inline Pud_Unit_Characteristics *
+_pud_unit_ch_get(const Editor *ed)
+{
+   return &(ed->pud->unit_data[ed->menu_units->selected]);
+}
+
+static void
+_update_sight(void        *data,
+              Evas_Object *obj,
+              void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->sight = val;
+}
+
+static Evas_Object *
+_sight_widget(Evas_Object *parent,
+              Editor      *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_sight, ed);
+   elm_spinner_min_max_set(o, 1.0, 9.0);
+
+   return o;
+}
+
+static void
+_update_hp(void        *data,
+           Evas_Object *obj,
+           void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->hp = val;
+}
+
+static Evas_Object *
+_hp_widget(Evas_Object *parent,
+              Editor      *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_hp, ed);
+   elm_spinner_min_max_set(o, 1.0, (double)UINT16_MAX);
+
+   return o;
+}
+
+static void
+_update_gold(void        *data,
+             Evas_Object *obj,
+             void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->gold_cost = val / 10.0;
+}
+
+static void
+_update_lumber(void        *data,
+             Evas_Object *obj,
+             void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->lumber_cost = val / 10.0;
+}
+
+static void
+_update_oil(void        *data,
+             Evas_Object *obj,
+             void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->oil_cost = val / 10.0;
+}
+
+static Evas_Object *
+_gold_widget(Evas_Object *parent,
+             Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_gold, ed);
+   elm_spinner_step_set(o, 10.0);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX * 10.0);
+
+   return o;
+}
+
+static Evas_Object *
+_lumber_widget(Evas_Object *parent,
+               Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_lumber, ed);
+   elm_spinner_step_set(o, 10.0);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX * 10.0);
+
+   return o;
+}
+
+static Evas_Object *
+_oil_widget(Evas_Object *parent,
+               Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_oil, ed);
+   elm_spinner_step_set(o, 10.0);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX * 10.0);
+
+   return o;
+}
+
+static void
+_update_range(void        *data,
+              Evas_Object *obj,
+              void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->range = val;
+}
+
+static Evas_Object *
+_range_widget(Evas_Object *parent,
+              Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_range, ed);
+   elm_spinner_min_max_set(o, 1.0, 9.0);
+
+   return o;
+}
+
+static void
+_update_armor(void        *data,
+              Evas_Object *obj,
+              void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->armor = val;
+}
+
+static Evas_Object *
+_armor_widget(Evas_Object *parent,
+              Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_armor, ed);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX);
+
+   return o;
+}
+
+static void
+_update_basic(void        *data,
+              Evas_Object *obj,
+              void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->basic_damage = val;
+}
+
+static Evas_Object *
+_basic_damage_wdiget(Evas_Object *parent,
+              Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_basic, ed);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX);
+
+   return o;
+}
+
+static void
+_update_piercing(void        *data,
+                 Evas_Object *obj,
+                 void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_spinner_value_get(obj);
+   ud->piercing_damage = val;
+}
+
+static Evas_Object *
+_piercing_damage_wdiget(Evas_Object *parent,
+                        Editor *ed)
+{
+   Evas_Object *o;
+
+   o = _common_spinner_add(parent, _update_piercing, ed);
+   elm_spinner_min_max_set(o, 0.0, (double)UINT8_MAX);
+
+   return o;
+}
+
+
+Evas_Object *
+menu_units_properties_new(Editor      *ed,
+                          Evas_Object *parent)
+{
+   Evas_Object *f, *gen, *t, *b;
+   unsigned int i, n = 0;
+   Menu_Units *mu;
+   
+   if (EINA_UNLIKELY(ed->menu_units != NULL))
+     {
+        ERR("ed->menu_units is not NULL. Memory leak!");
+     }
+
+   mu = ed->menu_units = malloc(sizeof(*ed->menu_units));
+   if (EINA_UNLIKELY(!ed->menu_units))
+     {
+        CRI("Failed to allocate memory");
+        return NULL;
+     }
+
+   f = _frame_add(parent, "Units Properties");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+
+   b = elm_box_add(f);
+   evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(b, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(b, EINA_TRUE);
+   elm_object_content_set(f, b);
+
+
+   gen = mu->gen = elm_genlist_add(b);
+   evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(gen, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_data_set(gen, "editor", ed);
+   elm_box_pack_start(b, gen);
+   evas_object_show(gen);
+
+   /*
+    * All units but:
+    * - start locations
+    * - gold mine
+    * - oil patch
+    * - attack peon/peasant
+    */
+   for (i = 0; i <= PUD_UNIT_ORC_CANNON_TOWER; i++)
+     if ((i != PUD_UNIT_GOLD_MINE) && (i != PUD_UNIT_OIL_PATCH) &&
+         (i != PUD_UNIT_ATTACK_PEASANT) && (i != PUD_UNIT_ATTACK_PEON) &&
+          (!pud_unit_start_location_is(i)) && (pud_unit_valid_is(i)))
+       {
+          elm_genlist_item_append(gen, _itc, (Pud_Unit *)(uintptr_t)(i), NULL,
+                                  ELM_GENLIST_ITEM_NONE, _unit_select_cb, ed); 
+       }
+
+
+   t = _table_add(b);
+   elm_table_homogeneous_set(t, EINA_FALSE);
+   elm_box_pack_end(b, t);
+
+   /* Settings column */
+   mu->sight = _pack_ui(ed, t, n++, "Sight", _sight_widget);
+   mu->hp = _pack_ui(ed, t,  n++, "Hit Points", _hp_widget);
+   mu->gold = _pack_ui(ed, t,  n++, "Gold Cost", _gold_widget);
+   mu->lumber = _pack_ui(ed, t,  n++, "Lumber Cost", _lumber_widget);
+   mu->oil = _pack_ui(ed, t,  n++, "Oil Cost", _oil_widget);
+   mu->range = _pack_ui(ed, t,  n++, "Range", _range_widget);
+   mu->armor = _pack_ui(ed, t,  n++, "Armor", _armor_widget);
+   mu->basic_damage = _pack_ui(ed, t, n++, "Basic Damage", _basic_damage_wdiget);
+   mu->piercing_damage = _pack_ui(ed, t, n++, "Piercing Damage", _piercing_damage_wdiget);
+//   mu->has_magic = _pack_ui(ed, t, n++, "Has Magic");
+//   mu->weapons_upgradable = _pack_ui(ed, t, n++, "Weapons Upgradable");
+//   mu->armor_upgradable = _pack_ui(ed, t, n++, "Armor Upgradable");
+
+   elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
+
+   return f;
+}

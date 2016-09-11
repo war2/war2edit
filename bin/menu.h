@@ -37,4 +37,23 @@ Evas_Object *menu_starting_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_units_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
 
+typedef struct
+{
+   Evas_Object *gen;
+   Evas_Object *sight;
+   Evas_Object *hp;
+   Evas_Object *gold;
+   Evas_Object *lumber;
+   Evas_Object *oil;
+   Evas_Object *range;
+   Evas_Object *armor;
+   Evas_Object *basic_damage;
+   Evas_Object *piercing_damage;
+   Evas_Object *has_magic;
+   Evas_Object *weapons_upgradable;
+   Evas_Object *armor_upgradable;
+
+   Pud_Unit selected;
+} Menu_Units;
+
 #endif /* ! _MENU_H_ */
