@@ -880,23 +880,15 @@ end:
    return ret;
 }
 
-Eina_Bool
-editor_unit_unref(Editor       *ed,
-                  unsigned int  x,
-                  unsigned int  y,
-                  Unit          type)
+static Elm_Object_Item *
+_unit_find(const Editor *ed,
+           unsigned int x,
+           unsigned int y,
+           Unit type)
 {
-   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
-   if (EINA_UNLIKELY(ed->pud->units_count <= 0))
-     {
-        CRI("Attempt to unref, but units count is already %u", ed->pud->units_count);
-        return EINA_FALSE;
-     }
-
    Unit_Descriptor *d;
    Elm_Object_Item *eoi;
 
-   DBG("Deleting unit: (%u, %u, 0x%x)", x, y, type);
    for (eoi = elm_genlist_first_item_get(ed->units_genlist);
         eoi != NULL;
         eoi = elm_genlist_item_next_get(eoi))
@@ -912,11 +904,33 @@ editor_unit_unref(Editor       *ed,
           {
              if ((d->x == x) && (d->y == y) && (d->type == type))
                {
-                  elm_object_item_del(eoi);
-                  break;
+                  return eoi;
                }
           }
      }
+
+   return NULL;
+}
+
+Eina_Bool
+editor_unit_unref(Editor       *ed,
+                  unsigned int  x,
+                  unsigned int  y,
+                  Unit          type)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   if (EINA_UNLIKELY(ed->pud->units_count <= 0))
+     {
+        CRI("Attempt to unref, but units count is already %u", ed->pud->units_count);
+        return EINA_FALSE;
+     }
+
+   Elm_Object_Item *eoi;
+
+   eoi = _unit_find(ed, x, y, type);
+   elm_object_item_del(eoi);
+
+   DBG("Deleting unit: (%u, %u, 0x%x)", x, y, type);
 
    ed->pud->units_count--;
    return EINA_TRUE;
