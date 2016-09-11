@@ -350,7 +350,7 @@ menu_add(Editor *ed)
 
 
    /*==== TOOLS MENU ====*/
-   i = itm = elm_menu_item_add(ed->menu, NULL, NULL, "Tools", NULL, NULL);
+   i = itm = elm_menu_item_add(ed->menu, NULL, NULL, "Units", NULL, NULL);
 
 #define RADIO_ADD_COMMON(unit_, label_, storage_) \
    _radio_add(ed, rd, unit_, i, label_, _radio_units_changed_cb, storage_)
@@ -470,7 +470,12 @@ menu_add(Editor *ed)
 
    elm_menu_item_separator_add(ed->menu, itm);
 
-   i = elm_menu_item_add(ed->menu, itm, NULL, "NPC's", NULL, NULL);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_SKELETON);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_DAEMON);
+
+   elm_menu_item_separator_add(ed->menu, itm);
+
+   i = elm_menu_item_add(ed->menu, itm, NULL, "Heroes", NULL, NULL);
 
    RADIO_ADD_ORC(PUD_UNIT_CHO_GALL);
    RADIO_ADD_ORC(PUD_UNIT_ZUL_JIN);
@@ -491,10 +496,6 @@ menu_add(Editor *ed)
    RADIO_ADD_HUMAN(PUD_UNIT_KHADGAR);
    RADIO_ADD_HUMAN(PUD_UNIT_KURDRAN_AND_SKY_REE);
 
-   elm_menu_item_separator_add(ed->menu, i);
-
-   RADIO_ADD_NEUTRAL(PUD_UNIT_SKELETON);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_DAEMON);
 
    /* Add a fictive radio which will be used to reset the units selection */
    ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL,
@@ -523,7 +524,7 @@ menu_add(Editor *ed)
 
 #undef RADIO_ADD
 
-   elm_menu_item_separator_add(ed->menu, itm);
+   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Properties", NULL, NULL);
    i = elm_menu_item_add(ed->menu, itm, NULL, "Map Properties...", _map_properties_cb, ed);
    elm_object_item_disabled_set(i, EINA_TRUE); // TODO
    elm_menu_item_add(ed->menu, itm, NULL, "Player Properties...", _player_properties_cb, ed);
@@ -533,8 +534,8 @@ menu_add(Editor *ed)
    i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
    elm_object_item_disabled_set(i, EINA_TRUE); // TODO
 
-   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
-   elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
+   //itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
+   //elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
 
    return EINA_TRUE;
 }
