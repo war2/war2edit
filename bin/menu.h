@@ -52,6 +52,7 @@ typedef struct
    Evas_Object *has_magic;
    Evas_Object *weapons_upgradable;
    Evas_Object *armor_upgradable;
+   Evas_Object *missile;
 
    Pud_Unit selected;
 } Menu_Units;

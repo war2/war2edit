@@ -1164,6 +1164,12 @@ _unit_select_cb(void        *data,
                 Evas_Object *obj  EINA_UNUSED,
                 void        *evt)
 {
+   /*
+    *
+    * Initial state of units
+    *
+    */
+
    Editor *const ed = data;
    const Pud_Unit u = (Pud_Unit)((uintptr_t)elm_object_item_data_get(evt));
    Menu_Units *mu;
@@ -1190,8 +1196,7 @@ _unit_select_cb(void        *data,
    elm_check_state_pointer_set(mu->weapons_upgradable, &c->weapons_upgradable);
    elm_check_state_pointer_set(mu->armor_upgradable, &c->armor_upgradable);
 
-   // TODO fill ui with current pud value
-
+   elm_object_text_set(mu->missile, pud_projectile2str(c->missile_weapon));
 }
 
 static Evas_Object *
@@ -1489,15 +1494,29 @@ _piercing_damage_wdiget(Evas_Object *parent,
    return o;
 }
 
+static void
+_missile_cb(void        *data,
+            Evas_Object *obj,
+            void        *info EINA_UNUSED)
+{
+   const Pud_Projectile p = (Pud_Projectile)((uintptr_t)data);
+   Editor *ed;
+   Pud_Unit_Characteristics *c;
+
+   ed = evas_object_data_get(obj, "editor");
+   c = _pud_unit_ch_get(ed);
+   c->missile_weapon = p;
+}
+
 
 Evas_Object *
 menu_units_properties_new(Editor      *ed,
                           Evas_Object *parent)
 {
-   Evas_Object *f, *gen, *t, *b;
+   Evas_Object *f, *gen, *t, *b, *o;
    unsigned int i, n = 0;
    Menu_Units *mu;
-   
+
    if (EINA_UNLIKELY(ed->menu_units != NULL))
      {
         ERR("ed->menu_units is not NULL. Memory leak!");
@@ -1541,7 +1560,7 @@ menu_units_properties_new(Editor      *ed,
           (!pud_unit_start_location_is(i)) && (pud_unit_valid_is(i)))
        {
           elm_genlist_item_append(gen, _itc, (Pud_Unit *)(uintptr_t)(i), NULL,
-                                  ELM_GENLIST_ITEM_NONE, _unit_select_cb, ed); 
+                                  ELM_GENLIST_ITEM_NONE, _unit_select_cb, ed);
        }
 
 
@@ -1563,6 +1582,16 @@ menu_units_properties_new(Editor      *ed,
    mu->weapons_upgradable = _pack_ui_check(ed, t, n++, "Weapons Upgradable");
    mu->armor_upgradable = _pack_ui_check(ed, t, n++, "Armor Upgradable");
 
+   /* Missile shapes editor */
+   _pack_label_right(t, 0, n, "Projectile");
+   mu->missile = o = _hoversel_add(t, pud_projectile2str(PUD_PROJECTILE_NONE));
+   evas_object_data_set(o, "editor", ed);
+   for (i = 0; i <= PUD_PROJECTILE_NONE; i++)
+     elm_hoversel_item_add(o, pud_projectile2str(i), NULL, ELM_ICON_NONE,
+                           _missile_cb, (void *)(uintptr_t)(i));
+   elm_table_pack(t, o, 1, n++, 1, 1);
+
+   /* Always make sure we have at least one selected element in the list */
    elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
 
    return f;
