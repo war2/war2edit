@@ -29,6 +29,8 @@ typedef struct
    Cell *c;
    Unit type;
    Pud_Unit unit;
+   unsigned int x;
+   unsigned int y;
 } Udata;
 
 typedef Evas_Object *(*Ctor)(Evas_Object *vbox, Udata *u);
@@ -39,7 +41,9 @@ udata_new(Editor      *ed,
           Evas_Object *lay,
           Cell        *c,
           Unit         type,
-          Pud_Unit     unit)
+          Pud_Unit     unit,
+          unsigned int x,
+          unsigned int y)
 {
    Udata *u;
 
@@ -55,6 +59,8 @@ udata_new(Editor      *ed,
    u->c = c;
    u->type = type;
    u->unit = unit;
+   u->x = x;
+   u->y = y;
    return u;
 }
 
@@ -99,26 +105,42 @@ _radio_cb(void        *data,
           void        *info EINA_UNUSED)
 {
    Udata *const u = data;
-   Pud_Player sel;
+   Pud_Player sel, old;
 
+   snapshot_push(u->ed);
    sel = elm_radio_value_get(obj);
    switch (u->type)
      {
       case UNIT_BELOW:
+         old = u->c->player_below;
          u->c->player_below = sel;
          break;
 
       case UNIT_ABOVE:
+         old = u->c->player_above;
          u->c->player_above = sel;
          break;
 
       default:
          CRI("Unhandled type 0x%x", u->type);
+         snapshot_push_done(u->ed);
          return;
      }
 
+   if (pud_side_for_player(u->ed->pud, old) != pud_side_for_player(u->ed->pud, sel))
+     {
+
+        u->unit = pud_unit_switch_side(u->unit);
+        if (u->type == UNIT_BELOW)
+          u->c->unit_below = u->unit;
+        else
+          u->c->unit_above = u->unit;
+
+        editor_unit_unref(u->ed, u->x, u->y, u->type);
+        editor_unit_ref(u->ed, u->x, u->y, u->type);
+     }
+   snapshot_push_done(u->ed);
    _update_icon(u->ed, u->lay, sel, u->unit);
-   // FIXME CHANGE RACE IF NEEDED
    bitmap_refresh(u->ed, NULL); // XXX Not cool
 }
 
@@ -244,6 +266,8 @@ static Evas_Object *
 _provide_unit_handler(Editor *ed,
                       Evas_Object *parent,
                       const Cell  *c,
+                      unsigned int x,
+                      unsigned int y,
                       Unit         unit_type)
 {
    const char wdg_group[] = "war2edit/unitselector/widget";
@@ -343,7 +367,7 @@ _provide_unit_handler(Editor *ed,
         if ((ctor_taken >> i) & 0x1)
           {
              /* FIXME Where do we free this? And check for return */
-             u = udata_new(ed, lay, (Cell *)c, unit_type, unit);
+             u = udata_new(ed, lay, (Cell *)c, unit_type, unit, x, y);
              o = ctor[i](vbox, u);
              evas_object_event_callback_add(o, EVAS_CALLBACK_FREE, _free_cb, u);
              elm_box_pack_end(vbox, o);
@@ -434,7 +458,7 @@ _unitselector_add(Editor       *ed,
    c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_TRUE);
    if (c && (c->unit_below != PUD_UNIT_NONE))
      {
-        o = _provide_unit_handler(ed, vbox, c, UNIT_BELOW);
+        o = _provide_unit_handler(ed, vbox, c, cx, cy, UNIT_BELOW);
         elm_box_pack_end(vbox, o);
         ed->unitselector.sel[0] = _sel_add(ed, cx, cy,
                                            c->spread_x_below,
@@ -443,7 +467,7 @@ _unitselector_add(Editor       *ed,
    c = cell_anchor_pos_get(ed->cells, x, y, &cx, &cy, EINA_FALSE);
    if (c && (c->unit_above != PUD_UNIT_NONE))
      {
-        o = _provide_unit_handler(ed, vbox, c, UNIT_ABOVE);
+        o = _provide_unit_handler(ed, vbox, c, cx, cy, UNIT_ABOVE);
         elm_box_pack_end(vbox, o);
         ed->unitselector.sel[1] = _sel_add(ed, cx, cy,
                                            c->spread_x_above,
@@ -452,7 +476,7 @@ _unitselector_add(Editor       *ed,
    c = &(ed->cells[y][x]);
    if (c->start_location != CELL_NOT_START_LOCATION)
      {
-        o = _provide_unit_handler(ed, vbox, c, UNIT_START_LOCATION);
+        o = _provide_unit_handler(ed, vbox, c, cx, cy, UNIT_START_LOCATION);
         elm_box_pack_end(vbox, o);
         ed->unitselector.sel[2] = _sel_add(ed, cx, cy, 1, 1);
      }
