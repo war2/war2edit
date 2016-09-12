@@ -844,9 +844,7 @@ _bind_side_cb(void        *data,
 
    _bind_cb(data, obj, evt);
 
-   /* This callback is called from UI exclusively.
-    * It is therefore safe to call editor_focused_get() */
-   ed = editor_focused_get();
+   ed = evas_object_data_get(obj, "editor");
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 }
 
@@ -866,7 +864,7 @@ _hoversel_add(Evas_Object *parent,
    return o;
 }
 
-static void
+static Evas_Object *
 _pack_race_selector(Evas_Object  *table,
                     unsigned int  row,
                     unsigned int  col,
@@ -882,6 +880,7 @@ _pack_race_selector(Evas_Object  *table,
    _hoversel_item_add(o, orc_race, _bind_side_cb, bind);
 
    elm_table_pack(table, o, col, row, 1, 1);
+   return o;
 }
 
 static const char *
@@ -1024,7 +1023,7 @@ Evas_Object *
 menu_player_properties_new(Editor      *ed,
                            Evas_Object *parent)
 {
-   Evas_Object *f, *t;
+   Evas_Object *f, *t, *o;
    unsigned int i;
 
    f = _frame_add(parent, "Players Properties");
@@ -1045,7 +1044,10 @@ menu_player_properties_new(Editor      *ed,
    /* Race */
    _pack_label(t, 0, 1, "Race");
    for (i = 0; i < 8; ++i)
-     _pack_race_selector(t, i + 1, 1, &(ed->pud->side.players[i]));
+     {
+        o = _pack_race_selector(t, i + 1, 1, &(ed->pud->side.players[i]));
+        evas_object_data_set(o, "editor", ed);
+     }
 
    /* Owner */
    _pack_label(t, 0, 2, "Owner");
