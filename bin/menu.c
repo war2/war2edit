@@ -693,7 +693,7 @@ menu_map_properties_new(Editor      *ed,
 Eina_Bool
 menu_init(void)
 {
-   static uint8_t values[] = {
+   static const uint8_t values[] = {
       PUD_SIDE_ORC,
       PUD_SIDE_HUMAN,
       PUD_OWNER_HUMAN,
