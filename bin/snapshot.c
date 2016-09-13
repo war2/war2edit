@@ -292,6 +292,7 @@ snapshot_rollback(Editor *ed,
    lzma_end(&stream);
 
    editor_units_recount(ed);
+   editor_units_list_update(ed);
    bitmap_refresh(ed, NULL);
    minimap_reload(ed);
    return EINA_TRUE;
