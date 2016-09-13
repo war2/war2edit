@@ -817,12 +817,14 @@ _pack_label_right(Evas_Object *table,
 
 static void
 _bind_cb(void        *data,
-         Evas_Object *obj  EINA_UNUSED,
+         Evas_Object *obj,
          void        *evt)
 {
    uint8_t *bind = data;
-   uint8_t *val;
+   uint8_t *val, v;
    Eina_Stringshare *text;
+   Editor *ed;
+   Pud_Player player;
 
    text = elm_wdg_item_part_text_get(evt, "default");
 
@@ -832,7 +834,19 @@ _bind_cb(void        *data,
         CRI("Failed to get bind value for text \"%s\"", text);
         return;
      }
-   *bind = *val;
+   v = *val;
+
+   if ((v == PUD_SIDE_ORC) || (v == PUD_SIDE_HUMAN))
+     {
+        if (*bind != v)
+          {
+             ed = evas_object_data_get(obj, "editor");
+             /* A little bit of black magic :-) */
+             player = (Pud_Player)((unsigned char *)bind - (unsigned char *)(&ed->pud->side));
+             editor_player_switch_race(ed, player);
+          }
+     }
+   *bind = v;
 }
 
 static void

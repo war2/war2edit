@@ -913,6 +913,13 @@ _unit_find(const Editor *ed,
 }
 
 Eina_Bool
+editor_units_list_update(Editor *ed)
+{
+   elm_genlist_realized_items_update(ed->units_genlist);
+   return EINA_TRUE;
+}
+
+Eina_Bool
 editor_unit_unref(Editor       *ed,
                   unsigned int  x,
                   unsigned int  y,
@@ -1077,4 +1084,28 @@ editor_icon_image_new(Evas_Object *parent,
 
 fail:
    return NULL;
+}
+
+Eina_Bool
+editor_player_switch_race(Editor     *ed,
+                          Pud_Player  player)
+{
+   Cell *c;
+   unsigned int i, j;
+
+   snapshot_push(ed);
+   for (j = 0; j < ed->pud->map_h; j++)
+     for (i = 0; i < ed->pud->map_w; i++)
+       {
+          c = &(ed->cells[j][i]);
+          if (c->player_above == player)
+            c->unit_above = pud_unit_switch_side(c->unit_above);
+          if (c->player_below == player)
+            c->unit_below = pud_unit_switch_side(c->unit_below);
+       }
+   snapshot_push_done(ed);
+
+   editor_units_list_update(ed);
+   bitmap_refresh(ed, NULL);
+   return EINA_TRUE;
 }

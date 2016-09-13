@@ -246,6 +246,12 @@ editor_icon_image_new(Evas_Object *parent,
                       Pud_Era      era,
                       Pud_Player   color);
 
+Eina_Bool editor_units_list_update(Editor *ed);
+
+Eina_Bool
+editor_player_switch_race(Editor     *ed,
+                          Pud_Player  player);
+
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \
       CRI(msg_, ## __VA_ARGS__); \
