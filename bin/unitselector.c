@@ -438,17 +438,11 @@ _unitselector_add(Editor       *ed,
                   unsigned int  x,
                   unsigned int  y)
 {
-   Evas_Object *vbox, *o, *scr;
+   Evas_Object *vbox, *o;
    unsigned int cx, cy;
    Cell *c;
 
-
-   scr = elm_scroller_add(parent);
-   evas_object_size_hint_weight_set(scr, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(scr, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   evas_object_show(scr);
-
-   vbox = elm_box_add(scr);
+   vbox = elm_box_add(parent);
    evas_object_size_hint_weight_set(vbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(vbox, EVAS_HINT_FILL, 0.0);
    elm_box_horizontal_set(vbox, EINA_FALSE);
@@ -480,10 +474,9 @@ _unitselector_add(Editor       *ed,
         elm_box_pack_end(vbox, o);
         ed->unitselector.sel[2] = _sel_add(ed, cx, cy, 1, 1);
      }
-   elm_object_content_set(scr, vbox);
-   evas_object_smart_member_add(scr, elm_layout_edje_get(ed->lay));
+   evas_object_smart_member_add(vbox, elm_layout_edje_get(ed->lay));
 
-   return scr;
+   return vbox;
 }
 
 static void

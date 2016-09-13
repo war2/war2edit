@@ -192,21 +192,16 @@ collections {
          }
 
          /*=== Unitselector ===*/
-         external { "bg1";
-            source: "elm/bg";
-            desc { "default";
-               rel.to: "war2edit.main.unitselector";
-            }
-         }
          swallow { "war2edit.main.unitselector";
             desc { "default"; /* aka. hidden */
                rel.to: "war2edit.main.contents";
                rel1.relative: 0.25 0.0;
                rel2.relative: 0.75 0.0;
+               align: 0.5 1.0;
             }
             desc { "visible";
                inherit: "default";
-               rel2.relative: 0.75 0.3;
+               align: 0.5 0.0;
             }
          }
 
