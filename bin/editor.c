@@ -333,6 +333,34 @@ editor_error(Editor     *ed,
    evas_object_show(ed->pop);
 }
 
+static void
+_hover_show_cb(void        *data,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   elm_layout_signal_emit(ed->lay, "war2edit,tileselector,show", "war2edit");
+}
+
+static void
+_pop_tileselector_cb(void        *data,
+                       Evas_Object *obj      EINA_UNUSED,
+                       const char  *emission EINA_UNUSED,
+                       const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   evas_object_show(ed->hover);
+}
+
+static void
+_hover_dismissed_cb(void        *data,
+                    Evas_Object *obj  EINA_UNUSED,
+                    void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   elm_layout_signal_emit(ed->lay, "war2edit,tileselector,hide", "war2edit");
+}
+
 
 Editor *
 editor_new(const char   *pud_file,
@@ -340,7 +368,7 @@ editor_new(const char   *pud_file,
 {
    Editor *ed;
    char title[512];
-   Evas_Object *o, *box;
+   Evas_Object *o;
    Eina_Bool open_pud = EINA_FALSE, chk;
    const char contents[] = "war2edit.main.contents";
    const char group[] = "war2edit/main";
@@ -406,18 +434,6 @@ editor_new(const char   *pud_file,
    elm_layout_content_set(ed->lay, contents, o);
    evas_object_show(o);
 
-   /* Toolbar */
-   box = elm_box_add(ed->win);
-   EINA_SAFETY_ON_NULL_GOTO(box, err_win_del);
-   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(box, 0.0, EVAS_HINT_FILL);
-   elm_box_align_set(box, 0.0, EVAS_HINT_FILL);
-   elm_box_horizontal_set(box, EINA_TRUE);
-   elm_box_homogeneous_set(box, EINA_FALSE);
-   evas_object_show(box);
-   toolbar_add(ed, box);
-   elm_layout_content_set(ed->lay, "war2edit.main.toolbar", box);
-
    /* Scroller */
    ed->scroller = elm_scroller_add(ed->win);
    EINA_SAFETY_ON_NULL_GOTO(ed->scroller, err_win_del);
@@ -448,6 +464,29 @@ editor_new(const char   *pud_file,
                               (void *)(uintptr_t)PUD_PLAYER_NEUTRAL,
                               NULL, ELM_GENLIST_ITEM_GROUP,
                               NULL, NULL);
+
+   ed->tileselector = elm_button_add(ed->lay);
+   o = elm_icon_add(ed->tileselector);
+   elm_icon_standard_set(o, "view-list-icons");
+   elm_object_part_content_set(ed->tileselector, "icon", o);
+   evas_object_size_hint_align_set(ed->tileselector, 0.0, EVAS_HINT_FILL);
+   elm_layout_content_set(ed->lay, "war2edit.main.tileselector", ed->tileselector);
+
+   ed->hover = elm_hover_add(ed->win);
+   elm_object_style_set(ed->hover, "popout");
+   elm_hover_parent_set(ed->hover, ed->win);
+   elm_hover_target_set(ed->hover, ed->tileselector);
+   evas_object_smart_callback_add(ed->tileselector, "clicked", _hover_show_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,tileselector,pop",
+                                  "war2edit", _pop_tileselector_cb, ed);
+   evas_object_smart_callback_add(ed->hover, "dismissed", _hover_dismissed_cb, ed);
+
+   toolbar_add(ed, ed->hover);
+
+   elm_object_part_content_set(ed->hover, "right", ed->segs[3]);
+   elm_object_part_content_set(ed->hover, "top", ed->segs[1]);
+   elm_object_part_content_set(ed->hover, "bottom", ed->segs[2]);
+   elm_object_part_content_set(ed->hover, "middle", ed->segs[0]);
 
    /* Add inwin */
    inwin_add(ed);
@@ -1108,4 +1147,10 @@ editor_player_switch_race(Editor     *ed,
    editor_units_list_update(ed);
    bitmap_refresh(ed, NULL);
    return EINA_TRUE;
+}
+
+void
+editor_tileselector_hide(Editor *ed)
+{
+   elm_hover_dismiss(ed->hover);
 }

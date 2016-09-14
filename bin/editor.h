@@ -83,6 +83,8 @@ struct _Editor
    Evas_Object  *menu_map_radio_group;
    Evas_Object  *rpanel;
    Evas_Object  *units_genlist;
+   Evas_Object  *tileselector;
+   Evas_Object  *hover;
 
    Cell        **cells;
 
@@ -251,6 +253,8 @@ Eina_Bool editor_units_list_update(Editor *ed);
 Eina_Bool
 editor_player_switch_race(Editor     *ed,
                           Pud_Player  player);
+
+void editor_tileselector_hide(Editor *ed);
 
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \

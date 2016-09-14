@@ -45,19 +45,27 @@ collections {
                visible: 0;
             }
          }
-         swallow { "war2edit.main.toolbar";
+         swallow { "war2edit.main.contents";
             desc { "default";
-               rel2.relative: 0.0 0.0;
                align: 0.0 0.0;
             }
          }
-         swallow { "war2edit.main.contents";
+
+         swallow { "war2edit.main.tileselector";
             desc { "default";
-               rel1 {
-                  to: "war2edit.main.toolbar";
-                  relative: 0.0 1.0;
-               }
-               align: 0.0 0.0;
+               min: 25 25;
+               max: 25 25;
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+               rel1.offset: 0 100;
+               rel2.offset: 0 100;
+               align: 0.0 0.5;
+            }
+            desc { "translated";
+               inherit: "default";
+               rel1.offset: 80 100;
+               rel2.offset: 80 100;
             }
          }
 
@@ -167,7 +175,7 @@ collections {
                min: 25 25;
                max: 25 25;
                params {
-                  string: "icon" "window-new";
+                  string: "icon" "view-list-compact";
                }
                visible: 1;
             }
@@ -229,6 +237,21 @@ collections {
       }
 
       programs {
+         program { signal: "war2edit,tileselector,show"; source: "war2edit";
+            action: STATE_SET "translated";
+            target: "war2edit.main.tileselector";
+            transition: ACCELERATE 0.2;
+            after: "tileselector,signal,show";
+         }
+         program { signal: "war2edit,tileselector,hide"; source: "war2edit";
+            action: STATE_SET "default";
+            target: "war2edit.main.tileselector";
+            transition: ACCELERATE 0.1;
+         }
+         program { name: "tileselector,signal,show";
+            action: SIGNAL_EMIT "war2edit,tileselector,pop" "war2edit";
+         }
+
          program { signal: "mouse,down,*"; source: "open_minimap";
             action: STATE_SET "default";
             target: "open_minimap";

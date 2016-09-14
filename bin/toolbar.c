@@ -117,13 +117,17 @@ _seg_changed_cb(void        *data,
    sel = *((uint16_t *)elm_object_item_data_get(eoi));
 
    editor_tb_sel_set(ed, sel);
-   DBG("GUI func");
 
    _enable_all_segments(ed);
    /* FIXME - remove this when circular brush is implemented */
    _subitem_disable(ed, SEG_SPREAD, 1);
 
    bitmap_cursor_visibility_set(ed, EINA_TRUE);
+
+   if (editor_sel_action_get(ed) != 0)
+     {
+        WRN("YES");
+     }
    switch (editor_sel_action_get(ed))
      {
       case EDITOR_SEL_ACTION_SELECTION:
@@ -156,6 +160,16 @@ _seg_changed_cb(void        *data,
 
    /* Safely unset the unit selection */
    menu_unit_selection_reset(ed);
+}
+
+static void
+_seg_action_changed_cb(void        *data,
+                       Evas_Object *obj,
+                       void        *info)
+{
+   Editor *const ed = data;
+   editor_tileselector_hide(ed);
+   _seg_changed_cb(data, obj, info);
 }
 
 static void
@@ -233,7 +247,7 @@ _segment_item_add(Evas_Object  *seg,
    ic = elm_icon_add(seg);
    elm_image_file_set(ic, img, NULL);
    evas_object_size_hint_weight_set(ic, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_fill_set(ic, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_size_hint_align_set(ic, 0.0, EVAS_HINT_FILL);
    evas_object_size_hint_aspect_set(ic, EVAS_ASPECT_CONTROL_BOTH, 1, 1);
    evas_object_show(ic);
 
@@ -296,7 +310,7 @@ toolbar_add(Editor      *ed,
    _segment_size_autoset(ed->segs[2], 3);
 
    /* Action segment */
-   ed->segs[3] = SEG_ADD(_seg_changed_cb);
+   ed->segs[3] = SEG_ADD(_seg_action_changed_cb);
    SEG_IT_ADD(ed->segs[3], "selection.png", AS);
    SEG_IT_ADD(ed->segs[3], "water.png", AW);
    SEG_IT_ADD(ed->segs[3], "ground.png", AN);
