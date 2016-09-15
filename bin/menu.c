@@ -324,9 +324,7 @@ menu_units_add(Editor *ed)
    Elm_Object_Item *i = NULL;
 
    ed->unitsmenu = elm_menu_add(ed->win);
-
    evas_object_data_set(ed->unitsmenu, "editor", ed);
-
 
 #define RADIO_ADD_COMMON(unit_, label_, storage_) \
    _radio_add(ed, rd, ed->unitsmenu, unit_, i, label_, _radio_units_changed_cb, storage_)
@@ -488,10 +486,35 @@ menu_units_add(Editor *ed)
 }
 
 Eina_Bool
+menu_players_add(Editor *ed)
+{
+   Evas_Object *rd;
+
+   ed->playersmenu = elm_menu_add(ed->win);
+   evas_object_data_set(ed->playersmenu, "editor", ed);
+
+#define RADIO_ADD(unit_, label_) \
+   _radio_add(ed, rd, ed->playersmenu, unit_, NULL, label_, _radio_players_changed_cb, NULL)
+
+   rd = NULL; /* Reset the radio group */
+   rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);
+   RADIO_ADD(PUD_PLAYER_BLUE,     STR_PLAYER_2);
+   RADIO_ADD(PUD_PLAYER_GREEN,    STR_PLAYER_3);
+   RADIO_ADD(PUD_PLAYER_VIOLET,   STR_PLAYER_4);
+   RADIO_ADD(PUD_PLAYER_ORANGE,   STR_PLAYER_5);
+   RADIO_ADD(PUD_PLAYER_BLACK,    STR_PLAYER_6);
+   RADIO_ADD(PUD_PLAYER_WHITE,    STR_PLAYER_7);
+   RADIO_ADD(PUD_PLAYER_YELLOW,   STR_PLAYER_8);
+
+#undef RADIO_ADD
+
+   return EINA_TRUE;
+}
+
+Eina_Bool
 menu_add(Editor *ed)
 {
    Elm_Object_Item *itm, *i;
-   Evas_Object *rd;
 
    ed->menu = elm_win_main_menu_get(ed->win);
    evas_object_data_set(ed->menu, "editor", ed);
@@ -517,23 +540,6 @@ menu_add(Editor *ed)
    elm_menu_item_add(ed->menu, itm, NULL, "Show Console", _console_show_cb, NULL);
    elm_menu_item_add(ed->menu, itm, NULL, "DOSBox Preferences", _prefs_dosbox_cb, ed);
 
-
-   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Players", NULL, NULL);
-
-#define RADIO_ADD(unit_, label_) \
-   _radio_add(ed, rd, ed->menu, unit_, itm, label_, _radio_players_changed_cb, NULL)
-
-   rd = NULL; /* Reset the radio group */
-   rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);
-   RADIO_ADD(PUD_PLAYER_BLUE,     STR_PLAYER_2);
-   RADIO_ADD(PUD_PLAYER_GREEN,    STR_PLAYER_3);
-   RADIO_ADD(PUD_PLAYER_VIOLET,   STR_PLAYER_4);
-   RADIO_ADD(PUD_PLAYER_ORANGE,   STR_PLAYER_5);
-   RADIO_ADD(PUD_PLAYER_BLACK,    STR_PLAYER_6);
-   RADIO_ADD(PUD_PLAYER_WHITE,    STR_PLAYER_7);
-   RADIO_ADD(PUD_PLAYER_YELLOW,   STR_PLAYER_8);
-
-#undef RADIO_ADD
 
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Properties", NULL, NULL);
    i = elm_menu_item_add(ed->menu, itm, NULL, "Map Properties...", _map_properties_cb, ed);

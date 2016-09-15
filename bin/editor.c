@@ -362,18 +362,32 @@ _hover_dismissed_cb(void        *data,
 }
 
 static void
+_show_menu(Evas_Object *obj)
+{
+   int x, y;
+
+   evas_object_geometry_get(obj, &x, &y, NULL, NULL);
+   elm_menu_move(obj, x, y);
+   evas_object_show(obj);
+}
+
+static void
 _show_units_menu_cb(void        *data,
                     Evas_Object *obj  EINA_UNUSED,
                     void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   int x, y;
-
-   evas_object_geometry_get(ed->unitsmenu_btn, &x, &y, NULL, NULL);
-   elm_menu_move(ed->unitsmenu, x, y);
-   evas_object_show(ed->unitsmenu);
+   _show_menu(ed->unitsmenu);
 }
 
+static void
+_show_players_menu_cb(void        *data,
+                      Evas_Object *obj  EINA_UNUSED,
+                      void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   _show_menu(ed->playersmenu);
+}
 
 
 Editor *
@@ -424,6 +438,7 @@ editor_new(const char   *pud_file,
    /* Get the main menu */
    menu_add(ed);
    menu_units_add(ed);
+   menu_players_add(ed);
 
    o = ed->lay = elm_layout_add(ed->win);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -503,6 +518,7 @@ editor_new(const char   *pud_file,
    elm_object_part_content_set(ed->hover, "bottom", ed->segs[2]);
    elm_object_part_content_set(ed->hover, "middle", ed->segs[0]);
 
+   /* Unitsmenu button */
    ed->unitsmenu_btn = elm_button_add(ed->lay);
    o = elm_icon_add(ed->unitsmenu_btn);
    elm_icon_standard_set(o, "contact-new");
@@ -510,6 +526,15 @@ editor_new(const char   *pud_file,
    evas_object_size_hint_align_set(ed->unitsmenu_btn, 0.0, EVAS_HINT_FILL);
    elm_layout_content_set(ed->lay, "war2edit.main.unitsmenu", ed->unitsmenu_btn);
    evas_object_smart_callback_add(ed->unitsmenu_btn, "clicked", _show_units_menu_cb, ed);
+
+   /* Playersmenu button */
+   ed->playersmenu_btn = elm_button_add(ed->lay);
+   o = elm_icon_add(ed->playersmenu_btn);
+   elm_icon_standard_set(o, "go-home");
+   elm_object_part_content_set(ed->playersmenu_btn, "icon", o);
+   evas_object_size_hint_align_set(ed->playersmenu_btn, 0.0, EVAS_HINT_FILL);
+   elm_layout_content_set(ed->lay, "war2edit.main.playersmenu", ed->playersmenu_btn);
+   evas_object_smart_callback_add(ed->playersmenu_btn, "clicked", _show_players_menu_cb, ed);
 
    /* Add inwin */
    inwin_add(ed);
