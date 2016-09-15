@@ -124,10 +124,6 @@ _seg_changed_cb(void        *data,
 
    bitmap_cursor_visibility_set(ed, EINA_TRUE);
 
-   if (editor_sel_action_get(ed) != 0)
-     {
-        WRN("YES");
-     }
    switch (editor_sel_action_get(ed))
      {
       case EDITOR_SEL_ACTION_SELECTION:
