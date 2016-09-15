@@ -286,47 +286,47 @@ toolbar_add(Editor      *ed,
    } while (0)
 
    /* Tint segment */
-   ed->segs[0] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(ed->segs[0], "light.png", TL);
-   SEG_IT_ADD(ed->segs[0], "dark.png", TD);
-   _segment_size_autoset(ed->segs[0], 2);
+   ed->segs[SEG_TINT] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[SEG_TINT], "light.png", TL);
+   SEG_IT_ADD(ed->segs[SEG_TINT], "dark.png", TD);
+   _segment_size_autoset(ed->segs[SEG_TINT], 2);
 
    /* Spread segmen,t */
-   ed->segs[1] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(ed->segs[1], "sel_squared.png", SN);
-   SEG_IT_ADD(ed->segs[1], "sel_circular.png", SC);
-   SEG_IT_ADD(ed->segs[1], "sel_sparkle.png", SS);
-   _segment_size_autoset(ed->segs[1], 3);
+   ed->segs[SEG_SPREAD] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[SEG_SPREAD], "sel_squared.png", SN);
+   SEG_IT_ADD(ed->segs[SEG_SPREAD], "sel_circular.png", SC);
+   SEG_IT_ADD(ed->segs[SEG_SPREAD], "sel_sparkle.png", SS);
+   _segment_size_autoset(ed->segs[SEG_SPREAD], 3);
 
    /* Radius segment */
-   ed->segs[2] = SEG_ADD(_seg_changed_cb);
-   SEG_IT_ADD(ed->segs[2], "brush_small.png", RS);
-   SEG_IT_ADD(ed->segs[2], "brush_medium.png", RM);
-   SEG_IT_ADD(ed->segs[2], "brush_big.png", RB);
-   _segment_size_autoset(ed->segs[2], 3);
+   ed->segs[SEG_RADIUS] = SEG_ADD(_seg_changed_cb);
+   SEG_IT_ADD(ed->segs[SEG_RADIUS], "brush_small.png", RS);
+   SEG_IT_ADD(ed->segs[SEG_RADIUS], "brush_medium.png", RM);
+   SEG_IT_ADD(ed->segs[SEG_RADIUS], "brush_big.png", RB);
+   _segment_size_autoset(ed->segs[SEG_RADIUS], 3);
 
    /* Action segment */
-   ed->segs[3] = SEG_ADD(_seg_action_changed_cb);
-   SEG_IT_ADD(ed->segs[3], "selection.png", AS);
-   SEG_IT_ADD(ed->segs[3], "water.png", AW);
-   SEG_IT_ADD(ed->segs[3], "ground.png", AN);
-   SEG_IT_ADD(ed->segs[3], "grass.png", AC);
-   SEG_IT_ADD(ed->segs[3], "trees.png", AT);
-   SEG_IT_ADD(ed->segs[3], "rocks.png", AR);
-   SEG_IT_ADD(ed->segs[3], "human_walls.png", AH);
-   SEG_IT_ADD(ed->segs[3], "orc_walls.png", AO);
-   _segment_size_autoset(ed->segs[3], 8);
+   ed->segs[SEG_ACTION] = SEG_ADD(_seg_action_changed_cb);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "selection.png", AS);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "water.png", AW);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "ground.png", AN);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "grass.png", AC);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "trees.png", AT);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "rocks.png", AR);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "human_walls.png", AH);
+   SEG_IT_ADD(ed->segs[SEG_ACTION], "orc_walls.png", AO);
+   _segment_size_autoset(ed->segs[SEG_ACTION], 8);
 
    /* Run segment */
-   ed->segs[4] = SEG_ADD(_run_cb);
-   elm_object_disabled_set(ed->segs[4], ipc_disabled_get());
-   SEG_IT_ADD(ed->segs[4], "efl.png", 0);
-   _segment_size_autoset(ed->segs[4], 1);
+   ed->segs[SEG_RUNNER] = SEG_ADD(_run_cb);
+   elm_object_disabled_set(ed->segs[SEG_RUNNER], ipc_disabled_get());
+   SEG_IT_ADD(ed->segs[SEG_RUNNER], "efl.png", 0);
+   _segment_size_autoset(ed->segs[SEG_RUNNER], 1);
 
    /* Always select the first item */
    for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->segs); i++)
      {
-        if (i == 4) continue; /* Skip run button */
+        if (i == SEG_RUNNER) continue; /* Skip run button */
 
         eoi = elm_segment_control_item_get(ed->segs[i], 0);
         elm_segment_control_item_selected_set(eoi, EINA_TRUE);
