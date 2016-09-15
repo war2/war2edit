@@ -138,6 +138,9 @@ _radio_cb(void        *data,
 
         editor_unit_unref(u->ed, u->x, u->y, u->type);
         editor_unit_ref(u->ed, u->x, u->y, u->type);
+
+        elm_layout_text_set(u->lay, "war2edit.unitselector.name",
+                            pud_unit2str(u->unit, PUD_TRUE));
      }
    snapshot_push_done(u->ed);
    _update_icon(u->ed, u->lay, sel, u->unit);
