@@ -225,7 +225,7 @@ _click_handle(Editor *ed,
    Sprite_Info orient;
    int w, h;
    Eina_Rectangle zone;
-   Editor_Sel action;
+   Editor_Sel action, spread;
    int z, i, j;
    Unit type = UNIT_NONE;
 
@@ -305,12 +305,16 @@ _click_handle(Editor *ed,
              z = 0;
           }
 
+        spread = editor_sel_spread_get(ed);
         snapshot_push(ed);
         for (j = -z; j <= z; j++)
           for (i = -z; i <= z; i++)
             {
-               _place_selected_tile(ed, action,
-                                    editor_sel_spread_get(ed),
+               if (spread == EDITOR_SEL_SPREAD_CIRCLE)
+                 {
+                    if ((z > 0) && (abs(i * j) >= z)) continue;
+                 }
+               _place_selected_tile(ed, action, spread,
                                     editor_sel_tint_get(ed), x + i, y + j);
             }
         snapshot_push_done(ed);

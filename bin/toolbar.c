@@ -119,10 +119,9 @@ _seg_changed_cb(void        *data,
    editor_tb_sel_set(ed, sel);
 
    _enable_all_segments(ed);
-   /* FIXME - remove this when circular brush is implemented */
-   _subitem_disable(ed, SEG_SPREAD, 1);
 
    bitmap_cursor_visibility_set(ed, EINA_TRUE);
+   bitmap_cursor_size_set(ed, 1, 1);
 
    switch (editor_sel_action_get(ed))
      {
@@ -132,20 +131,21 @@ _seg_changed_cb(void        *data,
 
       case EDITOR_SEL_ACTION_ORC_WALLS:
       case EDITOR_SEL_ACTION_HUMAN_WALLS:
-         editor_tb_sel_set(ed, EDITOR_SEL_RADIUS_SMALL);
+         editor_sel_radius_set(ed, EDITOR_SEL_RADIUS_SMALL);
          elm_object_disabled_set(ed->segs[SEG_RADIUS], EINA_TRUE);
          elm_object_disabled_set(ed->segs[SEG_SPREAD], EINA_TRUE);
          /* Fall through */
 
       case EDITOR_SEL_ACTION_TREES:
       case EDITOR_SEL_ACTION_ROCKS:
-         editor_tb_sel_set(ed, EDITOR_SEL_TINT_LIGHT);
+         editor_sel_tint_set(ed, EDITOR_SEL_TINT_LIGHT);
          elm_object_disabled_set(ed->segs[SEG_TINT], EINA_TRUE);
          /* Fall through */
 
       case EDITOR_SEL_ACTION_WATER:
-         editor_tb_sel_set(ed, EDITOR_SEL_SPREAD_NORMAL);
-         //_subitem_disable(ed, SEG_SPREAD, 2);
+         if (editor_sel_spread_get(ed) == EDITOR_SEL_SPREAD_SPECIAL)
+           editor_sel_spread_set(ed, EDITOR_SEL_SPREAD_NORMAL);
+         _subitem_disable(ed, SEG_SPREAD, 2);
          break;
 
       default:
