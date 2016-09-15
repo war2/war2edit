@@ -34,8 +34,9 @@ static Elm_Genlist_Item_Class *_itc = NULL;
  *============================================================================*/
 
 static Evas_Object *
-_radio_add(Editor          *ed,
+_radio_add(Editor          *ed EINA_UNUSED,
            Evas_Object     *group,
+           Evas_Object     *menu,
            unsigned int     object,
            Elm_Object_Item *parent,
            const char      *label,
@@ -45,15 +46,15 @@ _radio_add(Editor          *ed,
    Evas_Object *o;
    Elm_Object_Item *eoi;
 
-   o = elm_radio_add(ed->menu);
+   o = elm_radio_add(menu);
    elm_radio_state_value_set(o, object);
    if (group != NULL)
      elm_radio_group_add(o, group);
 
-   if (label) elm_object_text_set(o, label);
-   if (parent)
+   if (label)
      {
-        eoi = elm_menu_item_add(ed->menu, parent, NULL, NULL, func, o);
+        elm_object_text_set(o, label);
+        eoi = elm_menu_item_add(menu, parent, NULL, NULL, func, o);
         elm_object_item_content_set(eoi, o);
         if (storage)
           eina_array_push(storage, eoi);
@@ -317,14 +318,182 @@ _prefs_dosbox_cb(void        *data,
  *============================================================================*/
 
 Eina_Bool
+menu_units_add(Editor *ed)
+{
+   Evas_Object *rd;
+   Elm_Object_Item *i = NULL;
+
+   ed->unitsmenu = elm_menu_add(ed->win);
+
+   evas_object_data_set(ed->unitsmenu, "editor", ed);
+
+
+#define RADIO_ADD_COMMON(unit_, label_, storage_) \
+   _radio_add(ed, rd, ed->unitsmenu, unit_, i, label_, _radio_units_changed_cb, storage_)
+
+#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->human_menus)
+#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->orc_menus)
+#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), NULL)
+#define RADIO_ADD(unit_, label_) RADIO_ADD_COMMON(unit_, label_, NULL)
+
+   rd = NULL; /* Unset radio group */
+   rd = RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_START);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Human Air", NULL, NULL);
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_FLYING_MACHINE);
+   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_RIDER);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Human Land", NULL, NULL);
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_PEASANT);
+   RADIO_ADD_HUMAN(PUD_UNIT_FOOTMAN);
+   RADIO_ADD_HUMAN(PUD_UNIT_ARCHER);
+   RADIO_ADD_HUMAN(PUD_UNIT_KNIGHT);
+   RADIO_ADD_HUMAN(PUD_UNIT_BALLISTA);
+   RADIO_ADD_HUMAN(PUD_UNIT_DWARVES);
+   RADIO_ADD_HUMAN(PUD_UNIT_MAGE);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Human Water", NULL, NULL);
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TANKER);
+   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_DESTROYER);
+   RADIO_ADD_HUMAN(PUD_UNIT_BATTLESHIP);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TRANSPORT);
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_SUBMARINE);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Human Buildings", NULL, NULL);
+   eina_array_push(ed->human_menus, i);
+   RADIO_ADD_HUMAN(PUD_UNIT_FARM);
+   RADIO_ADD_HUMAN(PUD_UNIT_TOWN_HALL);
+   RADIO_ADD_HUMAN(PUD_UNIT_KEEP);
+   RADIO_ADD_HUMAN(PUD_UNIT_CASTLE);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BARRACKS);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SHIPYARD);
+   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_LUMBER_MILL);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_FOUNDRY);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_REFINERY);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_OIL_WELL);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BLACKSMITH);
+   RADIO_ADD_HUMAN(PUD_UNIT_STABLES);
+   RADIO_ADD_HUMAN(PUD_UNIT_CHURCH);
+   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_INVENTOR);
+   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_AVIARY);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SCOUT_TOWER);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_GUARD_TOWER);
+   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_CANNON_TOWER);
+   RADIO_ADD_HUMAN(PUD_UNIT_MAGE_TOWER);
+
+   elm_menu_item_separator_add(ed->unitsmenu, NULL);
+
+   i = NULL;
+   RADIO_ADD_ORC(PUD_UNIT_ORC_START);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Orc Air", NULL, NULL);
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_ZEPPLIN);
+   RADIO_ADD_ORC(PUD_UNIT_DRAGON);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Orc Land", NULL, NULL);
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_PEON);
+   RADIO_ADD_ORC(PUD_UNIT_GRUNT);
+   RADIO_ADD_ORC(PUD_UNIT_AXETHROWER);
+   RADIO_ADD_ORC(PUD_UNIT_OGRE);
+   RADIO_ADD_ORC(PUD_UNIT_CATAPULT);
+   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_SAPPER);
+   RADIO_ADD_ORC(PUD_UNIT_DEATH_KNIGHT);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Orc Water", NULL, NULL);
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_TANKER);
+   RADIO_ADD_ORC(PUD_UNIT_TROLL_DESTROYER);
+   RADIO_ADD_ORC(PUD_UNIT_JUGGERNAUGHT);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_TRANSPORT);
+   RADIO_ADD_ORC(PUD_UNIT_GIANT_TURTLE);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Orc Buildings", NULL, NULL);
+   eina_array_push(ed->orc_menus, i);
+   RADIO_ADD_ORC(PUD_UNIT_PIG_FARM);
+   RADIO_ADD_ORC(PUD_UNIT_GREAT_HALL);
+   RADIO_ADD_ORC(PUD_UNIT_STRONGHOLD);
+   RADIO_ADD_ORC(PUD_UNIT_FORTRESS);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_BARRACKS);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_SHIPYARD);
+   RADIO_ADD_ORC(PUD_UNIT_TROLL_LUMBER_MILL);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_FOUNDRY);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_REFINERY);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_OIL_WELL);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_BLACKSMITH);
+   RADIO_ADD_ORC(PUD_UNIT_OGRE_MOUND);
+   RADIO_ADD_ORC(PUD_UNIT_ALTAR_OF_STORMS);
+   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_ALCHEMIST);
+   RADIO_ADD_ORC(PUD_UNIT_DRAGON_ROOST);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_SCOUT_TOWER);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_GUARD_TOWER);
+   RADIO_ADD_ORC(PUD_UNIT_ORC_CANNON_TOWER);
+   RADIO_ADD_ORC(PUD_UNIT_TEMPLE_OF_THE_DAMNED);
+
+   elm_menu_item_separator_add(ed->unitsmenu, NULL);
+
+   i = NULL;
+   RADIO_ADD_NEUTRAL(PUD_UNIT_GOLD_MINE);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_OIL_PATCH);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_CRITTER);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_CIRCLE_OF_POWER);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_DARK_PORTAL);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_RUNESTONE);
+
+   elm_menu_item_separator_add(ed->unitsmenu, NULL);
+
+   RADIO_ADD_NEUTRAL(PUD_UNIT_SKELETON);
+   RADIO_ADD_NEUTRAL(PUD_UNIT_DAEMON);
+
+   elm_menu_item_separator_add(ed->unitsmenu, NULL);
+
+   i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Heroes", NULL, NULL);
+
+   RADIO_ADD_ORC(PUD_UNIT_CHO_GALL);
+   RADIO_ADD_ORC(PUD_UNIT_ZUL_JIN);
+   RADIO_ADD_ORC(PUD_UNIT_GUL_DAN);
+   RADIO_ADD_ORC(PUD_UNIT_GROM_HELLSCREAM);
+   RADIO_ADD_ORC(PUD_UNIT_KARGATH_BLADEFIST);
+   RADIO_ADD_ORC(PUD_UNIT_DENTARG);
+   RADIO_ADD_ORC(PUD_UNIT_TERON_GOREFIEND);
+   RADIO_ADD_ORC(PUD_UNIT_DEATHWING);
+
+   elm_menu_item_separator_add(ed->unitsmenu, i);
+
+   RADIO_ADD_HUMAN(PUD_UNIT_LOTHAR);
+   RADIO_ADD_HUMAN(PUD_UNIT_UTHER_LIGHTBRINGER);
+   RADIO_ADD_HUMAN(PUD_UNIT_TURALYON);
+   RADIO_ADD_HUMAN(PUD_UNIT_ALLERIA);
+   RADIO_ADD_HUMAN(PUD_UNIT_DANATH);
+   RADIO_ADD_HUMAN(PUD_UNIT_KHADGAR);
+   RADIO_ADD_HUMAN(PUD_UNIT_KURDRAN_AND_SKY_REE);
+
+
+   /* Add a fictive radio which will be used to reset the units selection */
+   ed->radio_units_reset = _radio_add(ed, rd, ed->unitsmenu, PUD_UNIT_NONE,
+                                      NULL, NULL, _radio_units_changed_cb, NULL);
+   menu_unit_selection_reset(ed);
+
+#undef RADIO_ADD
+#undef RADIO_ADD_HUMAN
+#undef RADIO_ADD_ORC
+#undef RADIO_ADD_COMMON
+
+
+   return EINA_TRUE;
+}
+
+Eina_Bool
 menu_add(Editor *ed)
 {
    Elm_Object_Item *itm, *i;
    Evas_Object *rd;
 
    ed->menu = elm_win_main_menu_get(ed->win);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(ed->menu, EINA_FALSE);
-
    evas_object_data_set(ed->menu, "editor", ed);
 
    /*==== FILE MENU ====*/
@@ -349,168 +518,10 @@ menu_add(Editor *ed)
    elm_menu_item_add(ed->menu, itm, NULL, "DOSBox Preferences", _prefs_dosbox_cb, ed);
 
 
-   /*==== TOOLS MENU ====*/
-   i = itm = elm_menu_item_add(ed->menu, NULL, NULL, "Units", NULL, NULL);
-
-#define RADIO_ADD_COMMON(unit_, label_, storage_) \
-   _radio_add(ed, rd, unit_, i, label_, _radio_units_changed_cb, storage_)
-
-#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->human_menus)
-#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->orc_menus)
-#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), NULL)
-#define RADIO_ADD(unit_, label_) RADIO_ADD_COMMON(unit_, label_, NULL)
-
-   rd = NULL; /* Unset radio group */
-   rd = RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_START);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Human Air", NULL, NULL);
-   eina_array_push(ed->human_menus, i);
-   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_FLYING_MACHINE);
-   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_RIDER);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Human Land", NULL, NULL);
-   eina_array_push(ed->human_menus, i);
-   RADIO_ADD_HUMAN(PUD_UNIT_PEASANT);
-   RADIO_ADD_HUMAN(PUD_UNIT_FOOTMAN);
-   RADIO_ADD_HUMAN(PUD_UNIT_ARCHER);
-   RADIO_ADD_HUMAN(PUD_UNIT_KNIGHT);
-   RADIO_ADD_HUMAN(PUD_UNIT_BALLISTA);
-   RADIO_ADD_HUMAN(PUD_UNIT_DWARVES);
-   RADIO_ADD_HUMAN(PUD_UNIT_MAGE);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Human Water", NULL, NULL);
-   eina_array_push(ed->human_menus, i);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TANKER);
-   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_DESTROYER);
-   RADIO_ADD_HUMAN(PUD_UNIT_BATTLESHIP);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_TRANSPORT);
-   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_SUBMARINE);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Human Buildings", NULL, NULL);
-   eina_array_push(ed->human_menus, i);
-   RADIO_ADD_HUMAN(PUD_UNIT_FARM);
-   RADIO_ADD_HUMAN(PUD_UNIT_TOWN_HALL);
-   RADIO_ADD_HUMAN(PUD_UNIT_KEEP);
-   RADIO_ADD_HUMAN(PUD_UNIT_CASTLE);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BARRACKS);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SHIPYARD);
-   RADIO_ADD_HUMAN(PUD_UNIT_ELVEN_LUMBER_MILL);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_FOUNDRY);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_REFINERY);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_OIL_WELL);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_BLACKSMITH);
-   RADIO_ADD_HUMAN(PUD_UNIT_STABLES);
-   RADIO_ADD_HUMAN(PUD_UNIT_CHURCH);
-   RADIO_ADD_HUMAN(PUD_UNIT_GNOMISH_INVENTOR);
-   RADIO_ADD_HUMAN(PUD_UNIT_GRYPHON_AVIARY);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_SCOUT_TOWER);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_GUARD_TOWER);
-   RADIO_ADD_HUMAN(PUD_UNIT_HUMAN_CANNON_TOWER);
-   RADIO_ADD_HUMAN(PUD_UNIT_MAGE_TOWER);
-
-   elm_menu_item_separator_add(ed->menu, itm);
-
-   i = itm;
-   RADIO_ADD_ORC(PUD_UNIT_ORC_START);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Air", NULL, NULL);
-   eina_array_push(ed->orc_menus, i);
-   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_ZEPPLIN);
-   RADIO_ADD_ORC(PUD_UNIT_DRAGON);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Land", NULL, NULL);
-   eina_array_push(ed->orc_menus, i);
-   RADIO_ADD_ORC(PUD_UNIT_PEON);
-   RADIO_ADD_ORC(PUD_UNIT_GRUNT);
-   RADIO_ADD_ORC(PUD_UNIT_AXETHROWER);
-   RADIO_ADD_ORC(PUD_UNIT_OGRE);
-   RADIO_ADD_ORC(PUD_UNIT_CATAPULT);
-   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_SAPPER);
-   RADIO_ADD_ORC(PUD_UNIT_DEATH_KNIGHT);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Water", NULL, NULL);
-   eina_array_push(ed->orc_menus, i);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_TANKER);
-   RADIO_ADD_ORC(PUD_UNIT_TROLL_DESTROYER);
-   RADIO_ADD_ORC(PUD_UNIT_JUGGERNAUGHT);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_TRANSPORT);
-   RADIO_ADD_ORC(PUD_UNIT_GIANT_TURTLE);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Orc Buildings", NULL, NULL);
-   eina_array_push(ed->orc_menus, i);
-   RADIO_ADD_ORC(PUD_UNIT_PIG_FARM);
-   RADIO_ADD_ORC(PUD_UNIT_GREAT_HALL);
-   RADIO_ADD_ORC(PUD_UNIT_STRONGHOLD);
-   RADIO_ADD_ORC(PUD_UNIT_FORTRESS);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_BARRACKS);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_SHIPYARD);
-   RADIO_ADD_ORC(PUD_UNIT_TROLL_LUMBER_MILL);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_FOUNDRY);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_REFINERY);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_OIL_WELL);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_BLACKSMITH);
-   RADIO_ADD_ORC(PUD_UNIT_OGRE_MOUND);
-   RADIO_ADD_ORC(PUD_UNIT_ALTAR_OF_STORMS);
-   RADIO_ADD_ORC(PUD_UNIT_GOBLIN_ALCHEMIST);
-   RADIO_ADD_ORC(PUD_UNIT_DRAGON_ROOST);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_SCOUT_TOWER);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_GUARD_TOWER);
-   RADIO_ADD_ORC(PUD_UNIT_ORC_CANNON_TOWER);
-   RADIO_ADD_ORC(PUD_UNIT_TEMPLE_OF_THE_DAMNED);
-
-   elm_menu_item_separator_add(ed->menu, itm);
-
-   i = itm;
-   RADIO_ADD_NEUTRAL(PUD_UNIT_GOLD_MINE);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_OIL_PATCH);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_CRITTER);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_CIRCLE_OF_POWER);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_DARK_PORTAL);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_RUNESTONE);
-
-   elm_menu_item_separator_add(ed->menu, itm);
-
-   RADIO_ADD_NEUTRAL(PUD_UNIT_SKELETON);
-   RADIO_ADD_NEUTRAL(PUD_UNIT_DAEMON);
-
-   elm_menu_item_separator_add(ed->menu, itm);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Heroes", NULL, NULL);
-
-   RADIO_ADD_ORC(PUD_UNIT_CHO_GALL);
-   RADIO_ADD_ORC(PUD_UNIT_ZUL_JIN);
-   RADIO_ADD_ORC(PUD_UNIT_GUL_DAN);
-   RADIO_ADD_ORC(PUD_UNIT_GROM_HELLSCREAM);
-   RADIO_ADD_ORC(PUD_UNIT_KARGATH_BLADEFIST);
-   RADIO_ADD_ORC(PUD_UNIT_DENTARG);
-   RADIO_ADD_ORC(PUD_UNIT_TERON_GOREFIEND);
-   RADIO_ADD_ORC(PUD_UNIT_DEATHWING);
-
-   elm_menu_item_separator_add(ed->menu, i);
-
-   RADIO_ADD_HUMAN(PUD_UNIT_LOTHAR);
-   RADIO_ADD_HUMAN(PUD_UNIT_UTHER_LIGHTBRINGER);
-   RADIO_ADD_HUMAN(PUD_UNIT_TURALYON);
-   RADIO_ADD_HUMAN(PUD_UNIT_ALLERIA);
-   RADIO_ADD_HUMAN(PUD_UNIT_DANATH);
-   RADIO_ADD_HUMAN(PUD_UNIT_KHADGAR);
-   RADIO_ADD_HUMAN(PUD_UNIT_KURDRAN_AND_SKY_REE);
-
-
-   /* Add a fictive radio which will be used to reset the units selection */
-   ed->radio_units_reset = _radio_add(ed, rd, PUD_UNIT_NONE, NULL, NULL,
-                                      _radio_units_changed_cb, NULL);
-   menu_unit_selection_reset(ed);
-
-#undef RADIO_ADD
-#undef RADIO_ADD_HUMAN
-#undef RADIO_ADD_ORC
-#undef RADIO_ADD_COMMON
-
    itm = elm_menu_item_add(ed->menu, NULL, NULL, "Players", NULL, NULL);
 
 #define RADIO_ADD(unit_, label_) \
-   _radio_add(ed, rd, unit_, itm, label_, _radio_players_changed_cb, NULL)
+   _radio_add(ed, rd, ed->menu, unit_, itm, label_, _radio_players_changed_cb, NULL)
 
    rd = NULL; /* Reset the radio group */
    rd = RADIO_ADD(PUD_PLAYER_RED, STR_PLAYER_1);

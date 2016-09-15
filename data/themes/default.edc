@@ -68,6 +68,23 @@ collections {
                rel2.offset: 80 100;
             }
          }
+         swallow { "war2edit.main.unitsmenu";
+            desc { "default";
+               min: 25 25;
+               max: 25 25;
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+               rel1.offset: 0 100+25;
+               rel2.offset: 0 100+25;
+               align: 0.0 0.5;
+            }
+            desc { "translated";
+               inherit: "default";
+               rel1.offset: 80 100+25;
+               rel2.offset: 80 100+25;
+            }
+         }
 
          external { "minimap_bg"; source: "elm/bg";
             desc { "default";

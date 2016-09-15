@@ -37,6 +37,8 @@ Evas_Object *menu_starting_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_units_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
 
+Eina_Bool menu_units_add(Editor *ed);
+
 typedef struct
 {
    Evas_Object *gen;
