@@ -35,6 +35,7 @@ Evas_Object *menu_map_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_player_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_starting_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_units_properties_new(Editor *ed, Evas_Object *parent);
+Evas_Object *menu_upgrades_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
 
 Eina_Bool menu_units_add(Editor *ed);
@@ -59,5 +60,16 @@ typedef struct
 
    Pud_Unit selected;
 } Menu_Units;
+
+typedef struct
+{
+   Evas_Object *gen;
+   Evas_Object *time;
+   Evas_Object *gold;
+   Evas_Object *lumber;
+   Evas_Object *oil;
+
+   Pud_Upgrade selected;
+} Menu_Upgrades;
 
 #endif /* ! _MENU_H_ */

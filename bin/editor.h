@@ -143,6 +143,7 @@ struct _Editor
    Elm_Object_Item *gen_group_neutral;
 
    Menu_Units *menu_units;
+   Menu_Upgrades *menu_upgrades;
 
    /* === PUD specific === */
    Pud        *pud;
