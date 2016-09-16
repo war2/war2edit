@@ -57,6 +57,7 @@ typedef struct
    Evas_Object *weapons_upgradable;
    Evas_Object *armor_upgradable;
    Evas_Object *missile;
+   Evas_Object *time;
 
    Pud_Unit selected;
 } Menu_Units;

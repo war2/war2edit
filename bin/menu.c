@@ -1234,7 +1234,7 @@ _unit_select_cb(void        *data,
    elm_check_state_set(mu->has_magic, !!c->has_magic);
    elm_check_state_set(mu->weapons_upgradable, !!c->weapons_upgradable);
    elm_check_state_set(mu->armor_upgradable, !!c->armor_upgradable);
-
+   elm_slider_value_set(mu->time, c->build_time);
    elm_check_state_pointer_set(mu->has_magic, &c->has_magic);
    elm_check_state_pointer_set(mu->weapons_upgradable, &c->weapons_upgradable);
    elm_check_state_pointer_set(mu->armor_upgradable, &c->armor_upgradable);
@@ -1568,6 +1568,38 @@ _missile_cb(void        *data,
 }
 
 static void
+_update_units_time(void        *data,
+                   Evas_Object *obj,
+                   void        *info EINA_UNUSED)
+{
+
+   Editor *const ed = data;
+   Pud_Unit_Characteristics *ud;
+   double val;
+
+   ud = _pud_unit_ch_get(ed);
+   val = elm_slider_value_get(obj);
+   ud->build_time = val;
+}
+
+static Evas_Object *
+_time_widget(Evas_Object *parent,
+             Editor *ed,
+             Evas_Smart_Cb cb)
+{
+   Evas_Object *o;
+
+   o = elm_slider_add(parent);
+   elm_slider_min_max_set(o, 0, 255);
+   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_smart_callback_add(o, "changed", cb, ed);
+   evas_object_show(o);
+
+   return o;
+}
+
+static void
 _free_data_cb(void        *data,
               Evas        *e    EINA_UNUSED,
               Evas_Object *obj  EINA_UNUSED,
@@ -1642,6 +1674,7 @@ menu_units_properties_new(Editor      *ed,
    mu->armor = _pack_ui(ed, t,  n++, "Armor", _armor_widget, _update_unit_armor);
    mu->basic_damage = _pack_ui(ed, t, n++, "Basic Damage", _basic_damage_widget, _update_unit_basic);
    mu->piercing_damage = _pack_ui(ed, t, n++, "Piercing Damage", _piercing_damage_wdiget, _update_unit_piercing);
+   mu->time = _pack_ui(ed, t, n++, "Building Time", _time_widget, _update_units_time);
    mu->has_magic = _pack_ui_check(ed, t, n++, "Has Magic");
    mu->weapons_upgradable = _pack_ui_check(ed, t, n++, "Weapons Upgradable");
    mu->armor_upgradable = _pack_ui_check(ed, t, n++, "Armor Upgradable");
@@ -1688,24 +1721,7 @@ _upgrade_select_cb(void        *data,
    elm_spinner_value_set(mu->lumber, c->lumber);
    elm_spinner_value_set(mu->gold, c->gold);
    elm_spinner_value_set(mu->oil, c->oil);
-#if 0
-
-   elm_spinner_value_set(mu->range, c->range);
-   elm_spinner_value_set(mu->sight, c->sight);
-   elm_spinner_value_set(mu->hp, c->hp);
-   elm_spinner_value_set(mu->armor, c->armor);
-   elm_spinner_value_set(mu->basic_damage, c->basic_damage);
-   elm_spinner_value_set(mu->piercing_damage, c->piercing_damage);
-   elm_check_state_set(mu->has_magic, !!c->has_magic);
-   elm_check_state_set(mu->weapons_upgradable, !!c->weapons_upgradable);
-   elm_check_state_set(mu->armor_upgradable, !!c->armor_upgradable);
-
-   elm_check_state_pointer_set(mu->has_magic, &c->has_magic);
-   elm_check_state_pointer_set(mu->weapons_upgradable, &c->weapons_upgradable);
-   elm_check_state_pointer_set(mu->armor_upgradable, &c->armor_upgradable);
-
-   elm_object_text_set(mu->missile, pud_projectile2str(c->missile_weapon));
-#endif
+   elm_slider_value_set(mu->time, c->time);
 }
 
 static void
@@ -1792,11 +1808,25 @@ _oil_ugrd_widget(Evas_Object *parent,
    return o;
 }
 
+static void
+_update_ugrd_time(void        *data,
+                  Evas_Object *obj,
+                  void        *info EINA_UNUSED)
+{
+
+   Editor *const ed = data;
+   Pud_Upgrade_Characteristics *ud;
+   double val;
+
+   ud = _pud_upgrade_ch_get(ed);
+   val = elm_slider_value_get(obj);
+   ud->time = val;
+}
 
 Evas_Object *
 menu_upgrades_properties_new(Editor *ed, Evas_Object *parent)
 {
-   Evas_Object *f, *gen, *t, *b, *o;
+   Evas_Object *f, *gen, *t, *b;
    unsigned int i, n = 0;
    Menu_Upgrades *mu;
 
@@ -1839,7 +1869,7 @@ menu_upgrades_properties_new(Editor *ed, Evas_Object *parent)
    elm_box_pack_end(b, t);
 
    /* Settings column */
-   // mu->time = _pack_ui(ed, t, n++, "Research Time", _time_widget);
+   mu->time = _pack_ui(ed, t, n++, "Research Time", _time_widget, _update_ugrd_time);
    mu->gold = _pack_ui(ed, t,  n++, "Gold Cost", _gold_ugrd_widget, _update_ugrd_gold);
    mu->lumber = _pack_ui(ed, t,  n++, "Lumber Cost", _lumber_ugrd_widget, _update_ugrd_lumber);
    mu->oil = _pack_ui(ed, t,  n++, "Oil Cost", _oil_ugrd_widget, _update_ugrd_oil);
