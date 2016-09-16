@@ -98,18 +98,13 @@ mainconfig_show(Editor *ed)
 {
    Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp;
 
+   editor_inwin_add(ed);
+
    /* Disable main menu */
    menu_enabled_set(ed, EINA_FALSE);
 
-   /* Don't recreate widget if already set */
-   if (inwin_id_is(ed, INWIN_MAINCONFIG))
-     {
-        inwin_activate(ed);
-        return;
-     }
-
    /* Create main box (mainconfig) */
-   box = elm_box_add(ed->win);
+   box = elm_box_add(ed->inwin.obj);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_horizontal_set(box, EINA_FALSE);
@@ -194,14 +189,14 @@ mainconfig_show(Editor *ed)
    elm_box_pack_end(b3, menu_map_properties_new(ed, b3));
 
    /* Show inwin */
-   inwin_set(ed, box, INWIN_MAINCONFIG,
-             "Create", _mc_create_cb,
-             "Cancel", _mc_cancel_cb);
+   editor_inwin_set(ed, box,
+                    "Create", _mc_create_cb,
+                    "Cancel", _mc_cancel_cb);
 }
 
 void
 mainconfig_hide(Editor *ed)
 {
-   inwin_dismiss(ed);
+   editor_inwin_dismiss(ed);
    menu_enabled_set(ed, EINA_TRUE);
 }

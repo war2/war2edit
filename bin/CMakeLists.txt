@@ -35,8 +35,6 @@ add_executable(war2edit
    atlas.h
    sprite.c
    sprite.h
-   file.c
-   file.h
    mainconfig.c
    mainconfig.h
    menu.c
@@ -51,8 +49,6 @@ add_executable(war2edit
    sel.h
    tile.c
    tile.h
-   inwin.c
-   inwin.h
    prefs.c
    prefs.h
    ipc.c

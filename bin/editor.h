@@ -23,8 +23,6 @@
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 
-#include "inwin.h"
-
 typedef uint16_t Editor_Sel;
 
 #define EDITOR_SEL_NONE                      ((Editor_Sel) 0)
@@ -74,7 +72,6 @@ struct _Editor
    Evas_Object  *menu;
    struct {
       Evas_Object  *obj;
-      Inwin         id;
    } inwin;
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
@@ -258,7 +255,22 @@ Eina_Bool
 editor_player_switch_race(Editor     *ed,
                           Pud_Player  player);
 
+
+Evas_Object *
+editor_file_selector_add(Editor    *ed,
+                         Eina_Bool  save);
+
 void editor_tileselector_hide(Editor *ed);
+
+Evas_Object *editor_inwin_add(Editor *ed);
+void
+editor_inwin_set(Editor        *ed,
+                 Evas_Object   *obj,
+                 const char    *ok_label,
+                 Evas_Smart_Cb  ok_smart_cb,
+                 const char    *cancel_label,
+                 Evas_Smart_Cb  cancel_smart_cb);
+void editor_inwin_dismiss(Editor *ed);
 
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \

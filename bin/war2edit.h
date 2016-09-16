@@ -29,6 +29,7 @@
 #include <Eina.h>
 #include <cairo.h>
 #include <Elementary.h>
+#include <elm_interface_fileselector.h>
 #include <lzma.h>
 
 typedef struct _Cell Cell;
@@ -80,9 +81,7 @@ const char *main_edje_file_get(void);
 #include "ipc.h"
 #include "cell.h"
 #include "snapshot.h"
-#include "file.h"
 #include "menu.h"
-#include "inwin.h"
 #include "sprite.h"
 #include "bitmap.h"
 #include "minimap.h"

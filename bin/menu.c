@@ -128,8 +128,8 @@ _win_open_cb(void        *data,
              Evas_Object *obj   EINA_UNUSED,
              void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
-   file_load_prompt(ed);
+   Editor *const ed = data;
+   editor_file_selector_add(ed, EINA_FALSE);
 }
 
 static void
@@ -137,9 +137,9 @@ _win_save_cb(void        *data,
              Evas_Object *obj   EINA_UNUSED,
              void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
    if (!ed->pud->filename)
-     file_save_prompt(ed);
+     editor_file_selector_add(ed, EINA_TRUE);
    else
      editor_save(ed, ed->pud->filename);
 }
@@ -149,8 +149,8 @@ _win_save_as_cb(void        *data,
                 Evas_Object *obj   EINA_UNUSED,
                 void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
-   file_save_prompt(ed);
+   Editor *const ed = data;
+   editor_file_selector_add(ed, EINA_TRUE);
 }
 
 static void
@@ -160,14 +160,8 @@ _map_properties_cb(void        *data,
 {
    Editor *ed = data;
 
-   if (inwin_id_is(ed, INWIN_MAP_PROPERTIES))
-     inwin_activate(ed);
-   else
-     {
-        inwin_set(ed, menu_map_properties_new(ed, ed->inwin.obj),
-                  INWIN_MAP_PROPERTIES,
-                  "Close", NULL, NULL, NULL);
-     }
+   editor_inwin_set(ed, menu_map_properties_new(ed, editor_inwin_add(ed)),
+             "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -177,15 +171,8 @@ _player_properties_cb(void        *data,
 {
    Editor *const ed = data;
 
-   if (inwin_id_is(ed, INWIN_PLAYER_PROPERTIES))
-     inwin_activate(ed);
-   else
-     {
-        inwin_set(ed, menu_player_properties_new(ed, ed->inwin.obj),
-                  INWIN_PLAYER_PROPERTIES,
-                  "Close", NULL, NULL, NULL);
-     }
-
+   editor_inwin_set(ed, menu_player_properties_new(ed, editor_inwin_add(ed)),
+             "Close", NULL, NULL, NULL);
    menu_unit_selection_reset(ed);
 }
 
@@ -194,16 +181,10 @@ _starting_properties_cb(void        *data,
                         Evas_Object *obj   EINA_UNUSED,
                         void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
 
-   if (inwin_id_is(ed, INWIN_STARTING_PROPERTIES))
-     inwin_activate(ed);
-   else
-     {
-        inwin_set(ed, menu_starting_properties_new(ed, ed->inwin.obj),
-                  INWIN_STARTING_PROPERTIES,
-                  "Close", NULL, NULL, NULL);
-     }
+   editor_inwin_set(ed, menu_starting_properties_new(ed, editor_inwin_add(ed)),
+             "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -211,16 +192,10 @@ _units_properties_cb(void        *data  EINA_UNUSED,
                      Evas_Object *obj   EINA_UNUSED,
                      void        *event EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
 
-   if (inwin_id_is(ed, INWIN_UNITS_PROPERTIES))
-     inwin_activate(ed);
-   else
-     {
-        inwin_set(ed, menu_units_properties_new(ed, ed->inwin.obj),
-                  INWIN_UNITS_PROPERTIES,
-                  "Close", NULL, NULL, NULL);
-     }
+   editor_inwin_set(ed, menu_units_properties_new(ed, editor_inwin_add(ed)),
+             "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -301,16 +276,10 @@ _prefs_dosbox_cb(void        *data,
                  Evas_Object *obj  EINA_UNUSED,
                  void        *evt  EINA_UNUSED)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
 
-   if (inwin_id_is(ed, INWIN_PREFS_DOSBOX))
-     inwin_activate(ed);
-   else
-     {
-        inwin_set(ed, prefs_new(ed->inwin.obj, PREFS_DOSBOX),
-                  INWIN_PREFS_DOSBOX,
-                  "Close", NULL, NULL, NULL);
-     }
+   editor_inwin_set(ed, prefs_new(editor_inwin_add(ed), PREFS_DOSBOX),
+             "Close", NULL, NULL, NULL);
 }
 
 /*============================================================================*
@@ -549,7 +518,6 @@ menu_add(Editor *ed)
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Units Properties...", _units_properties_cb, ed);
    i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
-   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
 
    //itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
    //elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
@@ -1542,6 +1510,15 @@ _missile_cb(void        *data,
    c->missile_weapon = p;
 }
 
+static void
+_free_units_cb(void        *data,
+               Evas        *e    EINA_UNUSED,
+               Evas_Object *obj  EINA_UNUSED,
+               void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   free(ed->menu_units);
+}
 
 Evas_Object *
 menu_units_properties_new(Editor      *ed,
@@ -1550,11 +1527,6 @@ menu_units_properties_new(Editor      *ed,
    Evas_Object *f, *gen, *t, *b, *o;
    unsigned int i, n = 0;
    Menu_Units *mu;
-
-   if (EINA_UNLIKELY(ed->menu_units != NULL))
-     {
-        ERR("ed->menu_units is not NULL. Memory leak!");
-     }
 
    mu = ed->menu_units = malloc(sizeof(*ed->menu_units));
    if (EINA_UNLIKELY(!ed->menu_units))
@@ -1565,6 +1537,8 @@ menu_units_properties_new(Editor      *ed,
 
    f = _frame_add(parent, "Units Properties");
    evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+
+   evas_object_event_callback_add(f, EVAS_CALLBACK_FREE, _free_units_cb, ed);
 
    b = elm_box_add(f);
    evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
