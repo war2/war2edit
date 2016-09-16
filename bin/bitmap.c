@@ -1010,6 +1010,7 @@ bitmap_unit_del_at(Editor       *ed,
            return;
      }
 
+   editor_unit_unref(ed, x, y, type);
    for (j = ry; j < ry + sy; ++j)
      for (i = rx; i < rx + sx; ++i)
        {
@@ -1043,7 +1044,6 @@ bitmap_unit_del_at(Editor       *ed,
             }
           minimap_update(ed, i, j);
        }
-   editor_unit_unref(ed, x, y, type);
 }
 
 Unit

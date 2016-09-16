@@ -1015,6 +1015,7 @@ editor_unit_unref(Editor       *ed,
 
    Elm_Object_Item *eoi;
 
+   cell_anchor_pos_get(ed->cells, x, y, &x, &y, type);
    eoi = _unit_find(ed, x, y, type);
    elm_object_item_del(eoi);
 
