@@ -895,7 +895,8 @@ _hoversel_add(Evas_Object *parent,
    Evas_Object *o;
 
    o = elm_hoversel_add(parent);
-   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_smart_callback_add(o, "selected", _hoversel_selected_cb, NULL);
    elm_hoversel_hover_parent_set(o, parent);
    elm_object_text_set(o, init_label);
@@ -1269,6 +1270,8 @@ _pack_ui_check(Editor *ed EINA_UNUSED,
 
    _pack_label_right(table, 0, row, label);
    o = elm_check_add(table);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_show(o);
    elm_table_pack(table, o, 1, row, 1, 1);
 
@@ -1287,7 +1290,7 @@ _common_spinner_add(Evas_Object *parent,
    elm_spinner_label_format_set(o, "%u");
    elm_spinner_step_set(o, 1.0);
    elm_spinner_wrap_set(o, EINA_FALSE);
-   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_smart_callback_add(o, "changed", cb, cb_data);
    evas_object_show(o);
@@ -1591,7 +1594,7 @@ _time_widget(Evas_Object *parent,
 
    o = elm_slider_add(parent);
    elm_slider_min_max_set(o, 0, 255);
-   evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_smart_callback_add(o, "changed", cb, ed);
    evas_object_show(o);
