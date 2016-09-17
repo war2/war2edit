@@ -1133,7 +1133,7 @@ editor_icon_image_new(Evas_Object *parent,
                       Pud_Era      era,
                       Pud_Player   color)
 {
-   Evas_Object *im;
+   Evas_Object *im, *imm;
    cairo_surface_t *surf;
    unsigned char *px;
 
@@ -1150,15 +1150,14 @@ editor_icon_image_new(Evas_Object *parent,
         CRI("Failed to get pixels from surface %p", surf);
         goto fail;
      }
-   im = evas_object_image_filled_add(evas_object_evas_get(parent));
-   if (EINA_UNLIKELY(!px))
-     {
-        CRI("Failed to create evas_object_image");
-        goto fail;
-     }
-   evas_object_image_colorspace_set(im, EVAS_COLORSPACE_ARGB8888);
-   evas_object_image_size_set(im, ICON_WIDTH, ICON_HEIGHT);
-   evas_object_image_data_set(im, px);
+
+   im = elm_icon_add(parent);
+   evas_object_size_hint_weight_set(im, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(im, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   imm = elm_image_object_get(im);
+   evas_object_image_colorspace_set(imm, EVAS_COLORSPACE_ARGB8888);
+   evas_object_image_size_set(imm, ICON_WIDTH, ICON_HEIGHT);
+   evas_object_image_data_set(imm, px);
    evas_object_show(im);
    evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
 
