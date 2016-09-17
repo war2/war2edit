@@ -37,6 +37,7 @@ Evas_Object *menu_starting_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_units_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_upgrades_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
+Evas_Object *menu_allow_properties_new(Editor *ed, Evas_Object *parent);
 
 Eina_Bool menu_units_add(Editor *ed);
 Eina_Bool menu_players_add(Editor *ed);
@@ -72,5 +73,12 @@ typedef struct
 
    Pud_Upgrade selected;
 } Menu_Upgrades;
+
+typedef struct
+{
+   Evas_Object *gen;
+   Pud_Player cur_player;
+   Pud_Allow cur_allow;
+} Menu_Allows;
 
 #endif /* ! _MENU_H_ */

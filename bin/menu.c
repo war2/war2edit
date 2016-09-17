@@ -233,6 +233,17 @@ _upgrades_properties_cb(void        *data,
 }
 
 static void
+_allow_properties_cb(void        *data,
+                     Evas_Object *obj   EINA_UNUSED,
+                     void        *event EINA_UNUSED)
+{
+   Editor *const ed = data;
+
+   editor_inwin_set(ed, menu_allow_properties_new(ed, editor_inwin_add(ed)),
+                    "Close", NULL, NULL, NULL);
+}
+
+static void
 _radio_units_changed_cb(void        *data,
                         Evas_Object *obj,
                         void        *event EINA_UNUSED)
@@ -545,6 +556,7 @@ menu_add(Editor *ed)
 
    i = elm_menu_item_add(ed->menu, itm, NULL, "Units Properties...", _units_properties_cb, ed);
    i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
+   i = elm_menu_item_add(ed->menu, itm, NULL, "Allow Properties...", _allow_properties_cb, ed);
 
    //itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
    //elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
@@ -1882,5 +1894,254 @@ menu_upgrades_properties_new(Editor *ed,
 
 end:
    if (itc) elm_genlist_item_class_free(itc);
+   return f;
+}
+
+
+/*============================================================================*
+ *                              Allow Properties                              *
+ *============================================================================*/
+
+typedef enum
+{
+   ALLOW_GROUP_UNITS                = 0,
+   ALLOW_GROUP_STARTING_SPELLS      = 1,
+   ALLOW_GROUP_RESEARCH_SPELLS      = 2,
+   ALLOW_GROUP_UPGRADES             = 3
+} Allow_Group;
+
+static char *
+_player_text_get(void        *data,
+                 Evas_Object *obj  EINA_UNUSED,
+                 const char  *part EINA_UNUSED)
+{
+   const Pud_Player player = (Pud_Player)((uintptr_t)data);
+   const char *const players_text[] = {
+      STR_PLAYER_1,
+      STR_PLAYER_2,
+      STR_PLAYER_3,
+      STR_PLAYER_4,
+      STR_PLAYER_5,
+      STR_PLAYER_6,
+      STR_PLAYER_7,
+      STR_PLAYER_8
+   };
+
+   return strdup(players_text[player]);
+}
+
+static char *
+_group_text_get(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                const char  *part EINA_UNUSED)
+{
+   const char *const str = data;
+   return strdup(str);
+}
+
+static char *
+_allow_text_get(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                const char  *part EINA_UNUSED)
+{
+   const Pud_Allow alow = (Pud_Allow)((uintptr_t)data);
+   if (!strcmp(part, "elm.text"))
+     {
+        return strdup(pud_allow_unit2str(alow));
+     }
+   return NULL;
+}
+
+static void
+_unit_alow_cb(void        *data,
+              Evas_Object *obj,
+              void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Eina_Bool on;
+   Pud_Allow *a;
+
+   a = &(ed->pud->unit_alow.players[ed->menu_allows->cur_player]);
+   on = elm_check_state_get(obj);
+   if (on) *a |= ed->menu_allows->cur_allow;
+   else *a &= ~(ed->menu_allows->cur_allow);
+}
+
+static Evas_Object *
+_allow_content_get(void        *data,
+                   Evas_Object *obj,
+                   const char  *part)
+{
+   const Pud_Allow alow = (Pud_Allow)((uintptr_t)data);
+   Evas_Object *im1, *im2, *box, *ret = NULL;
+   Editor *const ed = evas_object_data_get(obj, "editor");
+   const Pud_Icon *icons;
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        ret = box = elm_box_add(obj);
+        elm_box_horizontal_set(box, EINA_TRUE);
+        elm_box_padding_set(box, 2, 0);
+
+        icons = pud_allow_unit_icons_get(alow);
+        im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
+        im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
+        elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
+        elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
+
+        evas_object_show(im1);
+        evas_object_show(im2);
+        elm_box_pack_start(box, im1);
+        elm_box_pack_end(box, im2);
+        evas_object_show(box);
+     }
+   else if (!strcmp(part, "elm.swallow.end"))
+     {
+         ret = elm_check_add(obj);
+         evas_object_smart_callback_add(ret, "changed", _unit_alow_cb, ed);
+         elm_check_state_set(ret,
+                             (ed->pud->unit_alow.players[ed->menu_allows->cur_player] & alow) ? EINA_TRUE : EINA_FALSE);
+         //elm_object_style_set(ret, "toggle");
+         //elm_object_part_text_set(ret, "on", "Yes");
+         //elm_object_part_text_set(ret, "off", "No");
+         evas_object_show(ret);
+     }
+
+   return ret;
+}
+
+static void
+_select_player_cb(void        *data,
+                  Evas_Object *obj  EINA_UNUSED,
+                  void        *evt)
+{
+   Editor *const ed = data;
+   const Pud_Player p = (Pud_Player)((uintptr_t)elm_object_item_data_get(evt));
+
+   ed->menu_allows->cur_player = p;
+   elm_genlist_realized_items_update(ed->menu_allows->gen);
+}
+
+static void
+_select_unit_alow_cb(void        *data,
+                     Evas_Object *obj  EINA_UNUSED,
+                     void        *evt)
+{
+   Editor *const ed = data;
+   const Pud_Allow a = (Pud_Allow)((uintptr_t)elm_object_item_data_get(evt));
+
+   ed->menu_allows->cur_allow = a;
+}
+
+Evas_Object *
+menu_allow_properties_new(Editor *ed,
+                          Evas_Object *parent)
+{
+   Evas_Object *f = NULL, *gen, *gen2, *b;
+   unsigned int i;
+   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL;
+   Elm_Object_Item *groups[4], *eoi;
+   Pud_Allow fl;
+
+   itcp = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itcp))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itcp->item_style = "default";
+   itcp->func.text_get = _player_text_get;
+
+   itcg = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itcg))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itcg->item_style = "group_index";
+   itcg->func.text_get = _group_text_get;
+
+   itca = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itca))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itca->item_style = "double_label";
+   itca->func.text_get = _allow_text_get;
+   itca->func.content_get = _allow_content_get;
+
+   ed->menu_allows = calloc(1, sizeof(*ed->menu_allows));
+   if (EINA_UNLIKELY(!ed->menu_allows))
+     {
+        CRI("Failed to allocate memory");
+        goto end;
+     }
+
+   f = _frame_add(parent, "Allow Properties");
+   evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+
+   //   evas_object_event_callback_add(f, EVAS_CALLBACK_FREE, _free_data_cb, ed->menu_upgrades);
+
+   b = elm_box_add(f);
+   evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(b, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(b, EINA_TRUE);
+   elm_object_content_set(f, b);
+
+   ed->pud->default_allow = 0;
+
+   gen = elm_genlist_add(b);
+   evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(gen, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_data_set(gen, "editor", ed);
+   elm_box_pack_start(b, gen);
+   evas_object_show(gen);
+
+   for (i = 0; i <= 7; i++)
+     {
+        elm_genlist_item_append(gen, itcp, (Pud_Player *)((uintptr_t)i), NULL,
+                                ELM_GENLIST_ITEM_NONE, _select_player_cb, ed);
+     }
+
+   gen2 = ed->menu_allows->gen = elm_genlist_add(b);
+   evas_object_size_hint_weight_set(gen2, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(gen2, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_data_set(gen2, "editor", ed);
+   elm_box_pack_end(b, gen2);
+   evas_object_show(gen2);
+
+   eoi = groups[ALLOW_GROUP_UNITS] = elm_genlist_item_append(
+      gen2, itcg, "Units and Buildings Allowed", NULL,
+      ELM_GENLIST_ITEM_GROUP, NULL, NULL
+   );
+   for (fl = (1 << 0), i = 0; i < sizeof(Pud_Allow) * 8; i++, fl <<= 1)
+     {
+        if (pud_allow_unit_valid_is(fl))
+          {
+             elm_genlist_item_append(gen2, itca, (Pud_Allow *)((uintptr_t)fl), eoi,
+                                     ELM_GENLIST_ITEM_NONE, _select_unit_alow_cb, ed);
+          }
+     }
+   groups[ALLOW_GROUP_STARTING_SPELLS] = elm_genlist_item_append(
+      gen2, itcg, "Starting Spells", NULL,
+      ELM_GENLIST_ITEM_GROUP, NULL, NULL
+   );
+   groups[ALLOW_GROUP_RESEARCH_SPELLS] = elm_genlist_item_append(
+      gen2, itcg, "Spells Allowed to Research", NULL,
+      ELM_GENLIST_ITEM_GROUP, NULL, NULL
+   );
+   groups[ALLOW_GROUP_UPGRADES] = elm_genlist_item_append(
+      gen2, itcg, "Upgrades Allowed to Reseach", NULL,
+      ELM_GENLIST_ITEM_GROUP, NULL, NULL
+   );
+
+   /* Always make sure we have at least one selected element in the list */
+   elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
+
+end:
+   if (itcp) elm_genlist_item_class_free(itcp);
+   if (itcg) elm_genlist_item_class_free(itcg);
+   if (itca) elm_genlist_item_class_free(itca);
    return f;
 }

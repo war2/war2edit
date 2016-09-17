@@ -144,6 +144,7 @@ struct _Editor
 
    Menu_Units *menu_units;
    Menu_Upgrades *menu_upgrades;
+   Menu_Allows *menu_allows;
 
    /* === PUD specific === */
    Pud        *pud;
