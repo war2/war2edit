@@ -25,10 +25,6 @@
 static Eina_Hash *_values = NULL;
 #define PUD_DATA "war2edit/pud"
 
-static Elm_Genlist_Item_Class *_itc = NULL;
-static Elm_Genlist_Item_Class *_itc2 = NULL;
-
-
 
 /*============================================================================*
  *                                 Private API                                *
@@ -760,26 +756,6 @@ menu_init(void)
 
 #undef ADD
 
-   _itc = elm_genlist_item_class_new();
-   if (EINA_UNLIKELY(!_itc))
-     {
-        CRI("Failed to create genlist item class");
-        return EINA_FALSE; // FIXME Leak
-     }
-   _itc->item_style = "default";
-   _itc->func.text_get = _gen_units_text_get_cb;
-   _itc->func.content_get = _gen_units_icon_get_cb;
-
-   _itc2 = elm_genlist_item_class_new();
-   if (EINA_UNLIKELY(!_itc2))
-     {
-        CRI("Failed to create genlist item class");
-        return EINA_FALSE; // FIXME Leak
-     }
-   _itc2->item_style = "default";
-   _itc2->func.text_get = _gen_upgrades_text_get_cb;
-   _itc2->func.content_get = _gen_upgrades_icon_get_cb;
-
    return EINA_TRUE;
 }
 
@@ -787,7 +763,6 @@ void
 menu_shutdown(void)
 {
    eina_hash_free(_values);
-   elm_genlist_item_class_free(_itc);
 }
 
 /*============================================================================*
@@ -1615,15 +1590,26 @@ Evas_Object *
 menu_units_properties_new(Editor      *ed,
                           Evas_Object *parent)
 {
-   Evas_Object *f, *gen, *t, *b, *o;
+   Evas_Object *f = NULL, *gen, *t, *b, *o;
    unsigned int i, n = 0;
    Menu_Units *mu;
+   Elm_Genlist_Item_Class *itc;
+
+   itc = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itc))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itc->item_style = "default";
+   itc->func.text_get = _gen_units_text_get_cb;
+   itc->func.content_get = _gen_units_icon_get_cb;
 
    mu = ed->menu_units = malloc(sizeof(*ed->menu_units));
    if (EINA_UNLIKELY(!ed->menu_units))
      {
         CRI("Failed to allocate memory");
-        return NULL;
+        goto end;
      }
 
    f = _frame_add(parent, "Units Properties");
@@ -1658,7 +1644,7 @@ menu_units_properties_new(Editor      *ed,
          (i != PUD_UNIT_ATTACK_PEASANT) && (i != PUD_UNIT_ATTACK_PEON) &&
          (!pud_unit_start_location_is(i)) && (pud_unit_valid_is(i)))
        {
-          elm_genlist_item_append(gen, _itc, (Pud_Unit *)(uintptr_t)(i), NULL,
+          elm_genlist_item_append(gen, itc, (Pud_Unit *)(uintptr_t)(i), NULL,
                                   ELM_GENLIST_ITEM_NONE, _unit_select_cb, ed);
        }
 
@@ -1694,6 +1680,8 @@ menu_units_properties_new(Editor      *ed,
    /* Always make sure we have at least one selected element in the list */
    elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
 
+end:
+   if (itc) elm_genlist_item_class_free(itc);
    return f;
 }
 
@@ -1827,17 +1815,29 @@ _update_ugrd_time(void        *data,
 }
 
 Evas_Object *
-menu_upgrades_properties_new(Editor *ed, Evas_Object *parent)
+menu_upgrades_properties_new(Editor *ed,
+                             Evas_Object *parent)
 {
-   Evas_Object *f, *gen, *t, *b;
+   Evas_Object *f = NULL, *gen, *t, *b;
    unsigned int i, n = 0;
    Menu_Upgrades *mu;
+   Elm_Genlist_Item_Class *itc;
+
+   itc = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itc))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itc->item_style = "default";
+   itc->func.text_get = _gen_upgrades_text_get_cb;
+   itc->func.content_get = _gen_upgrades_icon_get_cb;
 
    mu = ed->menu_upgrades = malloc(sizeof(*ed->menu_upgrades));
    if (EINA_UNLIKELY(!ed->menu_upgrades))
      {
         CRI("Failed to allocate memory");
-        return NULL;
+        goto end;
      }
 
    f = _frame_add(parent, "Upgrades Properties");
@@ -1862,7 +1862,7 @@ menu_upgrades_properties_new(Editor *ed, Evas_Object *parent)
 
    for (i = 0; i < 52; i++)
      {
-        elm_genlist_item_append(gen, _itc2, (Pud_Upgrade *)(uintptr_t)(i), NULL,
+        elm_genlist_item_append(gen, itc, (Pud_Upgrade *)(uintptr_t)(i), NULL,
                                 ELM_GENLIST_ITEM_NONE, _upgrade_select_cb, ed);
      }
 
@@ -1880,5 +1880,7 @@ menu_upgrades_properties_new(Editor *ed, Evas_Object *parent)
    /* Always make sure we have at least one selected element in the list */
    elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
 
+end:
+   if (itc) elm_genlist_item_class_free(itc);
    return f;
 }
