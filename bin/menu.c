@@ -2089,6 +2089,18 @@ menu_allow_properties_new(Editor *ed,
    elm_box_horizontal_set(b, EINA_TRUE);
    elm_object_content_set(f, b);
 
+   /*
+    * PUD files are not expected to see their ALOW section manipulated,
+    * because Blizzard did not provide support for this in their editor
+    * back then. Therefore, the default ALOW section is "empty": nothing
+    * will be allowed. Our defaults are the opposite: eveything is allowed.
+    * It is necessary to use our defaults, otherwise the user would have to
+    * manually enable everything.
+    */
+   if (ed->pud->default_allow == 1)
+     {
+        pud_alow_defaults_set(ed->pud);
+     }
    ed->pud->default_allow = 0;
 
    gen = elm_genlist_add(b);
