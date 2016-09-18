@@ -2177,7 +2177,7 @@ menu_allow_properties_new(Editor *ed,
 {
    Evas_Object *f = NULL, *gen, *gen2, *b;
    unsigned int i;
-   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL, *itcsr;
+   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL, *itcsr = NULL;
    Elm_Object_Item *groups[4], *eoi;
    Pud_Allow fl;
 
