@@ -1947,9 +1947,24 @@ _allow_text_get(void        *data,
    const Pud_Allow alow = (Pud_Allow)((uintptr_t)data);
    if (!strcmp(part, "elm.text"))
      {
-        return strdup(pud_allow_unit2str(alow));
+        if (pud_allow_unit_valid_is(alow))
+          return strdup(pud_allow_unit2str(alow));
+        else if (pud_allow_spell_valid_is(alow))
+          return strdup(pud_allow_spell2str(alow));
      }
    return NULL;
+}
+
+static void
+_alow_set(const Evas_Object *chk,
+          Editor            *ed,
+          Pud_Allow         *a)
+{
+   Eina_Bool on;
+
+   on = elm_check_state_get(chk);
+   if (on) *a |= ed->menu_allows->cur_allow;
+   else *a &= ~(ed->menu_allows->cur_allow);
 }
 
 static void
@@ -1958,13 +1973,22 @@ _unit_alow_cb(void        *data,
               void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Eina_Bool on;
    Pud_Allow *a;
 
    a = &(ed->pud->unit_alow.players[ed->menu_allows->cur_player]);
-   on = elm_check_state_get(obj);
-   if (on) *a |= ed->menu_allows->cur_allow;
-   else *a &= ~(ed->menu_allows->cur_allow);
+   _alow_set(obj, ed, a);
+}
+
+static void
+_spell_start_cb(void        *data,
+                Evas_Object *obj,
+                void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Allow *a;
+
+   a = &(ed->pud->spell_start.players[ed->menu_allows->cur_player]);
+   _alow_set(obj, ed, a);
 }
 
 static Evas_Object *
@@ -1979,28 +2003,52 @@ _allow_content_get(void        *data,
 
    if (!strcmp(part, "elm.swallow.icon"))
      {
-        ret = box = elm_box_add(obj);
-        elm_box_horizontal_set(box, EINA_TRUE);
-        elm_box_padding_set(box, 2, 0);
+        if (pud_allow_unit_valid_is(alow))
+          {
+             ret = box = elm_box_add(obj);
+             elm_box_horizontal_set(box, EINA_TRUE);
+             elm_box_padding_set(box, 2, 0);
 
-        icons = pud_allow_unit_icons_get(alow);
-        im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
-        im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
-        elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
-        elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
+             icons = pud_allow_unit_icons_get(alow);
+             im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
+             im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
+             elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
+             elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
 
-        evas_object_show(im1);
-        evas_object_show(im2);
-        elm_box_pack_start(box, im1);
-        elm_box_pack_end(box, im2);
-        evas_object_show(box);
+             elm_box_pack_start(box, im1);
+             elm_box_pack_end(box, im2);
+             evas_object_show(box);
+          }
+        else if (pud_allow_spell_valid_is(alow))
+          {
+             Pud_Icon ic;
+
+             ic = pud_allow_spell_icon_get(alow);
+             ret = editor_icon_image_new(obj, ic, ed->pud->era, ed->menu_allows->cur_player);
+             elm_image_resizable_set(ret, EINA_FALSE, EINA_FALSE);
+          }
      }
    else if (!strcmp(part, "elm.swallow.end"))
      {
          ret = elm_check_add(obj);
-         evas_object_smart_callback_add(ret, "changed", _unit_alow_cb, ed);
-         elm_check_state_set(ret,
-                             (ed->pud->unit_alow.players[ed->menu_allows->cur_player] & alow) ? EINA_TRUE : EINA_FALSE);
+         if (pud_allow_unit_valid_is(alow))
+           {
+              evas_object_smart_callback_add(ret, "changed", _unit_alow_cb, ed);
+              elm_check_state_set(
+                 ret,
+                 (ed->pud->unit_alow.players[ed->menu_allows->cur_player] & alow)
+                 ? EINA_TRUE : EINA_FALSE
+              );
+           }
+         else if (pud_allow_spell_valid_is(alow))
+           {
+              evas_object_smart_callback_add(ret, "changed", _spell_start_cb, ed);
+              elm_check_state_set(
+                 ret,
+                 (ed->pud->spell_start.players[ed->menu_allows->cur_player] & alow)
+                 ? EINA_TRUE : EINA_FALSE
+              );
+           }
          //elm_object_style_set(ret, "toggle");
          //elm_object_part_text_set(ret, "on", "Yes");
          //elm_object_part_text_set(ret, "off", "No");
@@ -2023,15 +2071,16 @@ _select_player_cb(void        *data,
 }
 
 static void
-_select_unit_alow_cb(void        *data,
-                     Evas_Object *obj  EINA_UNUSED,
-                     void        *evt)
+_select_alow_cb(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                void        *evt)
 {
    Editor *const ed = data;
    const Pud_Allow a = (Pud_Allow)((uintptr_t)elm_object_item_data_get(evt));
 
    ed->menu_allows->cur_allow = a;
 }
+
 
 Evas_Object *
 menu_allow_properties_new(Editor *ed,
@@ -2127,18 +2176,29 @@ menu_allow_properties_new(Editor *ed,
       gen2, itcg, "Units and Buildings Allowed", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
-   for (fl = (1 << 0), i = 0; i < sizeof(Pud_Allow) * 8; i++, fl <<= 1)
+   for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
      {
+        fl = (1 << i) | PUD_ALLOW_UNIT_MARK;
         if (pud_allow_unit_valid_is(fl))
           {
              elm_genlist_item_append(gen2, itca, (Pud_Allow *)((uintptr_t)fl), eoi,
-                                     ELM_GENLIST_ITEM_NONE, _select_unit_alow_cb, ed);
+                                     ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
           }
      }
-   groups[ALLOW_GROUP_STARTING_SPELLS] = elm_genlist_item_append(
+   eoi = groups[ALLOW_GROUP_STARTING_SPELLS] = elm_genlist_item_append(
       gen2, itcg, "Starting Spells", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
+   for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
+     {
+        fl = (1 << i) | PUD_ALLOW_SPELL_MARK;
+        if (pud_allow_spell_valid_is(fl))
+          {
+
+             elm_genlist_item_append(gen2, itca, (Pud_Allow *)((uintptr_t)fl), eoi,
+                                     ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
+          }
+     }
    groups[ALLOW_GROUP_RESEARCH_SPELLS] = elm_genlist_item_append(
       gen2, itcg, "Spells Allowed to Research", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
