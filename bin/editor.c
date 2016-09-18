@@ -1278,7 +1278,7 @@ _done_cb(void        *data,
           {
              Evas_Object *b;
 
-             ed->pop = elm_popup_add(ed->fs);
+             ed->pop = elm_popup_add(ed->win);
              elm_object_text_set(ed->pop,  "Unsaved data will be lost. Continue?");
 
              b = elm_button_add(ed->pop);
