@@ -1988,6 +1988,18 @@ _spell_search_cb(void        *data,
    _alow_set(obj, ed, a);
 }
 
+static void
+_upgrade_alow_cb(void        *data,
+                 Evas_Object *obj,
+                 void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Allow *a;
+
+   a = &(ed->pud->up_alow.players[ed->menu_allows->cur_player]);
+   _alow_set(obj, ed, a);
+}
+
 static inline Pud_Allow
 _pud_allow_get(const void *data)
 {
@@ -2046,6 +2058,19 @@ _spell_search_text_get(void        *data,
    if (!strcmp(part, "elm.text"))
      {
         return strdup(pud_allow_spell2str(alow));
+     }
+   return NULL;
+}
+
+static char *
+_allow_upgrade_text_get(void        *data,
+                        Evas_Object *obj  EINA_UNUSED,
+                        const char  *part EINA_UNUSED)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   if (!strcmp(part, "elm.text"))
+     {
+        return strdup(pud_allow_upgrade2str(alow));
      }
    return NULL;
 }
@@ -2147,6 +2172,45 @@ _spell_search_content_get(void        *data,
    return ret;
 }
 
+static Evas_Object *
+_allow_upgrade_content_get(void        *data,
+                           Evas_Object *obj,
+                           const char  *part)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   Evas_Object *ret = NULL, *box, *im1, *im2;
+   Editor *const ed = evas_object_data_get(obj, "editor");
+   const Pud_Icon *icons;
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        ret = box = elm_box_add(obj);
+        elm_box_horizontal_set(box, EINA_TRUE);
+        elm_box_padding_set(box, 2, 0);
+
+        icons = pud_allow_upgrade_icons_get(alow);
+        im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
+        im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
+        elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
+        elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
+
+        elm_box_pack_start(box, im1);
+        elm_box_pack_end(box, im2);
+        evas_object_show(box);
+     }
+   else if (!strcmp(part, "elm.swallow.end"))
+     {
+        ret = _check_add(obj, _upgrade_alow_cb, ed);
+        elm_check_state_set(
+           ret,
+           (ed->pud->up_alow.players[ed->menu_allows->cur_player] & alow)
+           ? EINA_TRUE : EINA_FALSE
+        );
+     }
+
+   return ret;
+}
+
 static void
 _select_player_cb(void        *data,
                   Evas_Object *obj  EINA_UNUSED,
@@ -2177,7 +2241,7 @@ menu_allow_properties_new(Editor *ed,
 {
    Evas_Object *f = NULL, *gen, *gen2, *b;
    unsigned int i;
-   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL, *itcsr = NULL;
+   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL, *itcsr = NULL,  *itcu = NULL;
    Elm_Object_Item *groups[4], *eoi;
    Pud_Allow fl;
 
@@ -2233,6 +2297,17 @@ menu_allow_properties_new(Editor *ed,
    itcsr->item_style = "double_label";
    itcsr->func.text_get = _spell_search_text_get;
    itcsr->func.content_get = _spell_search_content_get;
+
+   /* Allowed Upgrades ITC */
+   itcu = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itcu))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itcu->item_style = "double_label";
+   itcu->func.text_get = _allow_upgrade_text_get;
+   itcu->func.content_get = _allow_upgrade_content_get;
 
    ed->menu_allows = calloc(1, sizeof(*ed->menu_allows));
    if (EINA_UNLIKELY(!ed->menu_allows))
@@ -2331,10 +2406,19 @@ menu_allow_properties_new(Editor *ed,
           }
      }
 
-   groups[ALLOW_GROUP_UPGRADES] = elm_genlist_item_append(
+   eoi = groups[ALLOW_GROUP_UPGRADES] = elm_genlist_item_append(
       gen2, itcg, "Upgrades Allowed to Reseach", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
+   for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
+     {
+        fl = (1 << i);
+        if (pud_allow_upgrade_valid_is(fl))
+          {
+             elm_genlist_item_append(gen2, itcu, (Pud_Allow *)((uintptr_t)fl), eoi,
+                                     ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
+          }
+     }
 
    /* Always make sure we have at least one selected element in the list */
    elm_genlist_item_selected_set(elm_genlist_first_item_get(gen), EINA_TRUE);
@@ -2343,6 +2427,7 @@ end:
    if (itcp) elm_genlist_item_class_free(itcp);
    if (itcg) elm_genlist_item_class_free(itcg);
    if (itca) elm_genlist_item_class_free(itca);
+   if (itcu) elm_genlist_item_class_free(itcu);
    if (itcss) elm_genlist_item_class_free(itcss);
    if (itcsr) elm_genlist_item_class_free(itcsr);
    return f;
