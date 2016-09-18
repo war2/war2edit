@@ -2081,7 +2081,7 @@ menu_allow_properties_new(Editor *ed,
    f = _frame_add(parent, "Allow Properties");
    evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 
-   //   evas_object_event_callback_add(f, EVAS_CALLBACK_FREE, _free_data_cb, ed->menu_upgrades);
+   evas_object_event_callback_add(f, EVAS_CALLBACK_FREE, _free_data_cb, ed->menu_allows);
 
    b = elm_box_add(f);
    evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
