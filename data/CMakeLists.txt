@@ -80,6 +80,9 @@ install(
    ${CMAKE_CURRENT_SOURCE_DIR}/images/selection.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/trees.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/water.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/tools.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/units.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/players.png
 
    DESTINATION share/${CMAKE_PROJECT_NAME}/images
 )
