@@ -494,7 +494,8 @@ editor_new(const char   *pud_file,
 
    ed->tileselector = elm_button_add(ed->lay);
    o = elm_icon_add(ed->tileselector);
-   elm_icon_standard_set(o, "view-list-icons");
+   snprintf(title, sizeof(title), "%s/images/tools.png", elm_app_data_dir_get());
+   elm_image_file_set(o, title, NULL);
    elm_object_part_content_set(ed->tileselector, "icon", o);
    evas_object_size_hint_align_set(ed->tileselector, 0.0, EVAS_HINT_FILL);
    elm_layout_content_set(ed->lay, "war2edit.main.tileselector", ed->tileselector);
@@ -518,7 +519,8 @@ editor_new(const char   *pud_file,
    /* Unitsmenu button */
    ed->unitsmenu_btn = elm_button_add(ed->lay);
    o = elm_icon_add(ed->unitsmenu_btn);
-   elm_icon_standard_set(o, "contact-new");
+   snprintf(title, sizeof(title), "%s/images/units.png", elm_app_data_dir_get());
+   elm_image_file_set(o, title, NULL);
    elm_object_part_content_set(ed->unitsmenu_btn, "icon", o);
    evas_object_size_hint_align_set(ed->unitsmenu_btn, 0.0, EVAS_HINT_FILL);
    elm_layout_content_set(ed->lay, "war2edit.main.unitsmenu", ed->unitsmenu_btn);
@@ -527,7 +529,8 @@ editor_new(const char   *pud_file,
    /* Playersmenu button */
    ed->playersmenu_btn = elm_button_add(ed->lay);
    o = elm_icon_add(ed->playersmenu_btn);
-   elm_icon_standard_set(o, "go-home");
+   snprintf(title, sizeof(title), "%s/images/players.png", elm_app_data_dir_get());
+   elm_image_file_set(o, title, NULL);
    elm_object_part_content_set(ed->playersmenu_btn, "icon", o);
    evas_object_size_hint_align_set(ed->playersmenu_btn, 0.0, EVAS_HINT_FILL);
    elm_layout_content_set(ed->lay, "war2edit.main.playersmenu", ed->playersmenu_btn);
