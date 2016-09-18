@@ -1976,6 +1976,18 @@ _spell_start_cb(void        *data,
    _alow_set(obj, ed, a);
 }
 
+static void
+_spell_search_cb(void        *data,
+                 Evas_Object *obj,
+                 void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   Pud_Allow *a;
+
+   a = &(ed->pud->spell_alow.players[ed->menu_allows->cur_player]);
+   _alow_set(obj, ed, a);
+}
+
 static inline Pud_Allow
 _pud_allow_get(const void *data)
 {
@@ -2016,6 +2028,19 @@ static char *
 _spell_start_text_get(void        *data,
                       Evas_Object *obj  EINA_UNUSED,
                       const char  *part EINA_UNUSED)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   if (!strcmp(part, "elm.text"))
+     {
+        return strdup(pud_allow_spell2str(alow));
+     }
+   return NULL;
+}
+
+static char *
+_spell_search_text_get(void        *data,
+                       Evas_Object *obj  EINA_UNUSED,
+                       const char  *part EINA_UNUSED)
 {
    const Pud_Allow alow = _pud_allow_get(data);
    if (!strcmp(part, "elm.text"))
@@ -2093,6 +2118,35 @@ _spell_start_content_get(void        *data,
    return ret;
 }
 
+static Evas_Object *
+_spell_search_content_get(void        *data,
+                          Evas_Object *obj,
+                          const char  *part)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   Evas_Object *ret = NULL;
+   Editor *const ed = evas_object_data_get(obj, "editor");
+   Pud_Icon ic;
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        ic = pud_allow_spell_icon_get(alow);
+        ret = editor_icon_image_new(obj, ic, ed->pud->era, ed->menu_allows->cur_player);
+        elm_image_resizable_set(ret, EINA_FALSE, EINA_FALSE);
+     }
+   else if (!strcmp(part, "elm.swallow.end"))
+     {
+        ret = _check_add(obj, _spell_search_cb, ed);
+        elm_check_state_set(
+           ret,
+           (ed->pud->spell_alow.players[ed->menu_allows->cur_player] & alow)
+           ? EINA_TRUE : EINA_FALSE
+        );
+     }
+
+   return ret;
+}
+
 static void
 _select_player_cb(void        *data,
                   Evas_Object *obj  EINA_UNUSED,
@@ -2123,7 +2177,7 @@ menu_allow_properties_new(Editor *ed,
 {
    Evas_Object *f = NULL, *gen, *gen2, *b;
    unsigned int i;
-   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL;
+   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL, *itcsr;
    Elm_Object_Item *groups[4], *eoi;
    Pud_Allow fl;
 
@@ -2168,6 +2222,17 @@ menu_allow_properties_new(Editor *ed,
    itcss->item_style = "double_label";
    itcss->func.text_get = _spell_start_text_get;
    itcss->func.content_get = _spell_start_content_get;
+
+   /* Research spells ITC */
+   itcsr = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itcsr))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itcsr->item_style = "double_label";
+   itcsr->func.text_get = _spell_search_text_get;
+   itcsr->func.content_get = _spell_search_content_get;
 
    ed->menu_allows = calloc(1, sizeof(*ed->menu_allows));
    if (EINA_UNLIKELY(!ed->menu_allows))
@@ -2246,15 +2311,26 @@ menu_allow_properties_new(Editor *ed,
         fl = (1 << i);
         if (pud_allow_spell_valid_is(fl))
           {
-
              elm_genlist_item_append(gen2, itcss, (Pud_Allow *)((uintptr_t)fl), eoi,
                                      ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
           }
      }
-   groups[ALLOW_GROUP_RESEARCH_SPELLS] = elm_genlist_item_append(
+
+   /* Research Spells */
+   eoi = groups[ALLOW_GROUP_RESEARCH_SPELLS] = elm_genlist_item_append(
       gen2, itcg, "Spells Allowed to Research", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
+   for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
+     {
+        fl = (1 << i);
+        if (pud_allow_spell_valid_is(fl))
+          {
+             elm_genlist_item_append(gen2, itcsr, (Pud_Allow *)((uintptr_t)fl), eoi,
+                                     ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
+          }
+     }
+
    groups[ALLOW_GROUP_UPGRADES] = elm_genlist_item_append(
       gen2, itcg, "Upgrades Allowed to Reseach", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
@@ -2268,5 +2344,6 @@ end:
    if (itcg) elm_genlist_item_class_free(itcg);
    if (itca) elm_genlist_item_class_free(itca);
    if (itcss) elm_genlist_item_class_free(itcss);
+   if (itcsr) elm_genlist_item_class_free(itcsr);
    return f;
 }
