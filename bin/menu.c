@@ -1939,22 +1939,6 @@ _group_text_get(void        *data,
    return strdup(str);
 }
 
-static char *
-_allow_text_get(void        *data,
-                Evas_Object *obj  EINA_UNUSED,
-                const char  *part EINA_UNUSED)
-{
-   const Pud_Allow alow = (Pud_Allow)((uintptr_t)data);
-   if (!strcmp(part, "elm.text"))
-     {
-        if (pud_allow_unit_valid_is(alow))
-          return strdup(pud_allow_unit2str(alow));
-        else if (pud_allow_spell_valid_is(alow))
-          return strdup(pud_allow_spell2str(alow));
-     }
-   return NULL;
-}
-
 static void
 _alow_set(const Evas_Object *chk,
           Editor            *ed,
@@ -1966,6 +1950,7 @@ _alow_set(const Evas_Object *chk,
    if (on) *a |= ed->menu_allows->cur_allow;
    else *a &= ~(ed->menu_allows->cur_allow);
 }
+
 
 static void
 _unit_alow_cb(void        *data,
@@ -1991,68 +1976,118 @@ _spell_start_cb(void        *data,
    _alow_set(obj, ed, a);
 }
 
+static inline Pud_Allow
+_pud_allow_get(const void *data)
+{
+   return (const Pud_Allow)((const uintptr_t)data);
+}
+
+static Evas_Object *
+_check_add(Evas_Object *parent,
+           Evas_Smart_Cb cb,
+           void *data)
+{
+   Evas_Object *o;
+
+   o = elm_check_add(parent);
+   evas_object_smart_callback_add(o, "changed", cb, data);
+   //elm_object_style_set(o, "toggle");
+   //elm_object_part_text_set(o, "on", "Yes");
+   //elm_object_part_text_set(o, "off", "No");
+   evas_object_show(o);
+
+   return o;
+}
+
+static char *
+_allow_text_get(void        *data,
+                Evas_Object *obj  EINA_UNUSED,
+                const char  *part EINA_UNUSED)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   if (!strcmp(part, "elm.text"))
+     {
+          return strdup(pud_allow_unit2str(alow));
+     }
+   return NULL;
+}
+
+static char *
+_spell_start_text_get(void        *data,
+                      Evas_Object *obj  EINA_UNUSED,
+                      const char  *part EINA_UNUSED)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   if (!strcmp(part, "elm.text"))
+     {
+        return strdup(pud_allow_spell2str(alow));
+     }
+   return NULL;
+}
+
 static Evas_Object *
 _allow_content_get(void        *data,
                    Evas_Object *obj,
                    const char  *part)
 {
-   const Pud_Allow alow = (Pud_Allow)((uintptr_t)data);
+   const Pud_Allow alow = _pud_allow_get(data);
    Evas_Object *im1, *im2, *box, *ret = NULL;
    Editor *const ed = evas_object_data_get(obj, "editor");
    const Pud_Icon *icons;
 
    if (!strcmp(part, "elm.swallow.icon"))
      {
-        if (pud_allow_unit_valid_is(alow))
-          {
-             ret = box = elm_box_add(obj);
-             elm_box_horizontal_set(box, EINA_TRUE);
-             elm_box_padding_set(box, 2, 0);
+        ret = box = elm_box_add(obj);
+        elm_box_horizontal_set(box, EINA_TRUE);
+        elm_box_padding_set(box, 2, 0);
 
-             icons = pud_allow_unit_icons_get(alow);
-             im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
-             im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
-             elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
-             elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
+        icons = pud_allow_unit_icons_get(alow);
+        im1 = editor_icon_image_new(box, icons[0], ed->pud->era, ed->menu_allows->cur_player);
+        im2 = editor_icon_image_new(box, icons[1], ed->pud->era, ed->menu_allows->cur_player);
+        elm_image_resizable_set(im1, EINA_FALSE, EINA_FALSE);
+        elm_image_resizable_set(im2, EINA_FALSE, EINA_FALSE);
 
-             elm_box_pack_start(box, im1);
-             elm_box_pack_end(box, im2);
-             evas_object_show(box);
-          }
-        else if (pud_allow_spell_valid_is(alow))
-          {
-             Pud_Icon ic;
-
-             ic = pud_allow_spell_icon_get(alow);
-             ret = editor_icon_image_new(obj, ic, ed->pud->era, ed->menu_allows->cur_player);
-             elm_image_resizable_set(ret, EINA_FALSE, EINA_FALSE);
-          }
+        elm_box_pack_start(box, im1);
+        elm_box_pack_end(box, im2);
+        evas_object_show(box);
      }
    else if (!strcmp(part, "elm.swallow.end"))
      {
-         ret = elm_check_add(obj);
-         if (pud_allow_unit_valid_is(alow))
-           {
-              evas_object_smart_callback_add(ret, "changed", _unit_alow_cb, ed);
-              elm_check_state_set(
-                 ret,
-                 (ed->pud->unit_alow.players[ed->menu_allows->cur_player] & alow)
-                 ? EINA_TRUE : EINA_FALSE
-              );
-           }
-         else if (pud_allow_spell_valid_is(alow))
-           {
-              evas_object_smart_callback_add(ret, "changed", _spell_start_cb, ed);
-              elm_check_state_set(
-                 ret,
-                 (ed->pud->spell_start.players[ed->menu_allows->cur_player] & alow)
-                 ? EINA_TRUE : EINA_FALSE
-              );
-           }
-         //elm_object_style_set(ret, "toggle");
-         //elm_object_part_text_set(ret, "on", "Yes");
-         //elm_object_part_text_set(ret, "off", "No");
-         evas_object_show(ret);
+         ret = _check_add(obj, _unit_alow_cb, ed);
+         elm_check_state_set(
+            ret,
+            (ed->pud->unit_alow.players[ed->menu_allows->cur_player] & alow)
+            ? EINA_TRUE : EINA_FALSE
+         );
+     }
+
+   return ret;
+}
+
+static Evas_Object *
+_spell_start_content_get(void        *data,
+                         Evas_Object *obj,
+                         const char  *part)
+{
+   const Pud_Allow alow = _pud_allow_get(data);
+   Evas_Object *ret = NULL;
+   Editor *const ed = evas_object_data_get(obj, "editor");
+   Pud_Icon ic;
+
+   if (!strcmp(part, "elm.swallow.icon"))
+     {
+        ic = pud_allow_spell_icon_get(alow);
+        ret = editor_icon_image_new(obj, ic, ed->pud->era, ed->menu_allows->cur_player);
+        elm_image_resizable_set(ret, EINA_FALSE, EINA_FALSE);
+     }
+   else if (!strcmp(part, "elm.swallow.end"))
+     {
+        ret = _check_add(obj, _spell_start_cb, ed);
+        elm_check_state_set(
+           ret,
+           (ed->pud->spell_start.players[ed->menu_allows->cur_player] & alow)
+           ? EINA_TRUE : EINA_FALSE
+        );
      }
 
    return ret;
@@ -2088,10 +2123,11 @@ menu_allow_properties_new(Editor *ed,
 {
    Evas_Object *f = NULL, *gen, *gen2, *b;
    unsigned int i;
-   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL;
+   Elm_Genlist_Item_Class *itcp, *itcg = NULL, *itca = NULL, *itcss = NULL;
    Elm_Object_Item *groups[4], *eoi;
    Pud_Allow fl;
 
+   /* Players ITC */
    itcp = elm_genlist_item_class_new();
    if (EINA_UNLIKELY(!itcp))
      {
@@ -2101,6 +2137,7 @@ menu_allow_properties_new(Editor *ed,
    itcp->item_style = "default";
    itcp->func.text_get = _player_text_get;
 
+   /* Group IRC */
    itcg = elm_genlist_item_class_new();
    if (EINA_UNLIKELY(!itcg))
      {
@@ -2110,6 +2147,7 @@ menu_allow_properties_new(Editor *ed,
    itcg->item_style = "group_index";
    itcg->func.text_get = _group_text_get;
 
+   /* Allowed units ITC */
    itca = elm_genlist_item_class_new();
    if (EINA_UNLIKELY(!itca))
      {
@@ -2119,6 +2157,17 @@ menu_allow_properties_new(Editor *ed,
    itca->item_style = "double_label";
    itca->func.text_get = _allow_text_get;
    itca->func.content_get = _allow_content_get;
+
+   /* Starting spells ITC */
+   itcss = elm_genlist_item_class_new();
+   if (EINA_UNLIKELY(!itcss))
+     {
+        CRI("Failed to create genlist item class");
+        goto end;
+     }
+   itcss->item_style = "double_label";
+   itcss->func.text_get = _spell_start_text_get;
+   itcss->func.content_get = _spell_start_content_get;
 
    ed->menu_allows = calloc(1, sizeof(*ed->menu_allows));
    if (EINA_UNLIKELY(!ed->menu_allows))
@@ -2172,30 +2221,33 @@ menu_allow_properties_new(Editor *ed,
    elm_box_pack_end(b, gen2);
    evas_object_show(gen2);
 
+   /* Allowed Units & Buildings */
    eoi = groups[ALLOW_GROUP_UNITS] = elm_genlist_item_append(
       gen2, itcg, "Units and Buildings Allowed", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
    for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
      {
-        fl = (1 << i) | PUD_ALLOW_UNIT_MARK;
+        fl = (1 << i);
         if (pud_allow_unit_valid_is(fl))
           {
              elm_genlist_item_append(gen2, itca, (Pud_Allow *)((uintptr_t)fl), eoi,
                                      ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
           }
      }
+
+   /* Starting Spells */
    eoi = groups[ALLOW_GROUP_STARTING_SPELLS] = elm_genlist_item_append(
       gen2, itcg, "Starting Spells", NULL,
       ELM_GENLIST_ITEM_GROUP, NULL, NULL
    );
    for (i = 0; i < sizeof(Pud_Allow) * 8; i++)
      {
-        fl = (1 << i) | PUD_ALLOW_SPELL_MARK;
+        fl = (1 << i);
         if (pud_allow_spell_valid_is(fl))
           {
 
-             elm_genlist_item_append(gen2, itca, (Pud_Allow *)((uintptr_t)fl), eoi,
+             elm_genlist_item_append(gen2, itcss, (Pud_Allow *)((uintptr_t)fl), eoi,
                                      ELM_GENLIST_ITEM_NONE, _select_alow_cb, ed);
           }
      }
@@ -2215,5 +2267,6 @@ end:
    if (itcp) elm_genlist_item_class_free(itcp);
    if (itcg) elm_genlist_item_class_free(itcg);
    if (itca) elm_genlist_item_class_free(itca);
+   if (itcss) elm_genlist_item_class_free(itcss);
    return f;
 }
