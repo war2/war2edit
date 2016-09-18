@@ -33,6 +33,15 @@ static Console _console;
 
 int _war2edit_log_dom = -1;
 
+static void _log_cb(const Eina_Log_Domain *d,
+                    Eina_Log_Level         level,
+                    const char            *file,
+                    const char            *fnc,
+                    int                    line,
+                    const char            *fmt,
+                    void                  *data,
+                    va_list                args) EINA_PRINTF(6, 0);
+
 static const char *
 _level_to_prefix(Eina_Log_Level lvl)
 {
