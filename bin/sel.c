@@ -129,6 +129,9 @@ sel_update(Editor *ed,
    ed->sel.rel2.x = (unsigned int)cx2;
    ed->sel.rel2.y = (unsigned int)cy2;
 
+   if (ed->sel.rel2.x >= ed->pud->map_w) ed->sel.rel2.x = ed->pud->map_w - 1;
+   if (ed->sel.rel2.y >= ed->pud->map_h) ed->sel.rel2.y = ed->pud->map_h - 1;
+
    //DBG("Sel (cells): %i %i ; %i %i", cx1, cy1, cx2, cy2);
 
    evas_object_move(ed->sel.obj, x, y);
