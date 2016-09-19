@@ -24,6 +24,7 @@
 #define _BITMAP_H_
 
 Eina_Bool bitmap_add(Editor *ed);
+void bitmap_del(Editor *ed);
 Unit bitmap_unit_set(Editor * ed, Pud_Unit unit, Pud_Player color, unsigned int orient, unsigned int x, unsigned int y, unsigned int w, unsigned int h, uint16_t alter);
 
 void bitmap_refresh(Editor *ed,

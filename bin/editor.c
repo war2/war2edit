@@ -274,10 +274,12 @@ void
 editor_shutdown(void)
 {
    Editor *ed;
+   Eina_List *l, *ll;
 
-   EINA_LIST_FREE(_editors, ed)
+   EINA_LIST_FOREACH_SAFE(_editors, l, ll, ed)
       editor_free(ed);
 
+   _focused = NULL;
    elm_genlist_item_class_free(_itc);
    _itc = NULL;
    elm_genlist_item_class_free(_itcg);
@@ -292,11 +294,12 @@ editor_free(Editor *ed)
    _editors = eina_list_remove(_editors, ed);
    cell_matrix_free(ed->cells);
    pud_close(ed->pud);
-   evas_object_del(ed->win);
    minimap_del(ed);
    eina_array_free(ed->orc_menus);
    eina_array_free(ed->human_menus);
    snapshot_del(ed);
+   bitmap_del(ed);
+   evas_object_del(ed->win);
    free(ed);
 }
 
@@ -857,7 +860,7 @@ editor_load(Editor     *ed,
         CRI("Failed to create bitmap");
         return EINA_FALSE;
      }
-
+   sel_add(ed);
    minimap_add(ed);
 
    // TODO split the map into parts, and do a parallel load

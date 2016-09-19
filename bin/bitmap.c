@@ -1543,7 +1543,6 @@ bitmap_add(Editor *ed)
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
 
-   sel_add(ed);
 
    cairo_set_source_rgb(ed->bitmap.cr, 1.0, 1.0, 0.0);
    cairo_rectangle(ed->bitmap.cr, 10, 10, 200, 200);
@@ -1552,6 +1551,19 @@ bitmap_add(Editor *ed)
    _bitmap_autoresize(ed);
 
    return EINA_TRUE;
+}
+
+void
+bitmap_del(Editor *ed)
+{
+   evas_object_event_callback_del_full(ed->scroller, EVAS_CALLBACK_RESIZE, _bitmap_resize_cb, ed);
+   evas_object_event_callback_del_full(ed->bitmap.img, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, ed);
+   evas_object_event_callback_del_full(ed->bitmap.img, EVAS_CALLBACK_MOUSE_MOVE, _mouse_move_cb, ed);
+   evas_object_event_callback_del_full(ed->bitmap.img, EVAS_CALLBACK_MOUSE_UP, _mouse_up_cb, ed);
+   cairo_destroy(ed->bitmap.cr);
+   cairo_surface_destroy(ed->bitmap.surf);
+   evas_object_del(ed->bitmap.cursor);
+   evas_object_del(ed->bitmap.img);
 }
 
 void
