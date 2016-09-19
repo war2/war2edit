@@ -216,18 +216,16 @@ _run_cb(void        *data,
 
 static Evas_Object *
 _segment_add(const Editor  *ed,
-             Evas_Object   *box,
+             Evas_Object   *parent,
              Evas_Smart_Cb  cb)
 {
    Evas_Object *o;
 
-   o = elm_segment_control_add(box);
+   o = elm_segment_control_add(parent);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, 0.0, EVAS_HINT_FILL);
    evas_object_smart_callback_add(o, "changed", cb, ed);
    evas_object_show(o);
-
-   elm_box_pack_end(box, o);
 
    return o;
 }
@@ -269,14 +267,14 @@ _segment_size_autoset(Evas_Object  *seg,
 
 Eina_Bool
 toolbar_add(Editor      *ed,
-            Evas_Object *box)
+            Evas_Object *parent)
 {
    Elm_Object_Item *eoi;
    unsigned int i;
    char path[PATH_MAX];
 
 #define SEG_ADD(cb) \
-   _segment_add(ed, box, cb)
+   _segment_add(ed, parent, cb)
 
 #define SEG_IT_ADD(seg_, icon_, value_) \
    do { \
