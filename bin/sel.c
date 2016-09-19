@@ -46,6 +46,7 @@ sel_add(Editor *ed)
 
    e = evas_object_evas_get(ed->win);
    o = evas_object_rectangle_add(e);
+   evas_object_smart_member_add(o, ed->scroller);
    evas_object_color_set(o, 0, 0, 100, 100);
    ed->sel.active = EINA_FALSE;
 
