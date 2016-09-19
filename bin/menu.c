@@ -129,54 +129,6 @@ _gen_upgrades_icon_get_cb(void        *data,
 }
 
 static void
-_win_del_cb(void        *data,
-            Evas_Object *obj   EINA_UNUSED,
-            void        *event EINA_UNUSED)
-{
-   Editor *const ed = data;
-   editor_free(ed);
-}
-
-static void
-_win_new_cb(void        *data,
-            Evas_Object *obj   EINA_UNUSED,
-            void        *event EINA_UNUSED)
-{
-   Editor *const parent_ed = data;
-   editor_new(NULL, parent_ed->debug);
-}
-
-static void
-_win_open_cb(void        *data,
-             Evas_Object *obj   EINA_UNUSED,
-             void        *event EINA_UNUSED)
-{
-   Editor *const ed = data;
-   editor_file_selector_add(ed, EINA_FALSE);
-}
-
-static void
-_win_save_cb(void        *data,
-             Evas_Object *obj   EINA_UNUSED,
-             void        *event EINA_UNUSED)
-{
-   Editor *const ed = data;
-   if (!ed->pud->filename)
-     editor_file_selector_add(ed, EINA_TRUE);
-   else
-     editor_save(ed, ed->pud->filename);
-}
-
-static void
-_win_save_as_cb(void        *data,
-                Evas_Object *obj   EINA_UNUSED,
-                void        *event EINA_UNUSED)
-{
-   Editor *const ed = data;
-   editor_file_selector_add(ed, EINA_TRUE);
-}
-
-static void
 _map_properties_cb(void        *data,
                    Evas_Object *obj   EINA_UNUSED,
                    void        *event EINA_UNUSED)
@@ -273,33 +225,6 @@ _radio_players_changed_cb(void        *data,
 
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 }
-
-static void
-_delete_cb(void        *data,
-           Evas_Object *obj  EINA_UNUSED,
-           void        *evt  EINA_UNUSED)
-{
-   Editor *ed = data;
-   editor_handle_delete(ed);
-}
-
-static void
-_undo_cb(void        *data,
-         Evas_Object *obj  EINA_UNUSED,
-         void        *evt  EINA_UNUSED)
-{
-   Editor *const ed = data;
-   snapshot_rollback(ed, -1);
-}
-
-//static void
-//_redo_cb(void        *data EINA_UNUSED,
-//         Evas_Object *obj  EINA_UNUSED,
-//         void        *evt  EINA_UNUSED)
-//{
-//   // TODO
-//}
-
 
 static void
 _console_show_cb(void        *data EINA_UNUSED,
@@ -519,47 +444,18 @@ menu_players_add(Editor *ed)
 }
 
 Eina_Bool
-menu_add(Editor *ed)
+menu_properties_add(Editor *ed)
 {
-   Elm_Object_Item *itm, *i;
+   Evas_Object *m;
 
-   ed->menu = elm_win_main_menu_get(ed->win);
-   evas_object_data_set(ed->menu, "editor", ed);
+   m = ed->propertiesmenu = elm_menu_add(ed->win);
+   //elm_menu_item_add(m, NULL, NULL, "Map Properties...", _map_properties_cb, ed); // TODO
+   elm_menu_item_add(m, NULL, NULL, "Player Properties...", _player_properties_cb, ed);
+   elm_menu_item_add(m, NULL, NULL, "Starting Properties...", _starting_properties_cb, ed);
 
-   /*==== FILE MENU ====*/
-   itm = elm_menu_item_add(ed->menu, NULL, NULL,  "File", NULL, NULL);
-   elm_menu_item_add(ed->menu, itm, NULL, "New...", _win_new_cb, ed);
-   elm_menu_item_add(ed->menu, itm, NULL, "Open...", _win_open_cb, ed);
-   elm_menu_item_add(ed->menu, itm, NULL, "Save", _win_save_cb, ed);
-   elm_menu_item_add(ed->menu, itm, NULL, "Save As...", _win_save_as_cb, ed);
-   elm_menu_item_separator_add(ed->menu, itm);
-   elm_menu_item_add(ed->menu, itm, NULL, "Close", _win_del_cb, ed);
-
-   /*==== EDIT MENU ====*/
-   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Edit", NULL, NULL);
-   ed->snapshot.menu_undo = elm_menu_item_add(ed->menu, itm, NULL, "Undo", _undo_cb, ed);
-   //elm_menu_item_add(ed->menu, itm, NULL, "Redo", _redo_cb, ed); // TODO
-   elm_menu_item_separator_add(ed->menu, itm);
-   ed->sel.menu = elm_menu_item_add(ed->menu, itm, NULL, "Delete", _delete_cb, ed);
-
-   /*==== VIEW MENU ====*/
-   itm = elm_menu_item_add(ed->menu, NULL, NULL, "View", NULL, NULL);
-   elm_menu_item_add(ed->menu, itm, NULL, "Show Console", _console_show_cb, NULL);
-   elm_menu_item_add(ed->menu, itm, NULL, "DOSBox Preferences", _prefs_dosbox_cb, ed);
-
-
-   itm = elm_menu_item_add(ed->menu, NULL, NULL, "Properties", NULL, NULL);
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Map Properties...", _map_properties_cb, ed);
-   elm_object_item_disabled_set(i, EINA_TRUE); // TODO
-   elm_menu_item_add(ed->menu, itm, NULL, "Player Properties...", _player_properties_cb, ed);
-   elm_menu_item_add(ed->menu, itm, NULL, "Starting Properties...", _starting_properties_cb, ed);
-
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Units Properties...", _units_properties_cb, ed);
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
-   i = elm_menu_item_add(ed->menu, itm, NULL, "Allow Properties...", _allow_properties_cb, ed);
-
-   //itm = elm_menu_item_add(ed->menu, NULL, NULL, "Help", NULL, NULL);
-   //elm_object_item_disabled_set(itm, EINA_TRUE); // TODO
+   elm_menu_item_add(m, NULL, NULL, "Units Properties...", _units_properties_cb, ed);
+   elm_menu_item_add(m, NULL, NULL, "Upgrades Properties...", _upgrades_properties_cb, ed);
+   elm_menu_item_add(m, NULL, NULL, "Allow Properties...", _allow_properties_cb, ed);
 
    return EINA_TRUE;
 }

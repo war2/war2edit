@@ -356,6 +356,83 @@ _pop_tileselector_cb(void        *data,
 }
 
 static void
+_editor_new_cb(void        *data,
+               Evas_Object *obj      EINA_UNUSED,
+               const char  *emission EINA_UNUSED,
+               const char  *source   EINA_UNUSED)
+{
+   Editor *const parent_ed = data;
+   editor_new(NULL, parent_ed->debug);
+}
+
+static void
+_editor_open_cb(void        *data,
+                Evas_Object *obj      EINA_UNUSED,
+                const char  *emission EINA_UNUSED,
+                const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   editor_file_selector_add(ed, EINA_FALSE);
+}
+
+static void
+_editor_save_cb(void        *data,
+                Evas_Object *obj      EINA_UNUSED,
+                const char  *emission EINA_UNUSED,
+                const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   if (!ed->pud->filename)
+     editor_file_selector_add(ed, EINA_TRUE);
+   else
+     editor_save(ed, ed->pud->filename);
+}
+
+static void
+_editor_save_as_cb(void        *data,
+                   Evas_Object *obj      EINA_UNUSED,
+                   const char  *emission EINA_UNUSED,
+                   const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   editor_file_selector_add(ed, EINA_TRUE);
+}
+
+static void
+_editor_undo_cb(void        *data,
+                Evas_Object *obj      EINA_UNUSED,
+                const char  *emission EINA_UNUSED,
+                const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   snapshot_rollback(ed, -1);
+}
+
+static void
+_editor_redo_cb(void        *data     EINA_UNUSED,
+                Evas_Object *obj      EINA_UNUSED,
+                const char  *emission EINA_UNUSED,
+                const char  *source   EINA_UNUSED)
+{
+   // TODO
+}
+
+static void
+_editor_properties_cb(void        *data,
+                      Evas_Object *obj      EINA_UNUSED,
+                      const char  *emission EINA_UNUSED,
+                      const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   int w;
+
+   evas_object_show(ed->propertiesmenu);
+   evas_object_geometry_get(obj, NULL, NULL, &w, NULL);
+   elm_menu_move(ed->propertiesmenu, w / 2, 0);
+}
+
+
+static void
 _hover_dismissed_cb(void        *data,
                     Evas_Object *obj  EINA_UNUSED,
                     void        *info EINA_UNUSED)
@@ -439,9 +516,9 @@ editor_new(const char   *pud_file,
                            _focus_in_cb, ed);
 
    /* Get the main menu */
-   menu_add(ed);
    menu_units_add(ed);
    menu_players_add(ed);
+   menu_properties_add(ed);
 
    o = ed->lay = elm_layout_add(ed->win);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -540,6 +617,24 @@ editor_new(const char   *pud_file,
    evas_object_smart_callback_add(ed->playersmenu_btn, "clicked", _show_players_menu_cb, ed);
 
    unitselector_add(ed);
+
+   /* Menu callbacks */
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,new", "war2edit",
+                                  _editor_new_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,open", "war2edit",
+                                  _editor_open_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,save", "war2edit",
+                                  _editor_save_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,saveas", "war2edit",
+                                  _editor_save_as_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,undo", "war2edit",
+                                  _editor_undo_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,redo", "war2edit",
+                                  _editor_redo_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,properties,open", "war2edit",
+                                  _editor_properties_cb, ed);
+//   elm_layout_signal_callback_add(ed->lay, "war2edit,run", "war2edit",
+//                                  _editor_run_cb, ed);
 
    /* Show window */
    evas_object_show(ed->win);

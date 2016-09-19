@@ -24,6 +24,11 @@ externals {
    external: "elm";
 }
 
+#define FIXED_SIZE(X, Y) \
+   min: X Y; \
+   max: X Y; \
+   fixed: 1 1
+
 collections {
 
    group { "war2edit/logconsole";
@@ -38,7 +43,7 @@ collections {
    group { "war2edit/main";
       parts {
 
-         rect { "left_bar";
+         rect { "left_bar"; nomouse;
             desc { "default";
                rel1.to: "war2edit.main.contents";
                rel2.relative: 0.0 1.0;
@@ -50,6 +55,183 @@ collections {
                align: 0.0 0.0;
             }
          }
+         rect { "top_zone";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "war2edit.main.contents";
+               rel2.relative: 1.0 0.0;
+               rel2.offset: 0 25;
+               align: 0.5 0.0;
+               color: 0 0 0 0;
+            }
+         }
+         rect { "menu_mask"; nomouse;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               align: 0.0 0.0;
+               rel1.offset: 0 -30;
+               rel2.offset: 0 -30;
+               color: 255 255 255 0;
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: (-23*4)-5 0;
+               rel2.offset: (+23*6)+5 5;
+               color: 255 255 255 200;
+            }
+            effect: SHADOW BOTTOM;
+         }
+
+         external { "menu_new"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: -23*4 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "document-new";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: -23*4 5;
+            }
+         }
+         external { "menu_open"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: -23*3 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "document-open";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: -23*3 5;
+            }
+         }
+         external { "menu_save"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: -23*2 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "document-save";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: -23*2 5;
+            }
+         }
+         external { "menu_save_as"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: -23*1 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "document-save-as";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: -23*1 5;
+            }
+         }
+         external { "menu_undo"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: 23*1 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "edit-undo";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: 23*1 5;
+            }
+         }
+         external { "menu_redo"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: 23*2 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "edit-redo";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: 23*2 5;
+            }
+         }
+         external { "menu_properties"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: 23*4 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "document-properties";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: 23*4 5;
+            }
+         }
+         external { "menu_run"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: 23*5 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "system-run";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: 23*5 5;
+            }
+         }
+
+
+
+
 
          swallow { "war2edit.main.tileselector";
             desc { "default";
@@ -271,6 +453,65 @@ collections {
       }
 
       programs {
+         program { signal: "mouse,clicked,1"; source: "menu_new";
+            action: SIGNAL_EMIT "war2edit,menu,new" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_open";
+            action: SIGNAL_EMIT "war2edit,menu,open" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_save";
+            action: SIGNAL_EMIT "war2edit,menu,save" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_save_as";
+            action: SIGNAL_EMIT "war2edit,menu,saveas" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_undo";
+            action: SIGNAL_EMIT "war2edit,menu,undo" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_redo";
+            action: SIGNAL_EMIT "war2edit,menu,redo" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_properties";
+            action: SIGNAL_EMIT "war2edit,properties,open" "war2edit";
+         }
+         program { signal: "mouse,clicked,1"; source: "menu_run";
+            action: SIGNAL_EMIT "war2edit,run" "war2edit";
+         }
+
+         program { signal: "mouse,in"; source: "top_zone";
+            action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
+            after: "in_top_zone";
+         }
+         program { name: "in_top_zone";
+            action: STATE_SET "visible";
+            target: "menu_mask";
+            target: "menu_new";
+            target: "menu_open";
+            target: "menu_save";
+            target: "menu_save_as";
+            target: "menu_undo";
+            target: "menu_redo";
+            target: "menu_properties";
+            target: "menu_run";
+            transition: ACCELERATE 0.5;
+         }
+         program { signal: "mouse,out"; source: "top_zone";
+            action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
+            after: "out_top_zone";
+         }
+         program { name: "out_top_zone";
+            action: STATE_SET "default";
+            target: "menu_mask";
+            target: "menu_new";
+            target: "menu_open";
+            target: "menu_save";
+            target: "menu_save_as";
+            target: "menu_undo";
+            target: "menu_redo";
+            target: "menu_properties";
+            target: "menu_run";
+            transition: DECELERATE 0.5;
+         }
          program { signal: "war2edit,tileselector,show"; source: "war2edit";
             action: STATE_SET "translated";
             target: "war2edit.main.tileselector";

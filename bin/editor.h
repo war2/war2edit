@@ -84,6 +84,7 @@ struct _Editor
    Evas_Object  *unitsmenu;
    Evas_Object  *unitsmenu_btn;
    Evas_Object  *playersmenu;
+   Evas_Object  *propertiesmenu;
    Evas_Object  *playersmenu_btn;
    Evas_Object  *hover;
 
