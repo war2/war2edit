@@ -1537,6 +1537,7 @@ bitmap_add(Editor *ed)
 
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
+   ed->bitmap.cursor_visible = EINA_TRUE;
    bitmap_cursor_visibility_set(ed, EINA_FALSE);
    bitmap_cursor_enabled_set(ed, EINA_TRUE);
 
@@ -1619,10 +1620,23 @@ void
 bitmap_cursor_visibility_set(Editor    *ed,
                              Eina_Bool  visible)
 {
-   if (visible)
-     evas_object_show(ed->bitmap.cursor);
-   else
-     evas_object_hide(ed->bitmap.cursor);
+   visible = !!visible;
+
+   if (ed->bitmap.cursor_visible != visible)
+     {
+        if (visible)
+          evas_object_show(ed->bitmap.cursor);
+        else
+          evas_object_hide(ed->bitmap.cursor);
+
+        ed->bitmap.cursor_visible = visible;
+     }
+}
+
+Eina_Bool
+bitmap_cursor_visibility_get(const Editor *ed)
+{
+   return ed->bitmap.cursor_visible;
 }
 
 void
