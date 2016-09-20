@@ -71,7 +71,6 @@ struct _Editor
    Evas_Object  *lay;
    Evas_Object  *menu;
    Evas_Object  *preview;
-   Evas_Object  *previous_container;
    struct {
       Evas_Object  *obj;
    } inwin;
