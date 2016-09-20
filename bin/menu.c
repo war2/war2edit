@@ -602,7 +602,8 @@ Evas_Object *
 menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
 {
-   Evas_Object *f, *box, *b, *o;
+   Evas_Object *f, *box, *b, *o, *bb, *ff, *e;
+
 
    /* Frame for map era */
    f = elm_frame_add(parent);
@@ -610,6 +611,14 @@ menu_map_properties_new(Editor      *ed,
    evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(f, 0.5, 0.5);
    evas_object_show(f);
+
+   /* Vertical box (MAP + TEXT) */
+   bb = elm_box_add(f);
+   evas_object_size_hint_weight_set(bb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(bb, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(bb, EINA_FALSE);
+   elm_box_padding_set(bb, 0, 5);
+   evas_object_show(bb);
 
    /* Container */
    box = elm_box_add(f);
@@ -679,7 +688,25 @@ menu_map_properties_new(Editor      *ed,
 
    elm_box_pack_start(box, b);
    elm_box_pack_end(box, ed->preview);
-   elm_object_content_set(f, box);
+
+   ff = elm_frame_add(f);
+   elm_object_text_set(ff, "Map Description");
+   evas_object_size_hint_weight_set(ff, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(ff, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(ff);
+
+   e = elm_entry_add(ff);
+   evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_entry_single_line_set(e, EINA_TRUE);
+   elm_entry_scrollable_set(e, EINA_TRUE);
+   elm_entry_editable_set(e, EINA_TRUE);
+   evas_object_show(e);
+   elm_object_content_set(ff, e);
+
+   elm_box_pack_start(bb, box);
+   elm_box_pack_end(bb, ff);
+   elm_object_content_set(f, bb);
 
    return f;
 }
