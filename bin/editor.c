@@ -1339,7 +1339,7 @@ static void
 _fs_show(Editor *ed)
 {
    editor_inwin_add(ed);
-   editor_inwin_set(ed, ed->fs, NULL, NULL, NULL, NULL);
+   editor_inwin_set(ed, ed->fs, "default", NULL, NULL, NULL, NULL);
 }
 
 static void
@@ -1526,6 +1526,7 @@ editor_inwin_add(Editor *ed)
 void
 editor_inwin_set(Editor        *ed,
                  Evas_Object   *obj,
+                 const char    *style,
                  const char    *ok_label,
                  Evas_Smart_Cb  ok_smart_cb,
                  const char    *cancel_label,
@@ -1533,6 +1534,7 @@ editor_inwin_set(Editor        *ed,
 {
    Evas_Object *vbox, *hbox, *o;
 
+   elm_object_style_set(ed->inwin.obj, style);
 
    /* Super box: holds everything */
    vbox = elm_box_add(ed->inwin.obj);

@@ -70,6 +70,8 @@ struct _Editor
    Evas_Object  *win;
    Evas_Object  *lay;
    Evas_Object  *menu;
+   Evas_Object  *preview;
+   Evas_Object  *previous_container;
    struct {
       Evas_Object  *obj;
    } inwin;
@@ -270,6 +272,7 @@ Evas_Object *editor_inwin_add(Editor *ed);
 void
 editor_inwin_set(Editor        *ed,
                  Evas_Object   *obj,
+                 const char    *style,
                  const char    *ok_label,
                  Evas_Smart_Cb  ok_smart_cb,
                  const char    *cancel_label,

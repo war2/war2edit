@@ -136,7 +136,7 @@ _map_properties_cb(void        *data,
    Editor *ed = data;
 
    editor_inwin_set(ed, menu_map_properties_new(ed, editor_inwin_add(ed)),
-             "Close", NULL, NULL, NULL);
+                    "minimal", "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -147,7 +147,7 @@ _player_properties_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, menu_player_properties_new(ed, editor_inwin_add(ed)),
-             "Close", NULL, NULL, NULL);
+                    "minimal", "Close", NULL, NULL, NULL);
    menu_unit_selection_reset(ed);
 }
 
@@ -159,7 +159,7 @@ _starting_properties_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, menu_starting_properties_new(ed, editor_inwin_add(ed)),
-             "Close", NULL, NULL, NULL);
+                    "minimal", "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -170,7 +170,7 @@ _units_properties_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, menu_units_properties_new(ed, editor_inwin_add(ed)),
-             "Close", NULL, NULL, NULL);
+                    "default", "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -181,7 +181,7 @@ _upgrades_properties_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, menu_upgrades_properties_new(ed, editor_inwin_add(ed)),
-                    "Close", NULL, NULL, NULL);
+                    "default", "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -192,7 +192,7 @@ _allow_properties_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, menu_allow_properties_new(ed, editor_inwin_add(ed)),
-                    "Close", NULL, NULL, NULL);
+                    "default", "Close", NULL, NULL, NULL);
 }
 
 static void
@@ -242,7 +242,7 @@ _prefs_dosbox_cb(void        *data,
    Editor *const ed = data;
 
    editor_inwin_set(ed, prefs_new(editor_inwin_add(ed), PREFS_DOSBOX),
-             "Close", NULL, NULL, NULL);
+                   "default",  "Close", NULL, NULL, NULL);
 }
 
 /*============================================================================*
@@ -449,7 +449,7 @@ menu_properties_add(Editor *ed)
    Evas_Object *m;
 
    m = ed->propertiesmenu = elm_menu_add(ed->win);
-   //elm_menu_item_add(m, NULL, NULL, "Map Properties...", _map_properties_cb, ed); // TODO
+   elm_menu_item_add(m, NULL, NULL, "Map Properties...", _map_properties_cb, ed);
    elm_menu_item_add(m, NULL, NULL, "Player Properties...", _player_properties_cb, ed);
    elm_menu_item_add(m, NULL, NULL, "Starting Properties...", _starting_properties_cb, ed);
 
@@ -534,36 +534,99 @@ _frame_add(Evas_Object *parent,
 }
 
 static void
+_free_px_cb(void        *data EINA_UNUSED,
+            Evas        *e    EINA_UNUSED,
+            Evas_Object *obj,
+            void        *info EINA_UNUSED)
+{
+   unsigned char *px;
+
+   px = evas_object_image_data_get(obj, EINA_FALSE);
+   free(px);
+}
+
+static void
+menu_map_properties_update(Editor *ed)
+{
+   unsigned char *px;
+
+   px = evas_object_image_data_get(ed->preview, EINA_FALSE);
+   free(px);
+
+   px = pud_minimap_bitmap_generate(ed->pud, NULL, PUD_PIXEL_FORMAT_ARGB);
+   if (EINA_UNLIKELY(!px))
+     {
+        CRI("Failed to create minimap image");
+        evas_object_del(ed->preview); ed->preview = NULL;
+     }
+   else
+     {
+        evas_object_image_size_set(ed->preview, ed->pud->map_w, ed->pud->map_h);
+        evas_object_image_data_set(ed->preview, px);
+        evas_object_image_data_update_add(ed->preview, 0, 0, ed->pud->map_w, ed->pud->map_h);
+
+        evas_object_size_hint_min_set(ed->preview, 256, 256);
+        evas_object_size_hint_max_set(ed->preview, 256, 256);
+        evas_object_show(ed->preview);
+     }
+}
+
+static void
 _era_changed_cb(void        *data,
                 Evas_Object *obj,
                 void        *event_info EINA_UNUSED)
 {
-   Editor *ed = data;
-   pud_era_set(ed->pud, elm_radio_value_get(obj));
+   Editor *const ed = data;
+   Pud_Era era;
+
+   era = elm_radio_value_get(obj);
+
+   /* FIXME
+    * Refcount atlases, and close old ones
+    */
+   atlas_texture_open(era);
+   atlas_icon_open(era);
+   sprite_buildings_open(era);
+
+   pud_era_set(ed->pud, era);
+
+   if (ed->bitmap.img)
+     bitmap_refresh(ed, NULL);
+   if (ed->minimap.map)
+     minimap_reload(ed);
+
+   menu_map_properties_update(ed);
 }
 
 Evas_Object *
 menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
 {
-   Evas_Object *f, *b, *o;
+   Evas_Object *f, *box, *b, *o;
 
    /* Frame for map era */
    f = elm_frame_add(parent);
    elm_object_text_set(f, "Map Properties");
    evas_object_size_hint_weight_set(f, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(f, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_size_hint_align_set(f, 0.5, 0.5);
    evas_object_show(f);
+
+   /* Container */
+   box = elm_box_add(f);
+   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(box, EINA_TRUE);
+   elm_box_padding_set(box, 5, 0);
+   evas_object_show(box);
+
    b = elm_box_add(f); /* Box */
-   elm_object_content_set(f, b);
-   elm_box_align_set(b, 0.0, 0.0);
    evas_object_show(b);
 
    /* Tileset item 1 (Forest) */
    o = elm_radio_add(b);
    elm_radio_state_value_set(o, PUD_ERA_FOREST);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_align_set(o, 0.0, 0.5);
    elm_object_text_set(o, "Forest");
    elm_box_pack_end(b, o);
    evas_object_show(o);
@@ -574,7 +637,7 @@ menu_map_properties_new(Editor      *ed,
    o = elm_radio_add(b);
    elm_radio_state_value_set(o, PUD_ERA_WINTER);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_align_set(o, 0.0, 0.5);
    elm_object_text_set(o, "Winter");
    elm_box_pack_end(b, o);
    evas_object_show(o);
@@ -585,7 +648,7 @@ menu_map_properties_new(Editor      *ed,
    o = elm_radio_add(b);
    elm_radio_state_value_set(o, PUD_ERA_WASTELAND);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_align_set(o, 0.0, 0.5);
    elm_object_text_set(o, "Wasteland");
    elm_box_pack_end(b, o);
    evas_object_show(o);
@@ -596,7 +659,7 @@ menu_map_properties_new(Editor      *ed,
    ed->menu_swamp_radio = o = elm_radio_add(b);
    elm_radio_state_value_set(o, PUD_ERA_SWAMP);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   evas_object_size_hint_align_set(o, 0.0, 0.5);
    elm_object_text_set(o, "Swamp");
    elm_box_pack_end(b, o);
    evas_object_show(o);
@@ -606,6 +669,17 @@ menu_map_properties_new(Editor      *ed,
    /* Default value */
    elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
    ed->pud->extension_pack = EINA_TRUE;
+
+   ed->preview = evas_object_image_filled_add(evas_object_evas_get(box));
+   evas_object_image_colorspace_set(ed->preview, EVAS_COLORSPACE_ARGB8888);
+   evas_object_size_hint_weight_set(ed->preview, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(ed->preview, 0.0, EVAS_HINT_FILL);
+   evas_object_event_callback_add(ed->preview, EVAS_CALLBACK_FREE, _free_px_cb, NULL);
+   menu_map_properties_update(ed);
+
+   elm_box_pack_start(box, b);
+   elm_box_pack_end(box, ed->preview);
+   elm_object_content_set(f, box);
 
    return f;
 }

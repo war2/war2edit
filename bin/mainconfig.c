@@ -189,7 +189,7 @@ mainconfig_show(Editor *ed)
    elm_box_pack_end(b3, menu_map_properties_new(ed, b3));
 
    /* Show inwin */
-   editor_inwin_set(ed, box,
+   editor_inwin_set(ed, box, "minimal",
                     "Create", _mc_create_cb,
                     "Cancel", _mc_cancel_cb);
 }
