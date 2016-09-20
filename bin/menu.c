@@ -749,13 +749,15 @@ _bind_cb(void        *data,
      {
         if (*bind != v)
           {
+             *bind = v;
              ed = evas_object_data_get(obj, "editor");
              /* A little bit of black magic :-) */
              player = (Pud_Player)((unsigned char *)bind - (unsigned char *)(&ed->pud->side));
              editor_player_switch_race(ed, player);
           }
      }
-   *bind = v;
+   else
+     *bind = v;
 }
 
 static void

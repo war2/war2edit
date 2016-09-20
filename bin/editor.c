@@ -1309,6 +1309,13 @@ editor_player_switch_race(Editor     *ed,
             c->unit_above = pud_unit_switch_side(c->unit_above);
           if (c->player_below == player)
             c->unit_below = pud_unit_switch_side(c->unit_below);
+          if (c->start_location == player)
+            {
+               if (pud_side_for_player(ed->pud, player) == PUD_SIDE_ORC)
+                 c->start_location_human = 0;
+               else
+                 c->start_location_human = 1;
+            }
        }
    snapshot_push_done(ed);
 
