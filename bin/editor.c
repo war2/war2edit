@@ -431,6 +431,26 @@ _editor_properties_cb(void        *data,
    elm_menu_move(ed->propertiesmenu, w / 2, 0);
 }
 
+static void
+_editor_menu_in_cb(void        *data,
+                   Evas_Object *obj      EINA_UNUSED,
+                   const char  *emission EINA_UNUSED,
+                   const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   ed->menu_in_out_cache = bitmap_cursor_visibility_get(ed);
+   bitmap_cursor_visibility_set(ed, EINA_FALSE);
+}
+
+static void
+_editor_menu_out_cb(void        *data,
+                    Evas_Object *obj      EINA_UNUSED,
+                    const char  *emission EINA_UNUSED,
+                    const char  *source   EINA_UNUSED)
+{
+   Editor *const ed = data;
+   bitmap_cursor_visibility_set(ed, ed->menu_in_out_cache);
+}
 
 static void
 _hover_dismissed_cb(void        *data,
@@ -468,6 +488,7 @@ _show_players_menu_cb(void        *data,
    Editor *const ed = data;
    _show_menu(ed->playersmenu);
 }
+
 
 
 Editor *
@@ -635,6 +656,10 @@ editor_new(const char   *pud_file,
                                   _editor_properties_cb, ed);
 //   elm_layout_signal_callback_add(ed->lay, "war2edit,run", "war2edit",
 //                                  _editor_run_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,in", "war2edit",
+                                  _editor_menu_in_cb, ed);
+   elm_layout_signal_callback_add(ed->lay, "war2edit,menu,out", "war2edit",
+                                  _editor_menu_out_cb, ed);
 
    /* Show window */
    evas_object_show(ed->win);

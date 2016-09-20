@@ -97,6 +97,7 @@ struct _Editor
    Pud_Player    sel_player;
 
    Bitmap  bitmap;
+   Eina_Bool menu_in_out_cache;
 
    struct {
       unsigned char **data;
