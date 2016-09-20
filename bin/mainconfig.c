@@ -104,7 +104,7 @@ mainconfig_show(Editor *ed)
    menu_enabled_set(ed, EINA_FALSE);
 
    /* Create main box (mainconfig) */
-   box = elm_box_add(ed->inwin.obj);
+   box = elm_box_add(ed->inwin);
    evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_box_horizontal_set(box, EINA_FALSE);

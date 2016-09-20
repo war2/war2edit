@@ -1502,25 +1502,21 @@ static void
 inwin_activate(Editor *ed)
 {
    bitmap_cursor_visibility_set(ed, EINA_FALSE);
-   elm_win_inwin_activate(ed->inwin.obj);
-   evas_object_show(ed->inwin.obj);
+   elm_win_inwin_activate(ed->inwin);
+   evas_object_show(ed->inwin);
 }
 
 
 Evas_Object *
 editor_inwin_add(Editor *ed)
 {
-   Evas_Object *obj;
-
-   obj = elm_win_inwin_add(ed->win);
-   if (EINA_UNLIKELY(!obj))
+   ed->inwin = elm_win_inwin_add(ed->win);
+   if (EINA_UNLIKELY(!ed->inwin))
      {
         CRI("Failed to create Inwin");
         return NULL;
      }
-   ed->inwin.obj = obj;
-
-   return obj;
+   return ed->inwin;
 }
 
 void
@@ -1534,10 +1530,10 @@ editor_inwin_set(Editor        *ed,
 {
    Evas_Object *vbox, *hbox, *o;
 
-   elm_object_style_set(ed->inwin.obj, style);
+   elm_object_style_set(ed->inwin, style);
 
    /* Super box: holds everything */
-   vbox = elm_box_add(ed->inwin.obj);
+   vbox = elm_box_add(ed->inwin);
    elm_box_horizontal_set(vbox, EINA_FALSE);
    evas_object_size_hint_weight_set(vbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(vbox, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -1577,13 +1573,13 @@ editor_inwin_set(Editor        *ed,
         evas_object_show(o);
      }
 
-   elm_win_inwin_content_set(ed->inwin.obj, vbox);
+   elm_win_inwin_content_set(ed->inwin, vbox);
    inwin_activate(ed);
 }
 
 void
 editor_inwin_dismiss(Editor *ed)
 {
-   evas_object_del(ed->inwin.obj);
-   ed->inwin.obj = NULL;
+   evas_object_del(ed->inwin);
+   ed->inwin = NULL;
 }

@@ -71,9 +71,7 @@ struct _Editor
    Evas_Object  *lay;
    Evas_Object  *menu;
    Evas_Object  *preview;
-   struct {
-      Evas_Object  *obj;
-   } inwin;
+   Evas_Object  *inwin;
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
    Evas_Object  *fs; /* File selector */
