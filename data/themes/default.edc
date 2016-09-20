@@ -526,7 +526,7 @@ collections {
             action: SIGNAL_EMIT "war2edit,tileselector,pop" "war2edit";
          }
 
-         program { signal: "mouse,down,*"; source: "open_minimap";
+         program { signal: "mouse,clicked,1"; source: "open_minimap";
             action: STATE_SET "default";
             target: "open_minimap";
             target: "war2edit.main.minimap";
@@ -536,7 +536,7 @@ collections {
          program { name: "minimap,open";
             action: SIGNAL_EMIT "war2edit,minimap,show" "war2edit";
          }
-         program { signal: "mouse,down,*"; source: "minimap_close_btn";
+         program { signal: "mouse,clicked,1"; source: "minimap_close_btn";
             action: SIGNAL_EMIT "war2edit,minimap,hide" "war2edit";
             after: "minimap,close";
          }
@@ -553,12 +553,12 @@ collections {
             target: "war2edit.main.sidepanel";
             transition: SINUSOIDAL 1.0;
          }
-         program { signal: "mouse,down,*"; source: "toggle";
+         program { signal: "mouse,clicked,1"; source: "toggle";
             action: STATE_SET "menu_toggled";
             target: "toggle";
             after: "nice_opening";
          }
-         program { signal: "mouse,down,*"; source: "sidepanel_button";
+         program { signal: "mouse,clicked,1"; source: "sidepanel_button";
             action: STATE_SET "default";
             target: "toggle";
             target: "sidepanel_button";
