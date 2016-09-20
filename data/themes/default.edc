@@ -65,7 +65,8 @@ collections {
                color: 0 0 0 0;
             }
          }
-         rect { "menu_mask"; nomouse;
+         rect { "menu_mask";
+            repeat_events: 1;
             desc { "default";
                rel.to: "top_zone";
                rel1.relative: 0.5 0.0;
@@ -478,11 +479,13 @@ collections {
             action: SIGNAL_EMIT "war2edit,run" "war2edit";
          }
 
-         program { signal: "mouse,in"; source: "top_zone";
+         program { signal: "mouse,in"; source: "menu_mask";
             action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
-            after: "in_top_zone";
          }
-         program { name: "in_top_zone";
+         program { signal: "mouse,out"; source: "menu_mask";
+            action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
+         }
+         program { signal: "mouse,in"; source: "top_zone";
             action: STATE_SET "visible";
             target: "menu_mask";
             target: "menu_new";
@@ -496,10 +499,6 @@ collections {
             transition: ACCELERATE 0.5;
          }
          program { signal: "mouse,out"; source: "top_zone";
-            action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
-            after: "out_top_zone";
-         }
-         program { name: "out_top_zone";
             action: STATE_SET "default";
             target: "menu_mask";
             target: "menu_new";
