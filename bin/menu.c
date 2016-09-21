@@ -478,21 +478,6 @@ menu_units_side_enable(Editor   *ed,
 }
 
 void
-menu_enabled_set(Editor    *ed,
-                 Eina_Bool  set)
-{
-   Eina_List *mi, *l;
-   Elm_Object_Item *eoi;
-
-   /* Because this is used for disabled_set() */
-   set = !set;
-
-   mi = (Eina_List *)elm_menu_items_get(ed->menu);
-   EINA_LIST_FOREACH(mi, l, eoi)
-      elm_object_item_disabled_set(eoi, set);
-}
-
-void
 menu_unit_selection_reset(Editor *ed)
 {
    elm_radio_value_set(ed->radio_units_reset, PUD_UNIT_NONE);

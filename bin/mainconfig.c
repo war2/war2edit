@@ -198,5 +198,4 @@ void
 mainconfig_hide(Editor *ed)
 {
    editor_inwin_dismiss(ed);
-   menu_enabled_set(ed, EINA_TRUE);
 }

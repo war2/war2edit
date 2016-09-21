@@ -69,7 +69,6 @@ struct _Editor
    /* === GUI === */
    Evas_Object  *win;
    Evas_Object  *lay;
-   Evas_Object  *menu;
    Evas_Object  *preview;
    Evas_Object  *inwin;
    Evas_Object  *mainbox;
