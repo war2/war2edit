@@ -47,6 +47,16 @@ _mc_create_cb(void        *data,
 }
 
 static void
+_mc_open_cb(void        *data,
+            Evas_Object *obj        EINA_UNUSED,
+            void        *event_info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   mainconfig_hide(ed);
+   editor_file_selector_add(ed, EINA_FALSE);
+}
+
+static void
 _size_changed_cb(void        *data,
                  Evas_Object *obj,
                  void        *event_info EINA_UNUSED)
@@ -96,12 +106,23 @@ _has_extension_cb(void        *data,
 void
 mainconfig_show(Editor *ed)
 {
-   Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp;
+   Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp, *bb, *ic;
+   struct {
+      const char *label;
+      const char *icon;
+      Evas_Smart_Cb cb;
+   } const ctor[] = {
+        { "Quit", "document-close", _mc_cancel_cb },
+        { "Open", "document-open", _mc_open_cb },
+        { "Create", "document-new", _mc_create_cb }
+   };
+   unsigned int i;
 
    editor_inwin_add(ed);
 
-   /* Disable main menu */
-   menu_enabled_set(ed, EINA_FALSE);
+   /* Default values */
+   ed->pud->extension_pack = EINA_TRUE;
+   ed->pud->era = PUD_ERA_FOREST;
 
    /* Create main box (mainconfig) */
    box = elm_box_add(ed->inwin);
@@ -188,10 +209,34 @@ mainconfig_show(Editor *ed)
 
    elm_box_pack_end(b3, menu_map_properties_new(ed, b3));
 
+   /* Box of buttons */
+   bb = elm_box_add(b3);
+   evas_object_size_hint_weight_set(bb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(bb, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_horizontal_set(bb, EINA_TRUE);
+   evas_object_show(bb);
+
+   for (i = 0; i < EINA_C_ARRAY_LENGTH(ctor); i++)
+     {
+        o = elm_button_add(bb);
+        evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+        evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+        evas_object_smart_callback_add(o, "clicked", ctor[i].cb, ed);
+        elm_object_text_set(o, ctor[i].label);
+        if (ctor[i].icon)
+          {
+             ic = elm_icon_add(o);
+             elm_icon_standard_set(ic, ctor[i].icon);
+             elm_object_part_content_set(o, "icon", ic);
+          }
+        evas_object_show(o);
+        elm_box_pack_end(bb, o);
+     }
+
+   elm_box_pack_end(b3, bb);
+
    /* Show inwin */
-   editor_inwin_set(ed, box, "minimal",
-                    "Create", _mc_create_cb,
-                    "Cancel", _mc_cancel_cb);
+   editor_inwin_set(ed, box, "minimal", NULL, NULL, NULL, NULL);
 }
 
 void
