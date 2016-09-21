@@ -531,7 +531,7 @@ editor_new(const char   *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed->win, err_free);
    elm_win_focus_highlight_enabled_set(ed->win, EINA_FALSE);
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
-   evas_object_resize(ed->win, 960, 480);
+   evas_object_resize(ed->win, 960, 600);
    evas_event_callback_add(evas_object_evas_get(ed->win),
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
                            _focus_in_cb, ed);
