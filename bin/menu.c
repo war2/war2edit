@@ -598,6 +598,16 @@ _era_changed_cb(void        *data,
    menu_map_properties_update(ed);
 }
 
+static void
+_set_description_cb(void        *data,
+                    Evas_Object *obj,
+                    void        *event_info EINA_UNUSED)
+{
+   Editor *const ed = data;
+
+   pud_description_set(ed->pud, elm_object_text_get(obj));
+}
+
 Evas_Object *
 menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
@@ -702,6 +712,8 @@ menu_map_properties_new(Editor      *ed,
    evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_entry_markup_filter_append(e, elm_entry_filter_limit_size, &limit);
+   evas_object_smart_callback_add(e, "changed,user", _set_description_cb, ed);
+   elm_object_text_set(e, pud_description_get(ed->pud));
    elm_entry_single_line_set(e, EINA_TRUE);
    elm_entry_scrollable_set(e, EINA_TRUE);
    elm_entry_editable_set(e, EINA_TRUE);
