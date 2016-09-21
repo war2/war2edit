@@ -529,6 +529,7 @@ editor_new(const char   *pud_file,
    /* Create window and set callbacks */
    ed->win = elm_win_util_standard_add("win-editor", "war2edit");
    EINA_SAFETY_ON_NULL_GOTO(ed->win, err_free);
+   elm_win_autodel_set(ed->win, EINA_TRUE);
    elm_win_focus_highlight_enabled_set(ed->win, EINA_FALSE);
    evas_object_smart_callback_add(ed->win, "delete,request", _win_del_cb, ed);
    evas_object_resize(ed->win, 960, 600);
