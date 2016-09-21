@@ -603,7 +603,10 @@ menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
 {
    Evas_Object *f, *box, *b, *o, *bb, *ff, *e;
-
+   static Elm_Entry_Filter_Limit_Size limit = {
+      .max_char_count = 31,
+      .max_byte_count = 0,
+   };
 
    /* Frame for map era */
    f = elm_frame_add(parent);
@@ -698,6 +701,7 @@ menu_map_properties_new(Editor      *ed,
    e = elm_entry_add(ff);
    evas_object_size_hint_weight_set(e, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(e, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_entry_markup_filter_append(e, elm_entry_filter_limit_size, &limit);
    elm_entry_single_line_set(e, EINA_TRUE);
    elm_entry_scrollable_set(e, EINA_TRUE);
    elm_entry_editable_set(e, EINA_TRUE);
