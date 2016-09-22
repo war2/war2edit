@@ -74,6 +74,7 @@ const char *main_edje_file_get(void);
 
 #include "str.h"
 #include "prefs.h"
+#include "plugins.h"
 #include "log.h"
 #include "tile.h"
 #include "atlas.h"

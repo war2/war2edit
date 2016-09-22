@@ -18,11 +18,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-#add_definitions(-DPACKAGE_BIN_DIR=\"${CMAKE_INSTALL_PREFIX}/bin\")
-#add_definitions(-DPACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\")
-#add_definitions(-DPACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\")
-#add_definitions(-DBUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\")
-
 add_executable(war2edit
    main.c
    editor.c
@@ -31,6 +26,8 @@ add_executable(war2edit
    log.h
    bitmap.c
    bitmap.h
+   plugins.c
+   plugins.h
    atlas.c
    atlas.h
    sprite.c
@@ -100,6 +97,8 @@ target_compile_definitions(war2edit
    PRIVATE PACKAGE_DATA_DIR=\"${CMAKE_INSTALL_PREFIX}/share/${CMAKE_PROJECT_NAME}\"
    PRIVATE PACKAGE_LIB_DIR=\"${CMAKE_INSTALL_PREFIX}/lib\"
    PRIVATE BUILD_DATA_DIR=\"${CMAKE_BINARY_DIR}/data\"
+   PRIVATE PACKAGE_BUILD_DIR=\"${CMAKE_BINARY_DIR}\"
+   PRIVATE PACKAGE_VERSION=\"${PROJECT_VERSION}\"
    PRIVATE EO_BETA_API=1
    PRIVATE EFL_BETA_API_SUPPORT=1
    PRIVATE EFL_EO_API_SUPPORT=1
