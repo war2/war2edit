@@ -1459,8 +1459,6 @@ bitmap_add(Editor *ed)
    const char group[] = "war2edit/cursor";
    unsigned char *pixels;
 
-   DBG("Adding bitmap");
-
    /* The scroller*/
    evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_RESIZE,
                                   _bitmap_resize_cb, ed);
@@ -1543,11 +1541,6 @@ bitmap_add(Editor *ed)
 
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
-
-
-   cairo_set_source_rgb(ed->bitmap.cr, 1.0, 1.0, 0.0);
-   cairo_rectangle(ed->bitmap.cr, 10, 10, 200, 200);
-   cairo_fill(ed->bitmap.cr);
 
    _bitmap_autoresize(ed);
 
