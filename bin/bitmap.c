@@ -1454,10 +1454,9 @@ bitmap_add(Editor *ed)
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
    Evas *const e = evas_object_evas_get(ed->win);
-   Eo *o;
+   Evas_Object *o;
    Eina_Bool chk;
    const char group[] = "war2edit/cursor";
-   unsigned char *pixels;
 
    /* The scroller*/
    evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_RESIZE,
@@ -1478,8 +1477,6 @@ bitmap_add(Editor *ed)
    evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
    evas_object_size_hint_align_set(o, 0.0, 0.0);
    evas_object_size_hint_weight_set(o, 0.0, 0.0);
-   evas_object_size_hint_min_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
-   evas_object_size_hint_max_set(o, ed->bitmap.max_w, ed->bitmap.max_h);
    elm_object_content_set(ed->scroller, o);
    evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, ed);
    evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_MOVE, _mouse_move_cb, ed);
@@ -1487,18 +1484,6 @@ bitmap_add(Editor *ed)
    evas_object_propagate_events_set(o, EINA_FALSE);
    evas_object_pass_events_set(o, EINA_FALSE);
    evas_object_show(o);
-
-   /* Cairo surface for the game */
-   ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                                ed->bitmap.max_w,
-                                                ed->bitmap.max_h);
-   ed->bitmap.cr = cairo_create(ed->bitmap.surf);
-   cairo_surface_flush(ed->bitmap.surf);
-   pixels = cairo_image_surface_get_data(ed->bitmap.surf);
-   evas_object_image_size_set(ed->bitmap.img,
-                              cairo_image_surface_get_width(ed->bitmap.surf),
-                              cairo_image_surface_get_height(ed->bitmap.surf));
-   evas_object_image_data_set(ed->bitmap.img, pixels);
 
    /* Debug will required text */
    if (ed->debug != EDITOR_DEBUG_NONE)
@@ -1509,6 +1494,8 @@ bitmap_add(Editor *ed)
         cairo_set_font_size(ed->bitmap.cr, 8);
      }
 
+
+   bitmap_resize(ed);
 
    /* Clip - to avoid the cursor overlapping with the scroller */
    o = ed->bitmap.clip = evas_object_rectangle_add(e);
@@ -1539,12 +1526,51 @@ bitmap_add(Editor *ed)
    bitmap_cursor_visibility_set(ed, EINA_FALSE);
    bitmap_cursor_enabled_set(ed, EINA_TRUE);
 
-   ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
-   EINA_SAFETY_ON_NULL_RETURN_VAL(ed->cells, EINA_FALSE);
-
    _bitmap_autoresize(ed);
 
    return EINA_TRUE;
+}
+
+void
+bitmap_resize(Editor *ed)
+{
+   unsigned char *pixels;
+
+   ed->bitmap.max_w = ed->bitmap.cell_w * ed->pud->map_w;
+   ed->bitmap.max_h = ed->bitmap.cell_h * ed->pud->map_h;
+
+   evas_object_size_hint_min_set(ed->bitmap.img, ed->bitmap.max_w, ed->bitmap.max_h);
+   evas_object_size_hint_max_set(ed->bitmap.img, ed->bitmap.max_w, ed->bitmap.max_h);
+
+   /* Cairo surface for the game */
+   if (ed->bitmap.surf)
+     {
+        cairo_destroy(ed->bitmap.cr);
+        cairo_surface_destroy(ed->bitmap.surf);
+     }
+   ed->bitmap.surf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                ed->bitmap.max_w,
+                                                ed->bitmap.max_h);
+   ed->bitmap.cr = cairo_create(ed->bitmap.surf);
+   cairo_surface_flush(ed->bitmap.surf);
+   pixels = cairo_image_surface_get_data(ed->bitmap.surf);
+   evas_object_image_size_set(ed->bitmap.img,
+                              cairo_image_surface_get_width(ed->bitmap.surf),
+                              cairo_image_surface_get_height(ed->bitmap.surf));
+   evas_object_image_data_set(ed->bitmap.img, pixels);
+
+   if (ed->cells)
+     {
+        cell_matrix_free(ed->cells);
+     }
+   ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
+   if (EINA_UNLIKELY(!ed->cells))
+     {
+        CRI("Failed to create cells matrix");
+     }
+   editor_units_recount(ed);
+   editor_units_list_update(ed);
+   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 }
 
 void
