@@ -129,6 +129,33 @@ _gen_upgrades_icon_get_cb(void        *data,
 }
 
 static void
+_randomize_cb(void        *data,
+              Evas_Object *obj   EINA_UNUSED,
+              void        *event EINA_UNUSED)
+{
+   Editor *const ed = data;
+   const Eina_Module *m;
+   float *(*func)(unsigned int, unsigned int, float, unsigned int);
+   float *map;
+
+   /* FIXME BAD */
+   m = plugins_request("generators", "perlin");
+   func = eina_module_symbol_get(m, "perlin");
+   if (EINA_UNLIKELY(!func))
+     {
+        CRI("Failed to find symbol");
+        return;
+     }
+
+   ed->generator = func(ed->pud->map_w, ed->pud->map_h, 0.1, 4);
+   if (EINA_UNLIKELY(!ed->generator))
+     {
+        CRI("Failed to create random map");
+        return;
+     }
+}
+
+static void
 _map_properties_cb(void        *data,
                    Evas_Object *obj   EINA_UNUSED,
                    void        *event EINA_UNUSED)
@@ -597,7 +624,7 @@ Evas_Object *
 menu_map_properties_new(Editor      *ed,
                         Evas_Object *parent)
 {
-   Evas_Object *f, *box, *b, *o, *bb, *ff, *e;
+   Evas_Object *f, *box, *b, *o, *bb, *ff, *e, *gens;
    static Elm_Entry_Filter_Limit_Size limit = {
       .max_char_count = 31,
       .max_byte_count = 0,
@@ -675,8 +702,9 @@ menu_map_properties_new(Editor      *ed,
 
    /* Default value */
    elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
-   ed->pud->extension_pack = EINA_TRUE;
+   ed->pud->extension_pack = EINA_TRUE; // FIXME ???
 
+   /* Map preview */
    ed->preview = evas_object_image_filled_add(evas_object_evas_get(box));
    evas_object_image_colorspace_set(ed->preview, EVAS_COLORSPACE_ARGB8888);
    evas_object_size_hint_weight_set(ed->preview, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -684,8 +712,36 @@ menu_map_properties_new(Editor      *ed,
    evas_object_event_callback_add(ed->preview, EVAS_CALLBACK_FREE, _free_px_cb, NULL);
    menu_map_properties_update(ed);
 
+   /* */
+     {
+        Evas_Object *o, *b;
+
+        gens = elm_frame_add(box);
+        evas_object_size_hint_weight_set(gens, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+        evas_object_size_hint_align_set(gens, EVAS_HINT_FILL, EVAS_HINT_FILL);
+        elm_object_text_set(gens, "Generators");
+        evas_object_show(gens);
+
+        b = elm_box_add(gens);
+        evas_object_size_hint_weight_set(b, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+        evas_object_size_hint_align_set(b, EVAS_HINT_FILL, EVAS_HINT_FILL);
+        elm_box_horizontal_set(b, EINA_FALSE);
+        evas_object_show(b);
+        elm_object_content_set(gens, b);
+
+        o = elm_button_add(b);
+        evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+        evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 1.0);
+        evas_object_show(o);
+        elm_object_text_set(o, "Random Map");
+        evas_object_smart_callback_add(o, "clicked", _randomize_cb, ed);
+        elm_box_pack_end(b, o);
+     }
+
+   /* Compose the final box */
    elm_box_pack_start(box, b);
    elm_box_pack_end(box, ed->preview);
+   elm_box_pack_end(box, gens);
 
    ff = elm_frame_add(f);
    elm_object_text_set(ff, "Map Description");
