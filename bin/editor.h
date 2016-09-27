@@ -151,6 +151,7 @@ struct _Editor
    uint8_t     sides[8]; /* Orc, Human */
    Evas_Point  start_locations[8];
 
+   float *generator;
    unsigned int    debug;
    double zoom;
 
