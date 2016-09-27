@@ -1535,6 +1535,7 @@ void
 bitmap_resize(Editor *ed)
 {
    unsigned char *pixels;
+   Eina_Bool recount = EINA_FALSE;
 
    ed->bitmap.max_w = ed->bitmap.cell_w * ed->pud->map_w;
    ed->bitmap.max_h = ed->bitmap.cell_h * ed->pud->map_h;
@@ -1562,14 +1563,18 @@ bitmap_resize(Editor *ed)
    if (ed->cells)
      {
         cell_matrix_free(ed->cells);
+        recount = EINA_TRUE;
      }
    ed->cells = cell_matrix_new(ed->pud->map_w, ed->pud->map_h);
    if (EINA_UNLIKELY(!ed->cells))
      {
         CRI("Failed to create cells matrix");
      }
-   editor_units_recount(ed);
-   editor_units_list_update(ed);
+   if (recount)
+     {
+        editor_units_recount(ed);
+        editor_units_list_update(ed);
+     }
    minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 }
 
