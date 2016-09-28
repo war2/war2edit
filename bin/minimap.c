@@ -80,7 +80,6 @@ _hide_cb(void        *data,
 Eina_Bool
 minimap_add(Editor *ed)
 {
-   unsigned int w, i, ratio;
    Evas_Object *o;
    Evas *evas;
 
@@ -91,46 +90,6 @@ minimap_add(Editor *ed)
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, 0.0, 0.0);
    evas_object_show(o);
-
-   /* Define a ratio to resize the minimap (way too small overwise) */
-   switch (ed->pud->dims)
-     {
-      case PUD_DIMENSIONS_32_32:   ratio = 5; break;
-      case PUD_DIMENSIONS_64_64:   ratio = 3; break;
-      case PUD_DIMENSIONS_96_96:   ratio = 2; break;
-      case PUD_DIMENSIONS_128_128: ratio = 2; break;
-      default:
-         CRI("ed->pud->dims is %i. This MUST NEVER happen", ed->pud->dims);
-         goto fail;
-     }
-   ed->minimap.ratio = ratio;
-
-   /* Colorspace width */
-   w = ed->pud->map_w * 4;
-
-   /* Allocate Iliffe vector to hold the minimap */
-   ed->minimap.data = malloc(ed->pud->map_h * sizeof(unsigned char *));
-   if (EINA_UNLIKELY(!ed->minimap.data))
-     {
-        CRI("Failed to alloc memory");
-        goto fail;
-     }
-   ed->minimap.data[0] = malloc(ed->pud->map_w * ed->pud->map_h * 4);
-   if (EINA_UNLIKELY(!ed->minimap.data[0]))
-     {
-        CRI("Failed to alloc memory");
-        goto fail_free;
-     }
-   for (i = 1; i < ed->pud->map_h; ++i)
-     ed->minimap.data[i] = ed->minimap.data[i - 1] + w;
-
-   /* Resize window for current minimap */
-   evas_object_size_hint_max_set(o, ed->pud->map_w * ratio, ed->pud->map_w * ratio);
-   evas_object_size_hint_min_set(o, ed->pud->map_h * ratio, ed->pud->map_h * ratio);
-
-   /* Configure minimap image */
-   evas_object_image_size_set(o, ed->pud->map_w, ed->pud->map_h);
-   evas_object_image_data_set(o, ed->minimap.data[0]);
 
    evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
                                   _mouse_down_cb, ed);
@@ -152,9 +111,66 @@ minimap_add(Editor *ed)
                                   _hide_cb, ed);
 
    return EINA_TRUE;
+}
 
+Eina_Bool
+minimap_resize(Editor *ed)
+{
+   unsigned int w, i, ratio;
+   void *ptr;
+
+   INF("Resizing minimap");
+
+   /* Define a ratio to resize the minimap (way too small overwise) */
+   switch (ed->pud->dims)
+     {
+      case PUD_DIMENSIONS_32_32:   ratio = 5; break;
+      case PUD_DIMENSIONS_64_64:   ratio = 3; break;
+      case PUD_DIMENSIONS_96_96:   ratio = 2; break;
+      case PUD_DIMENSIONS_128_128: ratio = 2; break;
+      default:
+         CRI("ed->pud->dims is %i. This MUST NEVER happen", ed->pud->dims);
+         goto fail;
+     }
+   ed->minimap.ratio = ratio;
+
+   /* Colorspace width */
+   w = ed->pud->map_w * 4;
+
+   /* Allocate Iliffe vector to hold the minimap */
+   ptr = (ed->minimap.data) ? ed->minimap.data[0] : NULL;
+   ptr = realloc(ptr, ed->pud->map_w * ed->pud->map_h * 4);
+   if (EINA_UNLIKELY(!ptr))
+     {
+        CRI("Failed to alloc memory");
+        goto fail;
+     }
+   ed->minimap.data = realloc(ed->minimap.data,
+                              ed->pud->map_h * sizeof(unsigned char *));
+   if (EINA_UNLIKELY(!ed->minimap.data))
+     {
+        CRI("Failed to alloc memory");
+        goto fail_free;
+     }
+   ed->minimap.data[0] = ptr;
+   for (i = 1; i < ed->pud->map_h; ++i)
+     ed->minimap.data[i] = ed->minimap.data[i - 1] + w;
+
+   /* Resize map for current minimap */
+   evas_object_size_hint_max_set(ed->minimap.map,
+                                 ed->pud->map_w * ratio,
+                                 ed->pud->map_w * ratio);
+   evas_object_size_hint_min_set(ed->minimap.map,
+                                 ed->pud->map_h * ratio,
+                                 ed->pud->map_h * ratio);
+
+   /* Configure minimap image */
+   evas_object_image_size_set(ed->minimap.map, ed->pud->map_w, ed->pud->map_h);
+   evas_object_image_data_set(ed->minimap.map, ed->minimap.data[0]);
+
+   return EINA_TRUE;
 fail_free:
-   free(ed->minimap.data);
+   free(ptr);
 fail:
    return EINA_FALSE;
 }

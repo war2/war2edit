@@ -33,6 +33,8 @@ minimap_render(Editor *ed,
                unsigned int  w,
                unsigned int  h);
 
+Eina_Bool minimap_resize(Editor *ed);
+
 void
 minimap_render_unit(Editor *ed,
                     unsigned int  x,
