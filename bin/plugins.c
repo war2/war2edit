@@ -77,7 +77,7 @@ plugins_request(const char *type,
                 const char *name)
 {
    Eina_Stringshare *shr;
-   Eina_Module *mod;
+   Eina_Module *mod = NULL;
    char path[PATH_MAX];
    int bytes;
    Eina_Bool chk;
