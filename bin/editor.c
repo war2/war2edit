@@ -538,6 +538,7 @@ editor_new(const char   *pud_file,
                            _focus_in_cb, ed);
 
    /* Get the main menu */
+   sel_add(ed);
    menu_units_add(ed);
    menu_players_add(ed);
    menu_properties_add(ed);
