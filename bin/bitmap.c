@@ -1485,6 +1485,8 @@ bitmap_add(Editor *ed)
    evas_object_pass_events_set(o, EINA_FALSE);
    evas_object_show(o);
 
+   bitmap_resize(ed);
+
    /* Debug will required text */
    if (ed->debug != EDITOR_DEBUG_NONE)
      {
@@ -1493,9 +1495,6 @@ bitmap_add(Editor *ed)
                                CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(ed->bitmap.cr, 8);
      }
-
-
-   bitmap_resize(ed);
 
    /* Clip - to avoid the cursor overlapping with the scroller */
    o = ed->bitmap.clip = evas_object_rectangle_add(e);
@@ -1515,7 +1514,7 @@ bitmap_add(Editor *ed)
      {
         ERR("Failed to set edje with file %s, group %s",
             main_edje_file_get(), group);
-        /* FIXME dealloc */
+        bitmap_del(ed);
         return EINA_FALSE;
      }
    evas_object_clip_set(o, ed->bitmap.clip);
