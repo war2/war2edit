@@ -1,6 +1,11 @@
 war2edit
 ========
 
+<a href="https://scan.coverity.com/projects/jeanguyomarch-war2edit">
+    <img alt="Coverity Scan Build Status"
+         src="https://scan.coverity.com/projects/6936/badge.svg"/>
+</a>
+
 A modest clone of Warcraft II World Map Editor.
 
 
