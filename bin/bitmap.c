@@ -1578,7 +1578,7 @@ bitmap_resize(Editor *ed)
      }
 
    minimap_resize(ed);
-   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
+   editor_partial_load(ed);
 }
 
 void
