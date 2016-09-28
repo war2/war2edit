@@ -190,7 +190,7 @@ sel_end(Editor *ed)
                     }
                   else
                     {
-                       if (!(anchor->selected_below & SEL_MARK))
+                       if (!(anchor->selected_above & SEL_MARK))
                          ++ed->sel.selections;
                        anchor->selected_above |= (SEL_MARK | SEL_SET);
                     }
