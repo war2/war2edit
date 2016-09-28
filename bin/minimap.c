@@ -83,7 +83,6 @@ minimap_add(Editor *ed)
    Evas_Object *o;
    Evas *evas;
 
-
    evas = evas_object_evas_get(ed->lay);
    o = ed->minimap.map = evas_object_image_filled_add(evas);
    evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);

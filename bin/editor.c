@@ -662,7 +662,10 @@ editor_new(const char   *pud_file,
    elm_layout_signal_callback_add(ed->lay, "war2edit,menu,out", "war2edit",
                                   _editor_menu_out_cb, ed);
 
+
+
    /* Show window */
+
    evas_object_show(ed->win);
 
    menu_unit_selection_reset(ed);
@@ -698,6 +701,13 @@ editor_new(const char   *pud_file,
              goto err_win_del;
           }
 
+        atlas_texture_open(ed->pud->era);
+        atlas_icon_open(ed->pud->era);
+        sprite_buildings_open(ed->pud->era);
+        minimap_add(ed);
+        bitmap_add(ed);
+        minimap_show(ed);
+
         snprintf(title, sizeof(title), "Untitled - %u", _eds++);
 
         /* Mainconfig: get user input for config parameters */
@@ -705,6 +715,7 @@ editor_new(const char   *pud_file,
      }
 
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
+   snapshot_add(ed);
 
    /* Set window's title */
    editor_name_set(ed, title);
@@ -943,11 +954,8 @@ editor_load(Editor     *ed,
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
 
-   unsigned int i, j, sw, sh, count;
+   unsigned int i, count;
    Pud *pud;
-   Pud_Unit_Data *u;
-   uint16_t tile;
-   uint8_t bl, br, tl, tr, seed;
 
    DBG("Loading %s\n", file);
 
@@ -971,40 +979,16 @@ editor_load(Editor     *ed,
      }
 
    pud = ed->pud;
-
    atlas_texture_open(pud->era);
    atlas_icon_open(pud->era);
    sprite_buildings_open(pud->era);
 
-   if (EINA_UNLIKELY(!bitmap_add(ed)))
-     {
-        CRI("Failed to create bitmap");
-        return EINA_FALSE;
-     }
-   sel_add(ed);
-   minimap_add(ed);
+   if (!ed->minimap.map) minimap_add(ed);
+   if (!ed->bitmap.img) bitmap_add(ed);
+   else bitmap_resize(ed);
 
-   // TODO split the map into parts, and do a parallel load
-   for (j = 0; j < pud->map_h; j++)
-     for (i = 0; i < pud->map_w; i++)
-       {
-          tile = pud_tile_get(pud, i, j);
-          tile_decompose(tile, &tl, &tr, &bl, &br, &seed);
-          bitmap_tile_set(ed, i, j, tl, tr, bl, br, seed, EINA_TRUE);
-       }
-
-   for (i = 0; i < pud->units_count; ++i)
-     {
-        u = &(pud->units[i]);
-        sprite_tile_size_get(u->type, &sw, &sh);
-        bitmap_unit_set(ed, u->type, u->owner,
-                        sprite_info_random_get(), u->x, u->y, sw, sh,
-                        u->alter);
-     }
-   snapshot_add(ed);
-   bitmap_refresh(ed, NULL);
    minimap_show(ed);
-   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
+   editor_partial_load(ed);
 
    count = pud->units_count;
    pud->units_count = 0;
@@ -1583,4 +1567,34 @@ editor_inwin_dismiss(Editor *ed)
 {
    evas_object_del(ed->inwin);
    ed->inwin = NULL;
+}
+
+void
+editor_partial_load(Editor *ed)
+{
+   const Pud *const pud = ed->pud;
+   unsigned int i, j, sw, sh;
+   uint16_t tile;
+   uint8_t bl, br, tl, tr, seed;
+   Pud_Unit_Data *u;
+
+   // TODO split the map into parts, and do a parallel load
+   for (j = 0; j < pud->map_h; j++)
+     for (i = 0; i < pud->map_w; i++)
+       {
+          tile = pud_tile_get(pud, i, j);
+          tile_decompose(tile, &tl, &tr, &bl, &br, &seed);
+          bitmap_tile_set(ed, i, j, tl, tr, bl, br, seed, EINA_TRUE);
+       }
+
+   for (i = 0; i < pud->units_count; ++i)
+     {
+        u = &(pud->units[i]);
+        sprite_tile_size_get(u->type, &sw, &sh);
+        bitmap_unit_set(ed, u->type, u->owner,
+                        sprite_info_random_get(), u->x, u->y, sw, sh,
+                        u->alter);
+     }
+   bitmap_refresh(ed, NULL);
+   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 }

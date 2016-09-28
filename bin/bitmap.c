@@ -1537,6 +1537,8 @@ bitmap_resize(Editor *ed)
    unsigned char *pixels;
    Eina_Bool recount = EINA_FALSE;
 
+   INF("Resizing bitmap: %i,%i", ed->pud->map_w, ed->pud->map_h);
+
    ed->bitmap.max_w = ed->bitmap.cell_w * ed->pud->map_w;
    ed->bitmap.max_h = ed->bitmap.cell_h * ed->pud->map_h;
 
@@ -1575,6 +1577,8 @@ bitmap_resize(Editor *ed)
         editor_units_recount(ed);
         editor_units_list_update(ed);
      }
+
+   minimap_resize(ed);
    minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 }
 

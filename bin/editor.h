@@ -276,6 +276,8 @@ editor_inwin_set(Editor        *ed,
                  Evas_Smart_Cb  cancel_smart_cb);
 void editor_inwin_dismiss(Editor *ed);
 
+void editor_partial_load(Editor *ed);
+
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \
       CRI(msg_, ## __VA_ARGS__); \

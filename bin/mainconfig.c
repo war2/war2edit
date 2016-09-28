@@ -76,6 +76,8 @@ _size_changed_cb(void        *data,
               CRI("Invalid ID for size radio group [%i]", id);
               return;
      }
+   bitmap_resize(ed);
+   pud_era_set(ed->pud, ed->pud->era);
 }
 
 
@@ -145,11 +147,6 @@ mainconfig_show(Editor *ed)
    evas_object_smart_callback_add(o, "changed", _has_extension_cb, ed);
    elm_box_pack_start(box, o);
    evas_object_show(o);
-
-   /* Image to hold the minimap overview */
-   img = elm_image_add(b2);
-   elm_box_pack_start(b2, img);
-   //   elm_image_file_set(img, // TODO
 
    /* Box to put commands */
    b3 = elm_box_add(b2);
@@ -237,6 +234,7 @@ mainconfig_show(Editor *ed)
 
    /* Show inwin */
    editor_inwin_set(ed, box, "minimal", NULL, NULL, NULL, NULL);
+   editor_partial_load(ed);
 }
 
 void
