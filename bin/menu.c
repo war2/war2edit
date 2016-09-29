@@ -22,6 +22,13 @@
 
 #include "war2edit.h"
 
+/*
+ * Set to 1 to enable generated map debug.
+ * On generation a grayscale PPM will be saved
+ * in the current working directory
+ */
+#define DEGUG_GENERATOR 0
+
 static Eina_Hash *_values = NULL;
 #define PUD_DATA "war2edit/pud"
 
@@ -29,6 +36,34 @@ static Eina_Hash *_values = NULL;
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
+
+#if DEGUG_GENERATOR
+static void
+_ppm_save(const float *map,
+          unsigned int w,
+          unsigned int h)
+{
+   FILE *f;
+   const char filename[] = "randmap.ppm";
+   unsigned int i, k = 0;
+   const unsigned int size = w * h;
+
+   f = fopen(filename, "w+");
+   if (EINA_UNLIKELY(!f))
+     {
+        CRI("Failed to open \"%s\" (W+)", filename);
+        return;
+     }
+
+   fprintf(f, "P2\n%u %u\n255\n", w, h);
+   for (i = 0; i < size; i++)
+     {
+        fprintf(f, "%u ", (unsigned int)(map[k++] * 255.0f));
+        if ((i + 1) % w == 0) fprintf(f, "\n");
+     }
+   fclose(f);
+}
+#endif
 
 static Evas_Object *
 _radio_add(Editor          *ed EINA_UNUSED,
@@ -137,6 +172,21 @@ _randomize_cb(void        *data,
    const Eina_Module *m;
    float *(*func)(unsigned int, unsigned int, float, unsigned int);
    float *map;
+   struct {
+      Tile tile;
+      float limit;
+   } const ctor[] = {
+        { TILE_WATER_DARK,      0.05f },
+        { TILE_WATER_LIGHT,     0.12f },
+        { TILE_GROUND_LIGHT,    0.15f },
+        { TILE_GROUND_DARK,     0.2f },
+        { TILE_GRASS_LIGHT,     0.65f },
+        { TILE_GRASS_DARK,      0.7f },
+        { TILE_TREES,           0.9f },
+        { TILE_GROUND_LIGHT,    0.9f },
+        { TILE_ROCKS,           1.0f },
+   };
+   unsigned int i, j, k = 0, l;
 
    /* FIXME BAD */
    m = plugins_request("generators", "perlin");
@@ -147,12 +197,41 @@ _randomize_cb(void        *data,
         return;
      }
 
-   ed->generator = func(ed->pud->map_w, ed->pud->map_h, 0.1, 4);
-   if (EINA_UNLIKELY(!ed->generator))
+   map = func(ed->pud->map_w, ed->pud->map_h, 0.1, 4);
+   if (EINA_UNLIKELY(!map))
      {
         CRI("Failed to create random map");
         return;
      }
+
+#if DEGUG_GENERATOR
+   _ppm_save(map, ed->pud->map_w, ed->pud->map_h);
+#endif
+
+   for (j = 0; j < ed->pud->map_h; j++)
+     for (i = 0; i < ed->pud->map_w; i++)
+       {
+          for (l = 0; l < EINA_C_ARRAY_LENGTH(ctor); l++)
+            {
+               if (map[k] <= ctor[l].limit)
+                 {
+                    bitmap_tile_set(ed, i, j,
+                                    ctor[l].tile, ctor[l].tile,
+                                    ctor[l].tile, ctor[l].tile,
+                                    TILE_RANDOMIZE, EINA_TRUE);
+                    bitmap_tile_calculate(ed, i, j, NULL);
+                    break;
+                 }
+            }
+
+          k++;
+       }
+   free(map);
+
+   editor_tiles_sync(ed);
+   bitmap_refresh(ed, NULL);
+   minimap_reload(ed);
+   menu_map_properties_update(ed);
 }
 
 static void
@@ -557,7 +636,7 @@ _free_px_cb(void        *data EINA_UNUSED,
    free(px);
 }
 
-static void
+void
 menu_map_properties_update(Editor *ed)
 {
    unsigned char *px;

@@ -42,7 +42,6 @@ _mc_create_cb(void        *data,
 {
    Editor *ed = data;
 
-   editor_load(ed, NULL);
    mainconfig_hide(ed);
 }
 

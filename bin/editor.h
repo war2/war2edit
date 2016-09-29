@@ -151,7 +151,6 @@ struct _Editor
    uint8_t     sides[8]; /* Orc, Human */
    Evas_Point  start_locations[8];
 
-   float *generator;
    unsigned int    debug;
    double zoom;
 
@@ -278,6 +277,7 @@ void editor_inwin_dismiss(Editor *ed);
 
 void editor_partial_load(Editor *ed);
 
+Eina_Bool editor_tiles_sync(Editor *ed);
 #define EDITOR_ERROR(ed_, msg_, ...) \
    do { \
       CRI(msg_, ## __VA_ARGS__); \

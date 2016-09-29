@@ -821,6 +821,21 @@ panic:
 }
 
 Eina_Bool
+editor_tiles_sync(Editor *ed)
+{
+   unsigned int i, j, k = 0;
+   const Cell *c;
+
+   for (j = 0; j < ed->pud->map_h; j++)
+     for (i = 0; i < ed->pud->map_w; i++)
+       {
+          c = &(ed->cells[j][i]);
+          ed->pud->tiles_map[k++] = c->tile;
+       }
+   return EINA_TRUE;
+}
+
+Eina_Bool
 editor_sync(Editor *ed)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);

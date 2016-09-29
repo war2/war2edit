@@ -38,6 +38,8 @@ Evas_Object *menu_upgrades_properties_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_dosbox_prefs_new(Editor *ed, Evas_Object *parent);
 Evas_Object *menu_allow_properties_new(Editor *ed, Evas_Object *parent);
 
+void menu_map_properties_update(Editor *ed);
+
 Eina_Bool menu_units_add(Editor *ed);
 Eina_Bool menu_players_add(Editor *ed);
 
