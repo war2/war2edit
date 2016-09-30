@@ -198,15 +198,15 @@ _randomize_cb(void        *data,
       Tile tile;
       float limit;
    } const ctor[] = {
-        { TILE_WATER_DARK,      0.05f },
-        { TILE_WATER_LIGHT,     0.12f },
-        { TILE_GROUND_LIGHT,    0.15f },
-        { TILE_GROUND_DARK,     0.2f },
-        { TILE_GRASS_LIGHT,     0.65f },
-        { TILE_GRASS_DARK,      0.7f },
-        { TILE_TREES,           0.9f },
-        { TILE_GROUND_LIGHT,    0.9f },
-        { TILE_ROCKS,           1.0f },
+        { TILE_WATER_DARK,     -1.00f },
+        { TILE_WATER_LIGHT,    -1.00f },
+        { TILE_GROUND_LIGHT,   -1.00f },
+        { TILE_GROUND_DARK,    -1.00f },
+        { TILE_GRASS_LIGHT,     0.30f },
+        { TILE_GRASS_DARK,      0.40f },
+        { TILE_TREES,           0.60f },
+        { TILE_GROUND_LIGHT,    0.65f },
+        { TILE_ROCKS,           1.00f },
    };
    unsigned int i, j, k = 0, l;
 
