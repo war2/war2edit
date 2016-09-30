@@ -63,6 +63,28 @@ _ppm_save(const float *map,
      }
    fclose(f);
 }
+
+static void
+_dump_map(const float *map,
+          unsigned int w,
+          unsigned int h)
+{
+   FILE *f;
+   const char filename[] = "randmap.dat";
+   const unsigned int size = w * h;
+   unsigned int i;
+
+   f = fopen(filename, "w+");
+   if (EINA_UNLIKELY(!f))
+     {
+        CRI("Failed to open \"%s\"", filename);
+        return;
+     }
+
+   for (i = 0; i < size; i++)
+     fprintf(f, "%f %f\n", (double)i, (double)map[i]);
+   fclose(f);
+}
 #endif
 
 static Evas_Object *
@@ -206,6 +228,7 @@ _randomize_cb(void        *data,
 
 #if DEGUG_GENERATOR
    _ppm_save(map, ed->pud->map_w, ed->pud->map_h);
+   _dump_map(map, ed->pud->map_w, ed->pud->map_h);
 #endif
 
    for (j = 0; j < ed->pud->map_h; j++)
