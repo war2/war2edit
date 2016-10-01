@@ -377,14 +377,6 @@ _radio_players_changed_cb(void        *data,
 }
 
 static void
-_console_show_cb(void        *data EINA_UNUSED,
-                 Evas_Object *obj  EINA_UNUSED,
-                 void        *evt  EINA_UNUSED)
-{
-   log_console_show();
-}
-
-static void
 _prefs_dosbox_cb(void        *data,
                  Evas_Object *obj  EINA_UNUSED,
                  void        *evt  EINA_UNUSED)
