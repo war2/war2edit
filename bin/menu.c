@@ -197,7 +197,7 @@ _randomize_cb(void        *data,
    struct {
       Tile tile;
       float limit;
-   } const ctor[] = {
+   } ctor[] = {
         { TILE_WATER_DARK,     -1.00f },
         { TILE_WATER_LIGHT,    -1.00f },
         { TILE_GROUND_LIGHT,   -1.00f },
@@ -229,6 +229,27 @@ _randomize_cb(void        *data,
 #if DEGUG_GENERATOR
    _ppm_save(map, ed->pud->map_w, ed->pud->map_h);
    _dump_map(map, ed->pud->map_w, ed->pud->map_h);
+#endif
+
+   /* Re-Init ctor */
+   while (1)
+     {
+        for (l = 0; l < EINA_C_ARRAY_LENGTH(ctor); l++)
+          ctor[l].limit = drand48();
+
+        for (k = 0, l = 0; l < EINA_C_ARRAY_LENGTH(ctor) - 1; l++)
+          {
+             if (ctor[l].limit < ctor[l + 1].limit)
+               k++;
+          }
+        if (k == EINA_C_ARRAY_LENGTH(ctor) - 1)
+          break;
+     }
+
+#if DEGUG_GENERATOR
+   printf("===\n");
+   for (l = 0; l < EINA_C_ARRAY_LENGTH(ctor); l++)
+     printf("%f\n", (double)ctor[l].limit);
 #endif
 
    for (j = 0; j < ed->pud->map_h; j++)
