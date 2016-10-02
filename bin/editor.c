@@ -42,11 +42,31 @@ static unsigned int _eds = 0;
 static Editor *_focused = NULL;
 static Elm_Genlist_Item_Class *_itcg = NULL;
 static Elm_Genlist_Item_Class *_itc = NULL;
+static Ecore_Event_Handler *_handler = NULL;
 
 
 /*============================================================================*
  *                                  Callbacks                                 *
  *============================================================================*/
+
+static Eina_Bool
+_handler_key_cb(void *data EINA_UNUSED,
+                int   type EINA_UNUSED,
+                void *info)
+{
+   Ecore_Event_Key *const key = info;
+   Editor *ed;
+
+   if (!strcmp(key->keyname, "Escape"))
+     {
+        ed = editor_focused_get();
+        elm_menu_close(ed->unitsmenu);
+        elm_menu_close(ed->playersmenu);
+        elm_menu_close(ed->propertiesmenu);
+
+     }
+   return ECORE_CALLBACK_RENEW;
+}
 
 static void
 _win_del_cb(void        *data,
@@ -259,6 +279,8 @@ editor_init(void)
    _itcg->item_style = "group_index";
    _itcg->func.text_get = _text_group_get_cb;
 
+   _handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, _handler_key_cb, NULL);
+
    ipc_spawns_cb_set(_spawn_cb, NULL);
    return EINA_TRUE;
 }
@@ -277,6 +299,9 @@ editor_shutdown(void)
    _itc = NULL;
    elm_genlist_item_class_free(_itcg);
    _itcg = NULL;
+
+   ecore_event_handler_del(_handler);
+   _handler = NULL;
 }
 
 void
