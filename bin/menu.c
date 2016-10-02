@@ -252,6 +252,7 @@ _randomize_cb(void        *data,
      printf("%f\n", (double)ctor[l].limit);
 #endif
 
+   snapshot_push(ed);
    for (j = 0; j < ed->pud->map_h; j++)
      for (i = 0; i < ed->pud->map_w; i++)
        {
@@ -270,6 +271,7 @@ _randomize_cb(void        *data,
 
           k++;
        }
+   snapshot_push_done(ed);
    free(map);
 
    editor_tiles_sync(ed);
