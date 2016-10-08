@@ -46,8 +46,6 @@ add_executable(war2edit
    sel.h
    tile.c
    tile.h
-   prefs.c
-   prefs.h
    snapshot.c
    snapshot.h
    unitselector.c
@@ -84,7 +82,6 @@ target_link_libraries(war2edit
 )
 add_dependencies(
    war2edit
-   prefs
    themes
 )
 

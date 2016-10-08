@@ -58,7 +58,6 @@ static const Module _modules[] =
    MODULE(atlas),
    MODULE(sprite),
    MODULE(menu),
-   MODULE(prefs),
    MODULE(plugins),
    MODULE(editor)
 #undef MODULE

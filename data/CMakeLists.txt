@@ -99,5 +99,4 @@ install(
    DESTINATION share/applications
 )
 
-add_subdirectory(prefs)
 add_subdirectory(themes)

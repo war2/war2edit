@@ -378,17 +378,6 @@ _radio_players_changed_cb(void        *data,
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 }
 
-static void
-_prefs_dosbox_cb(void        *data,
-                 Evas_Object *obj  EINA_UNUSED,
-                 void        *evt  EINA_UNUSED)
-{
-   Editor *const ed = data;
-
-   editor_inwin_set(ed, prefs_new(editor_inwin_add(ed), PREFS_DOSBOX),
-                   "default",  "Close", NULL, NULL, NULL);
-}
-
 /*============================================================================*
  *                                 Public API                                 *
  *============================================================================*/

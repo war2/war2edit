@@ -73,7 +73,6 @@ Eina_Bool main_in_tree_is(void);
 const char *main_edje_file_get(void);
 
 #include "str.h"
-#include "prefs.h"
 #include "plugins.h"
 #include "log.h"
 #include "tile.h"
