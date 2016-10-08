@@ -70,7 +70,7 @@ collections {
             desc { "visible";
                inherit: "default";
                rel1.offset: (-23*4)-5 0;
-               rel2.offset: (+23*6)+5 5;
+               rel2.offset: (+23*5)+5 5;
                color: 255 255 255 200;
             }
             effect: SHADOW BOTTOM;
@@ -202,28 +202,6 @@ collections {
                rel1.offset: 23*4 5;
             }
          }
-         external { "menu_run"; source: "elm/icon";
-            repeat_events: 1;
-            desc { "default";
-               rel.to: "top_zone";
-               rel1.relative: 0.5 0.0;
-               rel2.relative: 0.5 1.0;
-               rel1.offset: 23*5 -30;
-               align: 0.0 0.0;
-               FIXED_SIZE(20, 20);
-               params {
-                  string: "icon" "system-run";
-               }
-            }
-            desc { "visible";
-               inherit: "default";
-               rel1.offset: 23*5 5;
-            }
-         }
-
-
-
-
 
          swallow { "war2edit.main.tileselector";
             desc { "default";
@@ -466,9 +444,6 @@ collections {
          program { signal: "mouse,clicked,1"; source: "menu_properties";
             action: SIGNAL_EMIT "war2edit,properties,open" "war2edit";
          }
-         program { signal: "mouse,clicked,1"; source: "menu_run";
-            action: SIGNAL_EMIT "war2edit,run" "war2edit";
-         }
 
          program { signal: "mouse,in"; source: "menu_mask";
             action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
@@ -486,7 +461,6 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
-            target: "menu_run";
             transition: ACCELERATE 0.5;
          }
          program { signal: "mouse,out"; source: "top_zone";
@@ -499,7 +473,6 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
-            target: "menu_run";
             transition: DECELERATE 0.5;
          }
          program { signal: "war2edit,tileselector,show"; source: "war2edit";
