@@ -89,7 +89,7 @@ struct _Editor
    Cell        **cells;
 
    /* === Toolbar === */
-   Evas_Object  *segs[5];
+   Evas_Object  *segs[4];
    Editor_Sel    tb_sel;
    Pud_Unit      sel_unit;
    Pud_Player    sel_player;

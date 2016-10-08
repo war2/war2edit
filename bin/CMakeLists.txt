@@ -48,8 +48,6 @@ add_executable(war2edit
    tile.h
    prefs.c
    prefs.h
-   ipc.c
-   ipc.h
    snapshot.c
    snapshot.h
    unitselector.c

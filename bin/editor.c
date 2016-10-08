@@ -63,7 +63,6 @@ _handler_key_cb(void *data EINA_UNUSED,
         elm_menu_close(ed->unitsmenu);
         elm_menu_close(ed->playersmenu);
         elm_menu_close(ed->propertiesmenu);
-
      }
    return ECORE_CALLBACK_RENEW;
 }
@@ -127,18 +126,6 @@ _focus_in_cb(void        *data,
 {
    Editor *const ed = data;
    _focused = ed;
-}
-
-static void
-_spawn_cb(void         *data  EINA_UNUSED,
-          unsigned int  spawns)
-{
-   Eina_List *l;
-   Editor *ed;
-   const Eina_Bool select = (spawns == 0) ? EINA_FALSE : EINA_TRUE;
-
-   EINA_LIST_FOREACH(_editors, l, ed)
-      toolbar_runner_segment_selected_set(ed, select);
 }
 
 static char *
@@ -281,7 +268,6 @@ editor_init(void)
 
    _handler = ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, _handler_key_cb, NULL);
 
-   ipc_spawns_cb_set(_spawn_cb, NULL);
    return EINA_TRUE;
 }
 

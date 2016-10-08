@@ -80,7 +80,6 @@ const char *main_edje_file_get(void);
 #include "atlas.h"
 #include "mainconfig.h"
 #include "toolbar.h"
-#include "ipc.h"
 #include "cell.h"
 #include "snapshot.h"
 #include "menu.h"

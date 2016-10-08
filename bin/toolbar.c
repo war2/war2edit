@@ -31,7 +31,6 @@ typedef enum
    SEG_SPREAD = 1,
    SEG_RADIUS = 2,
    SEG_ACTION = 3,
-   SEG_RUNNER = 4,
 } Seg;
 
 
@@ -168,51 +167,10 @@ _seg_action_changed_cb(void        *data,
    _seg_changed_cb(data, obj, info);
 }
 
-static void
-_run_cb(void        *data,
-        Evas_Object *obj  EINA_UNUSED,
-        void        *info EINA_UNUSED)
-{
-   Editor *ed = data;
-   Ecore_Exe *exe;
-   char cmd[1024];
-   char *dosbox = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bin");
-   char *disk = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/disk");
-   char *cdrom = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/cdrom");
-   char *path = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/bdp/path");
-   char *extra_cmd = prefs_value_string_get(PREFS_DOSBOX, "main:dosbox/cmd");
-
-   snprintf(cmd, sizeof(cmd),
-            "%s"
-            " -c \"mount C: %s\""
-            " -c \"mount D: %s -t cdrom\""
-            " %s"
-            " -c \"C:\" -c \"%s\"",
-            dosbox, disk, cdrom, extra_cmd, path);
-   cmd[sizeof(cmd) - 1] = '\0';
-
-   free(dosbox);
-   free(disk);
-   free(cdrom);
-   free(path);
-   free(extra_cmd);
-
-   exe = ecore_exe_pipe_run(cmd,
-                            ECORE_EXE_PIPE_READ_LINE_BUFFERED |
-                            ECORE_EXE_PIPE_ERROR_LINE_BUFFERED, ed);
-   if (EINA_UNLIKELY(!exe))
-     {
-        CRI("Failed to start command [%s]", cmd);
-        toolbar_runner_segment_selected_set(ed, EINA_FALSE);
-        return;
-     }
-}
-
 
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
-
 
 static Evas_Object *
 _segment_add(const Editor  *ed,
@@ -315,17 +273,9 @@ toolbar_add(Editor      *ed,
    SEG_IT_ADD(ed->segs[SEG_ACTION], "orc_walls.png", AO);
    _segment_size_autoset(ed->segs[SEG_ACTION], 8);
 
-   /* Run segment */
-   ed->segs[SEG_RUNNER] = SEG_ADD(_run_cb);
-   elm_object_disabled_set(ed->segs[SEG_RUNNER], ipc_disabled_get());
-   SEG_IT_ADD(ed->segs[SEG_RUNNER], "efl.png", 0);
-   _segment_size_autoset(ed->segs[SEG_RUNNER], 1);
-
    /* Always select the first item */
    for (i = 0; i < EINA_C_ARRAY_LENGTH(ed->segs); i++)
      {
-        if (i == SEG_RUNNER) continue; /* Skip run button */
-
         eoi = elm_segment_control_item_get(ed->segs[i], 0);
         elm_segment_control_item_selected_set(eoi, EINA_TRUE);
      }
@@ -340,15 +290,4 @@ toolbar_actions_segment_unselect(const Editor *ed)
 
    eoi = elm_segment_control_item_selected_get(ed->segs[SEG_ACTION]);
    elm_segment_control_item_selected_set(eoi, EINA_FALSE);
-}
-
-void
-toolbar_runner_segment_selected_set(Editor    *ed,
-                                    Eina_Bool  select)
-{
-   Elm_Object_Item *eoi;
-
-   /* Reset selection on button */
-   eoi = elm_segment_control_item_selected_get(ed->segs[SEG_RUNNER]);
-   elm_segment_control_item_selected_set(eoi, select);
 }
