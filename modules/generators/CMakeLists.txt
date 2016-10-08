@@ -18,6 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+link_directories(${EINA_LIBRARY_DIRS})
 add_library(perlin MODULE perlin.c)
 target_include_directories(perlin SYSTEM PUBLIC ${EINA_INCLUDE_DIRS})
 target_link_libraries(perlin ${EINA_LIBRARIES})
