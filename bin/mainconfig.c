@@ -107,7 +107,7 @@ _has_extension_cb(void        *data,
 void
 mainconfig_show(Editor *ed)
 {
-   Evas_Object *o, *box, *b2, *b3, *img, *f, *b, *grp, *bb, *ic;
+   Evas_Object *o, *box, *b2, *b3, *f, *b, *grp, *bb, *ic;
    struct {
       const char *label;
       const char *icon;
