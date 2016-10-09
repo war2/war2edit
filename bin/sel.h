@@ -42,6 +42,5 @@ void sel_del(Editor * ed);
 
 Eina_Bool sel_active_is(const Editor * ed);
 Eina_Bool sel_empty_is(const Editor * ed);
-void sel_menu_disabled_set(Editor *ed, Eina_Bool disable);
 
 #endif /* ! __SEL_H__ */
