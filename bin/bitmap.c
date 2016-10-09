@@ -1579,6 +1579,7 @@ bitmap_resize(Editor *ed)
 
    minimap_resize(ed);
    editor_partial_load(ed);
+   _bitmap_autoresize(ed);
 }
 
 void
