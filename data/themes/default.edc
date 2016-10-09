@@ -354,8 +354,8 @@ collections {
                rel.to: "war2edit.main.sidepanel";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
-               rel2.offset: 9 32;
-               rel1.offset: 0 32;
+               rel2.offset: -32 0;
+               rel1.offset: 0 0;
                align: 1.0 0.0;
                fixed: 1 1;
                min: 25 25;
