@@ -556,12 +556,6 @@ editor_new(const char   *pud_file,
                            EVAS_CALLBACK_CANVAS_FOCUS_IN,
                            _focus_in_cb, ed);
 
-   /* Get the main menu */
-   sel_add(ed);
-   menu_units_add(ed);
-   menu_players_add(ed);
-   menu_properties_add(ed);
-
    o = ed->lay = elm_layout_add(ed->win);
    evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
@@ -592,6 +586,13 @@ editor_new(const char   *pud_file,
    evas_object_smart_callback_add(ed->scroller, "scroll", _scroll_cb, ed);
    elm_box_pack_end(o, ed->scroller);
    evas_object_show(ed->scroller);
+
+   /* Get the main menu */
+   sel_add(ed);
+   menu_units_add(ed);
+   menu_players_add(ed);
+   menu_properties_add(ed);
+
 
    o = ed->units_genlist = elm_genlist_add(ed->win);
    evas_object_data_set(o, "editor", ed);
