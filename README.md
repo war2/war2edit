@@ -23,29 +23,6 @@ Build
 - Launch: `war2edit`.
 
 
-TODO & BUGS
-===========
-
-- [ ] Scaling of map
-- [ ] Implement properties editors
-- [ ] Help/About panel
-- [ ] Toggle extension mode
-- [ ] Oil Patch can be placed too close to land
-- [ ] Oil Patch and Gold Mines must prevent collectors to be placed too close
-- [ ] DOSBox/Boxer fancy selection panel
-
-
-
-Contributors
-============
-
-- Lucie Guyomarc'h:
-   - Fix mispelled names
-
-- Jean-Luc Guyomarc'h
-   - Toolbar icons
-   - Game icon
-
 License
 =======
 
