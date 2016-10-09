@@ -622,9 +622,12 @@ _mouse_move_cb(void        *data,
                Evas_Object *bmp  EINA_UNUSED,
                void        *info)
 {
-   Editor *ed = data;
+   Editor *const ed = data;
    Evas_Event_Mouse_Move *ev = info;
    int cx, cy, ox, oy;
+
+   /* Disable mouse move callback actions when the menu is there */
+   if (ed->menu_in_out_cache.menu_in) return;
 
    evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
    bitmap_coords_to_cells(ed, ev->cur.canvas.x - ox, ev->cur.canvas.y - oy, &cx, &cy);

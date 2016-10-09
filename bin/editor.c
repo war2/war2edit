@@ -449,8 +449,13 @@ _editor_menu_in_cb(void        *data,
                    const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   ed->menu_in_out_cache = bitmap_cursor_visibility_get(ed);
+
+   ed->menu_in_out_cache.menu_in = EINA_TRUE;
+   ed->menu_in_out_cache.visible = bitmap_cursor_visibility_get(ed);
+   ed->menu_in_out_cache.enabled = bitmap_cursor_enabled_get(ed);
+
    bitmap_cursor_visibility_set(ed, EINA_FALSE);
+   bitmap_cursor_enabled_set(ed, EINA_FALSE);
 }
 
 static void
@@ -460,7 +465,10 @@ _editor_menu_out_cb(void        *data,
                     const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   bitmap_cursor_visibility_set(ed, ed->menu_in_out_cache);
+
+   bitmap_cursor_visibility_set(ed, ed->menu_in_out_cache.visible);
+   bitmap_cursor_enabled_set(ed, ed->menu_in_out_cache.enabled);
+   ed->menu_in_out_cache.menu_in = EINA_FALSE;
 }
 
 static void
@@ -667,8 +675,6 @@ editor_new(const char   *pud_file,
                                   _editor_redo_cb, ed);
    elm_layout_signal_callback_add(ed->lay, "war2edit,properties,open", "war2edit",
                                   _editor_properties_cb, ed);
-//   elm_layout_signal_callback_add(ed->lay, "war2edit,run", "war2edit",
-//                                  _editor_run_cb, ed);
    elm_layout_signal_callback_add(ed->lay, "war2edit,menu,in", "war2edit",
                                   _editor_menu_in_cb, ed);
    elm_layout_signal_callback_add(ed->lay, "war2edit,menu,out", "war2edit",
