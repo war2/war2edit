@@ -44,6 +44,7 @@ snapshot_new(uint8_t *buf,
         CRI("Failed to allocate memory");
         return NULL;
      }
+
    INF("Size is %zu, sizeof shot is %zu", size, sizeof(*shot));
    shot->mem = (uint8_t *)shot + sizeof(*shot);
    INF("shot is %p, shot->mem is %p", shot, shot->mem);
@@ -184,11 +185,14 @@ snapshot_add(Editor *ed)
 void
 snapshot_del(Editor *ed)
 {
-//   Snapshot *shot;
+   Snapshot *shot;
 
    free(ed->snapshot.buffer);
-//XXX   EINA_INLIST_FREE(ed->snapshot.items, shot)
-//XXX      snapshot_free(shot);
+   EINA_INLIST_FREE(ed->snapshot.items, shot)
+     {
+        ed->snapshot.items = eina_inlist_remove(ed->snapshot.items, EINA_INLIST_GET(shot));
+        snapshot_free(shot);
+     }
 }
 
 void
