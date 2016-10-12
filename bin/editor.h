@@ -69,7 +69,6 @@ struct _Editor
    /* === GUI === */
    Evas_Object  *win;
    Evas_Object  *lay;
-   Evas_Object  *preview;
    Evas_Object  *inwin;
    Evas_Object  *mainbox;
    Evas_Object  *scroller;
@@ -87,6 +86,11 @@ struct _Editor
    Evas_Object  *hover;
 
    Cell        **cells;
+
+   struct {
+      unsigned char *pixels;
+      Evas_Object *obj;
+   } preview;
 
    /* === Toolbar === */
    Evas_Object  *segs[4];

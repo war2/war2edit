@@ -652,15 +652,20 @@ _frame_add(Evas_Object *parent,
 }
 
 static void
-_free_px_cb(void        *data EINA_UNUSED,
+_preview_cache_free(Editor *ed)
+{
+   free(ed->preview.pixels);
+   ed->preview.pixels = NULL;
+}
+
+static void
+_free_px_cb(void        *data,
             Evas        *e    EINA_UNUSED,
-            Evas_Object *obj,
+            Evas_Object *obj  EINA_UNUSED,
             void        *info EINA_UNUSED)
 {
-   unsigned char *px;
-
-   px = evas_object_image_data_get(obj, EINA_FALSE);
-   free(px);
+   Editor *const ed = data;
+   _preview_cache_free(ed);
 }
 
 void
@@ -668,24 +673,24 @@ menu_map_properties_update(Editor *ed)
 {
    unsigned char *px;
 
-   px = evas_object_image_data_get(ed->preview, EINA_FALSE);
-   free(px);
+   _preview_cache_free(ed);
 
    px = pud_minimap_bitmap_generate(ed->pud, NULL, PUD_PIXEL_FORMAT_ARGB);
    if (EINA_UNLIKELY(!px))
      {
         CRI("Failed to create minimap image");
-        evas_object_del(ed->preview); ed->preview = NULL;
+        evas_object_del(ed->preview.obj); ed->preview.obj = NULL;
      }
    else
      {
-        evas_object_image_size_set(ed->preview, ed->pud->map_w, ed->pud->map_h);
-        evas_object_image_data_set(ed->preview, px);
-        evas_object_image_data_update_add(ed->preview, 0, 0, ed->pud->map_w, ed->pud->map_h);
+        ed->preview.pixels = px;
+        evas_object_image_size_set(ed->preview.obj, ed->pud->map_w, ed->pud->map_h);
+        evas_object_image_data_set(ed->preview.obj, px);
+        evas_object_image_data_update_add(ed->preview.obj, 0, 0, ed->pud->map_w, ed->pud->map_h);
 
-        evas_object_size_hint_min_set(ed->preview, 256, 256);
-        evas_object_size_hint_max_set(ed->preview, 256, 256);
-        evas_object_show(ed->preview);
+        evas_object_size_hint_min_set(ed->preview.obj, 256, 256);
+        evas_object_size_hint_max_set(ed->preview.obj, 256, 256);
+        evas_object_show(ed->preview.obj);
      }
 }
 
@@ -811,11 +816,11 @@ menu_map_properties_new(Editor      *ed,
    ed->pud->extension_pack = EINA_TRUE; // FIXME ???
 
    /* Map preview */
-   ed->preview = evas_object_image_filled_add(evas_object_evas_get(box));
-   evas_object_image_colorspace_set(ed->preview, EVAS_COLORSPACE_ARGB8888);
-   evas_object_size_hint_weight_set(ed->preview, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(ed->preview, 0.0, EVAS_HINT_FILL);
-   evas_object_event_callback_add(ed->preview, EVAS_CALLBACK_FREE, _free_px_cb, NULL);
+   ed->preview.obj = evas_object_image_filled_add(evas_object_evas_get(box));
+   evas_object_image_colorspace_set(ed->preview.obj, EVAS_COLORSPACE_ARGB8888);
+   evas_object_size_hint_weight_set(ed->preview.obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(ed->preview.obj, 0.0, EVAS_HINT_FILL);
+   evas_object_event_callback_add(ed->preview.obj, EVAS_CALLBACK_FREE, _free_px_cb, NULL);
    menu_map_properties_update(ed);
 
    /* */
@@ -846,7 +851,7 @@ menu_map_properties_new(Editor      *ed,
 
    /* Compose the final box */
    elm_box_pack_start(box, b);
-   elm_box_pack_end(box, ed->preview);
+   elm_box_pack_end(box, ed->preview.obj);
    elm_box_pack_end(box, gens);
 
    ff = elm_frame_add(f);
