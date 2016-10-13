@@ -820,7 +820,7 @@ menu_map_properties_new(Editor      *ed,
    evas_object_image_colorspace_set(ed->preview.obj, EVAS_COLORSPACE_ARGB8888);
    evas_object_size_hint_weight_set(ed->preview.obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->preview.obj, 0.0, EVAS_HINT_FILL);
-   evas_object_event_callback_add(ed->preview.obj, EVAS_CALLBACK_FREE, _free_px_cb, NULL);
+   evas_object_event_callback_add(ed->preview.obj, EVAS_CALLBACK_FREE, _free_px_cb, ed);
    menu_map_properties_update(ed);
 
    /* */
