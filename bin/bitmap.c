@@ -1519,6 +1519,7 @@ bitmap_add(Editor *ed)
         return EINA_FALSE;
      }
    evas_object_clip_set(o, ed->bitmap.clip);
+   evas_object_clip_set(ed->sel.obj, ed->bitmap.clip);
 
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
