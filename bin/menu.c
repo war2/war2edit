@@ -410,6 +410,7 @@ menu_units_add(Editor *ed)
    i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Human Land", NULL, NULL);
    eina_array_push(ed->human_menus, i);
    RADIO_ADD_HUMAN(PUD_UNIT_PEASANT);
+   RADIO_ADD_HUMAN(PUD_UNIT_ATTACK_PEASANT);
    RADIO_ADD_HUMAN(PUD_UNIT_FOOTMAN);
    RADIO_ADD_HUMAN(PUD_UNIT_ARCHER);
    RADIO_ADD_HUMAN(PUD_UNIT_KNIGHT);
@@ -460,6 +461,7 @@ menu_units_add(Editor *ed)
    i = elm_menu_item_add(ed->unitsmenu, NULL, NULL, "Orc Land", NULL, NULL);
    eina_array_push(ed->orc_menus, i);
    RADIO_ADD_ORC(PUD_UNIT_PEON);
+   RADIO_ADD_ORC(PUD_UNIT_ATTACK_PEON);
    RADIO_ADD_ORC(PUD_UNIT_GRUNT);
    RADIO_ADD_ORC(PUD_UNIT_AXETHROWER);
    RADIO_ADD_ORC(PUD_UNIT_OGRE);
