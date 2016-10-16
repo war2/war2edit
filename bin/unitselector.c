@@ -127,7 +127,7 @@ _radio_cb(void        *data,
          return;
      }
 
-   if (pud_side_for_player(u->ed->pud, old) != pud_side_for_player(u->ed->pud, sel))
+   if (pud_side_for_player_get(u->ed->pud, old) != pud_side_for_player_get(u->ed->pud, sel))
      {
 
         u->unit = pud_unit_switch_side(u->unit);
@@ -140,7 +140,7 @@ _radio_cb(void        *data,
         editor_unit_ref(u->ed, u->x, u->y, u->type);
 
         elm_layout_text_set(u->lay, "war2edit.unitselector.name",
-                            pud_unit2str(u->unit, PUD_TRUE));
+                            pud_unit_to_string(u->unit, PUD_TRUE));
      }
    snapshot_push_done(u->ed);
    _update_icon(u->ed, u->lay, sel, u->unit);
@@ -380,7 +380,7 @@ _provide_unit_handler(Editor *ed,
 
    snprintf(buf, sizeof(buf), "Coordinates: X=%u, Y=%u",
             ed->unitselector.x, ed->unitselector.y);
-   elm_layout_text_set(lay, "war2edit.unitselector.name", pud_unit2str(unit, PUD_TRUE));
+   elm_layout_text_set(lay, "war2edit.unitselector.name", pud_unit_to_string(unit, PUD_TRUE));
    elm_layout_text_set(lay, "war2edit.unitselector.info", buf);
    elm_layout_content_set(lay, "war2edit.unitselector.contents", vbox);
    evas_object_show(lay);

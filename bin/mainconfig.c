@@ -96,7 +96,7 @@ _has_extension_cb(void        *data,
         elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
      }
 
-   ed->pud->extension_pack = with_extension;
+   ed->extension = with_extension;
 }
 
 
@@ -122,8 +122,8 @@ mainconfig_show(Editor *ed)
    editor_inwin_add(ed);
 
    /* Default values */
-   ed->pud->extension_pack = EINA_TRUE;
-   ed->pud->era = PUD_ERA_FOREST;
+   ed->extension = EINA_TRUE;
+   pud_era_set(ed->pud, PUD_ERA_FOREST);
 
    /* Create main box (mainconfig) */
    box = elm_box_add(ed->inwin);

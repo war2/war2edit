@@ -85,6 +85,7 @@ struct _Editor
    Evas_Object  *playersmenu_btn;
    Evas_Object  *hover;
 
+   Eina_Stringshare *filename;
    Cell        **cells;
 
    struct {
@@ -152,6 +153,7 @@ struct _Editor
    Menu_Units *menu_units;
    Menu_Upgrades *menu_upgrades;
    Menu_Allows *menu_allows;
+   Eina_Bool extension;
 
    /* === PUD specific === */
    Pud        *pud;

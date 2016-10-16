@@ -145,7 +145,7 @@ _text_get_cb(void        *data,
 
    cell_unit_get(c, d->type, &u, NULL);
 
-   bytes = snprintf(buf, sizeof(buf), "%s", pud_unit2str(u, PUD_TRUE));
+   bytes = snprintf(buf, sizeof(buf), "%s", pud_unit_to_string(u, PUD_TRUE));
    buf[sizeof(buf) - 1] = '\0';
    return strndup(buf, bytes);
 }
@@ -164,7 +164,7 @@ _text_group_get_cb(void        *data,
         int b;
 
         b = snprintf(buf, sizeof(buf), "Player %i (", player + 1);
-        bytes = snprintf(buf + b, sizeof(buf) - b, "%s)", pud_color2str(player));
+        bytes = snprintf(buf + b, sizeof(buf) - b, "%s)", pud_color_to_string(player));
         bytes += b;
         buf[b] -= 0x20; // Uppercase
      }
@@ -393,10 +393,10 @@ _editor_save_cb(void        *data,
                 const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   if (!ed->pud->filename)
+   if (!ed->filename)
      editor_file_selector_add(ed, EINA_TRUE);
    else
-     editor_save(ed, ed->pud->filename);
+     editor_save(ed, ed->filename);
 }
 
 static void
@@ -526,6 +526,8 @@ editor_new(const char   *pud_file,
 
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
+
+   if (pud_file) ed->filename = eina_stringshare_add(pud_file);
 
    ed->debug = debug;
    ed->zoom = 1.0;
@@ -713,7 +715,7 @@ editor_new(const char   *pud_file,
    else
      {
         /* Create PUD file */
-        ed->pud = pud_open_new(pud_file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
+        ed->pud = pud_open(pud_file, PUD_OPEN_MODE_RW);
         if (EINA_UNLIKELY(!ed->pud))
           {
              CRI("Failed to create generic PUD file");
@@ -781,19 +783,19 @@ editor_save(Editor     *ed,
          EDITOR_ERROR(ed,
                       "An extra start location was found at %u,%u (%s)",
                       err.data.unit->x, err.data.unit->y,
-                      pud_color2str(err.data.unit->owner));
+                      pud_color_to_string(err.data.unit->owner));
          return EINA_FALSE;
 
       case PUD_ERROR_EMPTY_PLAYER:
          EDITOR_ERROR(ed,
                       "Player %i (%s) has a start location but no units",
-                      err.data.player + 1, pud_color2str(err.data.player));
+                      err.data.player + 1, pud_color_to_string(err.data.player));
          return EINA_FALSE;
 
       case PUD_ERROR_NO_START_LOCATION:
          EDITOR_ERROR(ed,
                       "Player %i (%s) has units but no start location",
-                      err.data.player + 1, pud_color2str(err.data.player));
+                      err.data.player + 1, pud_color_to_string(err.data.player));
          return EINA_FALSE;
 
       case PUD_ERROR_NOT_ENOUGH_START_LOCATIONS:
@@ -809,19 +811,6 @@ editor_save(Editor     *ed,
          return EINA_FALSE;
      }
 
-   /* Attribute a filename to the pud itself if none where attributed
-    * before */
-   if (!pud->filename)
-     {
-        pud->filename = strdup(file);
-        if (!pud->filename)
-          {
-             CRI("Failed to strdup(\"%s\")", pud->filename);
-             goto panic;
-          }
-        elm_win_title_set(ed->win, file);
-     }
-
    /* Write the PUD to disk */
    chk = pud_write(pud, file);
    if (EINA_UNLIKELY(chk == EINA_FALSE))
@@ -833,9 +822,6 @@ editor_save(Editor     *ed,
    editor_notif_send(ed, "Saved");
    INF("Map has been saved to \"%s\"", file);
    return EINA_TRUE;
-
-panic:
-   return EINA_FALSE;
 }
 
 Eina_Bool
@@ -870,7 +856,7 @@ editor_sync(Editor *ed)
    Pud *pud = ed->pud;
    Cell **cells = ed->cells;
    const Cell *c;
-   Pud_Unit_Data *u;
+   Pud_Unit_Info *u;
    void *tmp;
 
    /* We never known th exact amount of units because they are modified
@@ -1028,7 +1014,7 @@ editor_load(Editor     *ed,
    pud->units_count = 0;
    for (i = 0; i < count; i++)
      {
-        const Pud_Unit_Data *const ud = &(pud->units[i]);
+        const Pud_Unit_Info *const ud = &(pud->units[i]);
         editor_unit_ref(ed, ud->x, ud->y, _unit_to_type(ud->type));
      }
    if (EINA_UNLIKELY(pud->units_count != count))
@@ -1330,7 +1316,7 @@ editor_player_switch_race(Editor     *ed,
             c->unit_below = pud_unit_switch_side(c->unit_below);
           if (c->start_location == player)
             {
-               if (pud_side_for_player(ed->pud, player) == PUD_SIDE_ORC)
+               if (pud_side_for_player_get(ed->pud, player) == PUD_SIDE_ORC)
                  c->start_location_human = 0;
                else
                  c->start_location_human = 1;
@@ -1383,7 +1369,7 @@ _continue_load_cb(void        *data,
 
    if (EINA_UNLIKELY(!ed))
      {
-        CRI("Could not reopen pud %s", old_ed->pud->filename);
+        CRI("Could not reopen pud %s", old_ed->filename);
         return;
      }
 
@@ -1610,7 +1596,7 @@ editor_partial_load(Editor *ed)
    unsigned int i, j, sw, sh;
    uint16_t tile;
    uint8_t bl, br, tl, tr, seed;
-   Pud_Unit_Data *u;
+   Pud_Unit_Info *u;
 
    // TODO split the map into parts, and do a parallel load
    for (j = 0; j < pud->map_h; j++)

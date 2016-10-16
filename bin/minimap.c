@@ -292,8 +292,8 @@ minimap_render_unit(Editor *ed,
                     unsigned int  y,
                     Pud_Unit      u)
 {
-   minimap_render(ed, x, y, ed->pud->unit_data[u].size_w,
-                  ed->pud->unit_data[u].size_h);
+   minimap_render(ed, x, y, ed->pud->units_descr[u].size_w,
+                  ed->pud->units_descr[u].size_h);
 }
 
 void

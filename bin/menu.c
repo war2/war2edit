@@ -139,7 +139,7 @@ _gen_units_text_get_cb(void        *data,
                        const char  *part EINA_UNUSED)
 {
    const Pud_Unit u = (Pud_Unit)((uintptr_t)data);
-   return strdup(pud_unit2str(u, EINA_TRUE));
+   return strdup(pud_unit_to_string(u, EINA_TRUE));
 }
 
 static Evas_Object *
@@ -165,7 +165,7 @@ _gen_upgrades_text_get_cb(void        *data,
                           const char  *part EINA_UNUSED)
 {
    const Pud_Upgrade u = (Pud_Upgrade)((uintptr_t)data);
-   return strdup(pud_upgrade2str(u));
+   return strdup(pud_upgrade_to_string(u));
 }
 
 static Evas_Object *
@@ -355,7 +355,7 @@ _radio_units_changed_cb(void        *data,
    unsigned int w, h;
    Editor *ed = evas_object_data_get(obj, "editor");
    _radio_changed_common_do(data, (int *)(&(ed->sel_unit)));
-   DBG("Units selection changed: <%s>", pud_unit2str(ed->sel_unit, PUD_TRUE));
+   DBG("Units selection changed: <%s>", pud_unit_to_string(ed->sel_unit, PUD_TRUE));
 
    sprite_tile_size_get(ed->sel_unit, &w, &h);
    bitmap_cursor_size_set(ed, (int)w, (int)h);
@@ -373,7 +373,7 @@ _radio_players_changed_cb(void        *data,
 
    ed = evas_object_data_get(obj, "editor");
    _radio_changed_common_do(data, (int *)(&(ed->sel_player)));
-   DBG("Player selection changed: <%s>", pud_color2str(ed->sel_player));
+   DBG("Player selection changed: <%s>", pud_color_to_string(ed->sel_player));
 
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
 }
@@ -394,9 +394,9 @@ menu_units_add(Editor *ed)
 #define RADIO_ADD_COMMON(unit_, label_, storage_) \
    _radio_add(ed, rd, ed->unitsmenu, unit_, i, label_, _radio_units_changed_cb, storage_)
 
-#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->human_menus)
-#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), ed->orc_menus)
-#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, pud_unit2str(unit_, PUD_TRUE), NULL)
+#define RADIO_ADD_HUMAN(unit_) RADIO_ADD_COMMON(unit_, pud_unit_to_string(unit_, PUD_TRUE), ed->human_menus)
+#define RADIO_ADD_ORC(unit_) RADIO_ADD_COMMON(unit_, pud_unit_to_string(unit_, PUD_TRUE), ed->orc_menus)
+#define RADIO_ADD_NEUTRAL(unit_) RADIO_ADD_COMMON(unit_, pud_unit_to_string(unit_, PUD_TRUE), NULL)
 #define RADIO_ADD(unit_, label_) RADIO_ADD_COMMON(unit_, label_, NULL)
 
    rd = NULL; /* Unset radio group */
@@ -815,7 +815,7 @@ menu_map_properties_new(Editor      *ed,
 
    /* Default value */
    elm_radio_value_set(ed->menu_map_radio_group, PUD_ERA_FOREST);
-   ed->pud->extension_pack = EINA_TRUE; // FIXME ???
+   ed->extension = EINA_TRUE; // FIXME ???
 
    /* Map preview */
    ed->preview.obj = evas_object_image_filled_add(evas_object_evas_get(box));
@@ -1373,11 +1373,11 @@ _unit_select_cb(void        *data,
    Editor *const ed = data;
    const Pud_Unit u = (Pud_Unit)((uintptr_t)elm_object_item_data_get(evt));
    Menu_Units *mu;
-   Pud_Unit_Characteristics *c;
+   Pud_Unit_Description *c;
 
    ed->menu_units->selected = u;
    mu = ed->menu_units;
-   c = &(ed->pud->unit_data[u]);
+   c = &(ed->pud->units_descr[u]);
 
    elm_spinner_value_set(mu->range, c->range);
    elm_spinner_value_set(mu->sight, c->sight);
@@ -1396,7 +1396,7 @@ _unit_select_cb(void        *data,
    elm_check_state_pointer_set(mu->weapons_upgradable, &c->weapons_upgradable);
    elm_check_state_pointer_set(mu->armor_upgradable, &c->armor_upgradable);
 
-   elm_object_text_set(mu->missile, pud_projectile2str(c->missile_weapon));
+   elm_object_text_set(mu->missile, pud_projectile_to_string(c->missile_weapon));
 }
 
 static Evas_Object *
@@ -1454,16 +1454,16 @@ _common_spinner_add(Evas_Object *parent,
    return o;
 }
 
-static inline Pud_Unit_Characteristics *
+static inline Pud_Unit_Description *
 _pud_unit_ch_get(const Editor *ed)
 {
-   return &(ed->pud->unit_data[ed->menu_units->selected]);
+   return &(ed->pud->units_descr[ed->menu_units->selected]);
 }
 
-static inline Pud_Upgrade_Characteristics *
+static inline Pud_Upgrade_Description *
 _pud_upgrade_ch_get(const Editor *ed)
 {
-   return &(ed->pud->upgrade[ed->menu_upgrades->selected]);
+   return &(ed->pud->upgrades[ed->menu_upgrades->selected]);
 }
 
 static void
@@ -1472,7 +1472,7 @@ _update_unit_sight(void        *data,
               void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1499,7 +1499,7 @@ _update_unit_hp(void        *data,
                 void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1526,7 +1526,7 @@ _update_unit_gold(void        *data,
                   void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1540,7 +1540,7 @@ _update_unit_lumber(void        *data,
                     void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1554,7 +1554,7 @@ _update_unit_oil(void        *data,
                  void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1610,7 +1610,7 @@ _update_unit_range(void        *data,
                    void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1637,7 +1637,7 @@ _update_unit_armor(void        *data,
                    void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1664,7 +1664,7 @@ _update_unit_basic(void        *data,
                    void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1691,7 +1691,7 @@ _update_unit_piercing(void        *data,
                       void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1719,7 +1719,7 @@ _missile_cb(void        *data,
 {
    const Pud_Projectile p = (Pud_Projectile)((uintptr_t)data);
    Editor *ed;
-   Pud_Unit_Characteristics *c;
+   Pud_Unit_Description *c;
 
    ed = evas_object_data_get(obj, "editor");
    c = _pud_unit_ch_get(ed);
@@ -1733,7 +1733,7 @@ _update_units_time(void        *data,
 {
 
    Editor *const ed = data;
-   Pud_Unit_Characteristics *ud;
+   Pud_Unit_Description *ud;
    double val;
 
    ud = _pud_unit_ch_get(ed);
@@ -1804,7 +1804,7 @@ menu_units_properties_new(Editor      *ed,
    elm_box_horizontal_set(b, EINA_TRUE);
    elm_object_content_set(f, b);
 
-   ed->pud->default_udta = 0;
+   pud_default_udta_override(ed->pud, PUD_TRUE);
 
    gen = mu->gen = elm_genlist_add(b);
    evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -1851,10 +1851,10 @@ menu_units_properties_new(Editor      *ed,
 
    /* Missile shapes editor */
    _pack_label_right(t, 0, n, "Projectile");
-   mu->missile = o = _hoversel_add(t, pud_projectile2str(PUD_PROJECTILE_NONE));
+   mu->missile = o = _hoversel_add(t, pud_projectile_to_string(PUD_PROJECTILE_NONE));
    evas_object_data_set(o, "editor", ed);
    for (i = 0; i <= PUD_PROJECTILE_NONE; i++)
-     elm_hoversel_item_add(o, pud_projectile2str(i), NULL, ELM_ICON_NONE,
+     elm_hoversel_item_add(o, pud_projectile_to_string(i), NULL, ELM_ICON_NONE,
                            _missile_cb, (void *)(uintptr_t)(i));
    elm_table_pack(t, o, 1, n++, 1, 1);
 
@@ -1884,11 +1884,11 @@ _upgrade_select_cb(void        *data,
    Editor *const ed = data;
    const Pud_Upgrade u = (Pud_Upgrade)((uintptr_t)elm_object_item_data_get(evt));
    Menu_Upgrades *mu;
-   Pud_Upgrade_Characteristics *c;
+   Pud_Upgrade_Description *c;
 
    ed->menu_upgrades->selected = u;
    mu = ed->menu_upgrades;
-   c = &(ed->pud->upgrade[u]);
+   c = &(ed->pud->upgrades[u]);
 
    elm_spinner_value_set(mu->lumber, c->lumber);
    elm_spinner_value_set(mu->gold, c->gold);
@@ -1902,7 +1902,7 @@ _update_ugrd_gold(void        *data,
                   void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Upgrade_Characteristics *ud;
+   Pud_Upgrade_Description *ud;
    double val;
 
    ud = _pud_upgrade_ch_get(ed);
@@ -1916,7 +1916,7 @@ _update_ugrd_lumber(void        *data,
                     void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Upgrade_Characteristics *ud;
+   Pud_Upgrade_Description *ud;
    double val;
 
    ud = _pud_upgrade_ch_get(ed);
@@ -1930,7 +1930,7 @@ _update_ugrd_oil(void        *data,
                  void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-   Pud_Upgrade_Characteristics *ud;
+   Pud_Upgrade_Description *ud;
    double val;
 
    ud = _pud_upgrade_ch_get(ed);
@@ -1987,7 +1987,7 @@ _update_ugrd_time(void        *data,
 {
 
    Editor *const ed = data;
-   Pud_Upgrade_Characteristics *ud;
+   Pud_Upgrade_Description *ud;
    double val;
 
    ud = _pud_upgrade_ch_get(ed);
@@ -2032,7 +2032,7 @@ menu_upgrades_properties_new(Editor *ed,
    elm_box_horizontal_set(b, EINA_TRUE);
    elm_object_content_set(f, b);
 
-   ed->pud->default_ugrd = 0;
+   pud_default_udta_override(ed->pud, PUD_TRUE);
 
    gen = mu->gen = elm_genlist_add(b);
    evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -2200,7 +2200,7 @@ _allow_text_get(void        *data,
    const Pud_Allow alow = _pud_allow_get(data);
    if (!strcmp(part, "elm.text"))
      {
-          return strdup(pud_allow_unit2str(alow));
+          return strdup(pud_allow_unit_to_string(alow));
      }
    return NULL;
 }
@@ -2213,7 +2213,7 @@ _spell_start_text_get(void        *data,
    const Pud_Allow alow = _pud_allow_get(data);
    if (!strcmp(part, "elm.text"))
      {
-        return strdup(pud_allow_spell2str(alow));
+        return strdup(pud_allow_spell_to_string(alow));
      }
    return NULL;
 }
@@ -2226,7 +2226,7 @@ _spell_search_text_get(void        *data,
    const Pud_Allow alow = _pud_allow_get(data);
    if (!strcmp(part, "elm.text"))
      {
-        return strdup(pud_allow_spell2str(alow));
+        return strdup(pud_allow_spell_to_string(alow));
      }
    return NULL;
 }
@@ -2239,7 +2239,7 @@ _allow_upgrade_text_get(void        *data,
    const Pud_Allow alow = _pud_allow_get(data);
    if (!strcmp(part, "elm.text"))
      {
-        return strdup(pud_allow_upgrade2str(alow));
+        return strdup(pud_allow_upgrade_to_string(alow));
      }
    return NULL;
 }
@@ -2504,11 +2504,11 @@ menu_allow_properties_new(Editor *ed,
     * It is necessary to use our defaults, otherwise the user would have to
     * manually enable everything.
     */
-   if (ed->pud->default_allow == 1)
+   if (pud_default_alow_get(ed->pud))
      {
         pud_alow_defaults_set(ed->pud);
      }
-   ed->pud->default_allow = 0;
+   pud_default_alow_override(ed->pud, PUD_TRUE);
 
    gen = elm_genlist_add(b);
    evas_object_size_hint_weight_set(gen, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);

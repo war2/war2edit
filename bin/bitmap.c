@@ -898,7 +898,7 @@ bitmap_unit_draw(Editor       *ed,
 
    cairo_surface_destroy(surf);
 
-   //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit2str(unit), at_x, at_y);
+   //DBG("Draw unit %s at_x=%i, at_y=%i", pud_unit_to_string(unit), at_x, at_y);
 }
 
 static void
@@ -1154,7 +1154,7 @@ bitmap_tile_draw(Editor       *ed,
    atlas = atlas_texture_get(ed->pud->era);
    if (EINA_UNLIKELY(!atlas))
      {
-        ERR("Failed to get atlas for era %s", pud_era2str(ed->pud->era));
+        ERR("Failed to get atlas for era %s", pud_era_to_string(ed->pud->era));
         return;
      }
 
