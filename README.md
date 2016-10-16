@@ -14,7 +14,7 @@ Build
 
 - `EFL` must be installed (https://www.enlightenment.org/docs);
 - `cairo` must be installed (https://www.cairographics.org/);
-- `war2tools` must be installed (https://github.com/jeanguyomarch/war2tools)
+- `war2tools` must be installed (https://github.com/war2/war2tools)
 
 - Create build directory: `mkdir -b build && cd build`.
 - Run cmake: `cmake ..`.
