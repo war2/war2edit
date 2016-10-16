@@ -136,3 +136,10 @@ fail:
    if (shr) eina_stringshare_del(shr);
    return NULL;
 }
+
+Plugin_Generator_Func
+plugins_generator_func_get(const Eina_Module *mod)
+{
+   EINA_SAFETY_ON_NULL_RETURN_VAL(mod, NULL);
+   return eina_module_symbol_get(mod, PLUGIN_GENERATOR_FUNC_SYMBOL);
+}

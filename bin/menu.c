@@ -189,7 +189,7 @@ static void
 _generator_func(Editor *ed,
                 const Eina_Module *generator)
 {
-   float *(*func)(unsigned int, unsigned int, float, unsigned int);
+   Plugin_Generator_Func func;
    float *map;
    struct {
       Tile tile;
@@ -207,7 +207,7 @@ _generator_func(Editor *ed,
    };
    unsigned int i, j, k = 0, l;
 
-   func = eina_module_symbol_get(generator, "perlin"); // FIXME "perlin"
+   func = plugins_generator_func_get(generator);
    if (EINA_UNLIKELY(!func))
      {
         CRI("Failed to find symbol");

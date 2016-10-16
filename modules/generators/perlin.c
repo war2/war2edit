@@ -98,8 +98,7 @@ perlin_reconfigure(void)
 static Eina_Bool
 perlin_init(void)
 {
-
-   eina_init();
+   if (eina_init() <= 0) return EINA_FALSE;
    perlin_reconfigure();
 
    return EINA_TRUE;
@@ -117,10 +116,10 @@ perlin_shutdown(void)
  *============================================================================*/
 
 extern float *
-perlin(unsigned int width,
-       unsigned int height,
-       float        freq,
-       unsigned int depth)
+generator(unsigned int width,
+          unsigned int height,
+          float        freq,
+          unsigned int depth)
 {
    unsigned int i, j, k = 0;
    float *arr;

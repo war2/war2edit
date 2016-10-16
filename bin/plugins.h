@@ -25,8 +25,13 @@
 
 #include <Eina.h>
 
+#define PLUGIN_GENERATOR_FUNC_SYMBOL "generator"
+
+typedef float *(*Plugin_Generator_Func)(unsigned int, unsigned int, float, unsigned int);
+
 Eina_Bool plugins_init(void);
 void plugins_shutdown(void);
 const Eina_Module *plugins_request(const char *type, const char *name);
+Plugin_Generator_Func plugins_generator_func_get(const Eina_Module *mod);
 
 #endif /* ! __WAR2EDIT_PLUGINS_H__ */
