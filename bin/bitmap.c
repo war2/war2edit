@@ -1719,6 +1719,8 @@ bitmap_refresh(Editor               *ed,
    int x2, y2;
    int i, j;
 
+   if (ed->bitmap.norender) return;
+
    bitmap_visible_zone_cells_get(ed, &area);
    //DBG("Visible zone %"EINA_RECTANGLE_FORMAT, EINA_RECTANGLE_ARGS(&area));
 
@@ -1836,4 +1838,23 @@ bitmap_visible_zone_cells_get(const Editor   *ed,
 
    zone->w -= (zone->x - 1);
    zone->h -= (zone->y - 1);
+}
+
+void
+bitmap_render_lock(Editor *ed)
+{
+   ed->bitmap.norender = EINA_TRUE;
+}
+
+void
+bitmap_render_unlock(Editor *ed)
+{
+   ed->bitmap.norender = EINA_FALSE;
+}
+
+void
+bitmap_render_flush(Editor *ed)
+{
+   bitmap_refresh(ed, NULL);
+   minimap_reload(ed);
 }

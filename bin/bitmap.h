@@ -121,5 +121,9 @@ Eina_Bool bitmap_cursor_visibility_get(const Editor *ed);
 void
 bitmap_minimap_view_resize(Editor *ed);
 
+void bitmap_render_lock(Editor *ed);
+void bitmap_render_unlock(Editor *ed);
+void bitmap_render_flush(Editor *ed);
+
 void bitmap_resize(Editor *ed);
 #endif /* ! _BITMAP_H_ */

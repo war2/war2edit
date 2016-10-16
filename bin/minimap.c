@@ -198,6 +198,7 @@ minimap_reload(Editor *ed)
    unsigned int i, j;
    Eina_Bool ret = EINA_TRUE;
 
+   if (ed->bitmap.norender) return EINA_FALSE;
    for (j = 0; j < ed->pud->map_h; j++)
      for (i = 0; i < ed->pud->map_w; i++)
        ret &= minimap_update(ed, i, j);
@@ -223,6 +224,8 @@ minimap_update(Editor       *ed,
    unsigned int i, j;
    unsigned int ry, rx;
    unsigned int w, h;
+
+   if (ed->bitmap.norender) return EINA_FALSE;
 
    if (c->unit_above != PUD_UNIT_NONE)
      {
@@ -283,6 +286,7 @@ minimap_render(Editor *ed,
                unsigned int  w,
                unsigned int  h)
 {
+   if (ed->bitmap.norender) return;
    evas_object_image_data_update_add(ed->minimap.map, x, y, w, h);
 }
 

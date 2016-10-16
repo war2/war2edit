@@ -66,6 +66,7 @@ typedef struct
    int cx, cy, cw, ch;
    Eina_Bool cursor_enabled;
    Eina_Bool cursor_visible;
+   Eina_Bool norender;
 } Bitmap;
 
 

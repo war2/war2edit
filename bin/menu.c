@@ -186,12 +186,9 @@ _gen_upgrades_icon_get_cb(void        *data,
 }
 
 static void
-_randomize_cb(void        *data,
-              Evas_Object *obj   EINA_UNUSED,
-              void        *event EINA_UNUSED)
+_generator_func(Editor *ed,
+                const Eina_Module *generator)
 {
-   Editor *const ed = data;
-   const Eina_Module *m;
    float *(*func)(unsigned int, unsigned int, float, unsigned int);
    float *map;
    struct {
@@ -210,9 +207,7 @@ _randomize_cb(void        *data,
    };
    unsigned int i, j, k = 0, l;
 
-   /* FIXME BAD */
-   m = plugins_request("generators", "perlin");
-   func = eina_module_symbol_get(m, "perlin");
+   func = eina_module_symbol_get(generator, "perlin"); // FIXME "perlin"
    if (EINA_UNLIKELY(!func))
      {
         CRI("Failed to find symbol");
@@ -273,11 +268,31 @@ _randomize_cb(void        *data,
        }
    snapshot_push_done(ed);
    free(map);
+}
 
+static inline void
+_render_unlock(Editor *ed)
+{
    editor_tiles_sync(ed);
-   bitmap_refresh(ed, NULL);
-   minimap_reload(ed);
+   bitmap_render_unlock(ed);
+   bitmap_render_flush(ed);
    menu_map_properties_update(ed);
+}
+
+static void
+_randomize_cb(void        *data,
+              Evas_Object *obj   EINA_UNUSED,
+              void        *event EINA_UNUSED)
+{
+   Editor *const ed = data;
+   const Eina_Module *m;
+
+   /* FIXME BAD */
+   m = plugins_request("generators", "perlin");
+
+   bitmap_render_lock(ed);
+   _generator_func(ed, m);
+   _render_unlock(ed);
 }
 
 static void

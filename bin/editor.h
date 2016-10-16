@@ -131,6 +131,7 @@ struct _Editor
       } rel1, rel2;
    } sel;
 
+   Efl_Domain_Data *domain;
    Evas_Object *radio_units_reset;
    Evas_Object *pop;
 

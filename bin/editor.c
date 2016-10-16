@@ -527,6 +527,8 @@ editor_new(const char   *pud_file,
    ed = calloc(1, sizeof(Editor));
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
+   ed->domain = efl_domain_data_get();
+
    if (pud_file) ed->filename = eina_stringshare_add(pud_file);
 
    ed->debug = debug;
