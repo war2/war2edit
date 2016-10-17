@@ -164,6 +164,7 @@ struct _Editor
    unsigned int    debug;
    double zoom;
 
+   int mainconfig;
    /* Used to avoid setting tiles in the same cell every time
     * the mouse is moved within the cell */
    int prev_x;

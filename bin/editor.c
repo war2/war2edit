@@ -49,20 +49,108 @@ static Ecore_Event_Handler *_handler = NULL;
  *                                  Callbacks                                 *
  *============================================================================*/
 
+static inline void
+_cmd_open(Editor *ed)
+{
+   editor_file_selector_add(ed, EINA_FALSE);
+}
+
+static inline void
+_cmd_new(const Editor *parent)
+{
+   editor_new(NULL, parent ? parent->debug : 0);
+}
+
+static inline void
+_cmd_quit(Editor *ed)
+{
+   // TODO Popup to ask for confirmation if unsaved
+   editor_free(ed);
+}
+
+static inline void
+_cmd_save(Editor    *ed,
+          Eina_Bool  as)
+{
+   if ((!ed->filename) || (as))
+     editor_file_selector_add(ed, EINA_TRUE);
+   else
+     editor_save(ed, ed->filename);
+}
+
+static inline void
+_cmd_undo(Editor *ed)
+{
+   snapshot_rollback(ed, -1);
+}
+
+static inline void
+_cmd_redo(Editor *ed)
+{
+   // TODO
+   (void) ed;
+   CRI("IMPLEMENT ME");
+}
+
+static inline Eina_Bool
+_modifier_only_is(unsigned int flags,
+                  unsigned int modifier)
+{
+   return ((flags & modifier) &&
+           (!((0xff ^ modifier) & (flags & 0x0f))));
+}
+
 static Eina_Bool
 _handler_key_cb(void *data EINA_UNUSED,
                 int   type EINA_UNUSED,
                 void *info)
 {
-   Ecore_Event_Key *const key = info;
-   Editor *ed;
+   Ecore_Event_Key *const ev = info;
+   Editor *const ed = editor_focused_get();
+   const Eina_Bool ctrl = _modifier_only_is(ev->modifiers, ECORE_EVENT_MODIFIER_CTRL);
 
-   if (!strcmp(key->keyname, "Escape"))
+   if (!strcmp(ev->keyname, "Escape"))
      {
-        ed = editor_focused_get();
         elm_menu_close(ed->unitsmenu);
         elm_menu_close(ed->playersmenu);
         elm_menu_close(ed->propertiesmenu);
+     }
+   else if (!strcmp(ev->keyname, "n")) /* CTRL-N */
+     {
+        if (ctrl && !ed->mainconfig)
+          _cmd_new(ed);
+     }
+   else if (!strcmp(ev->keyname, "o"))
+     {
+        if (ctrl && !ed->mainconfig) /* CTRL-O */
+          _cmd_open(ed);
+     }
+   else if (!strcmp(ev->keyname, "w"))
+     {
+        if (ctrl && !ed->mainconfig) /* CTRL-W */
+          _cmd_quit(ed);
+     }
+   else if (!strcmp(ev->keyname, "s"))
+     {
+        if (!ed->mainconfig)
+          {
+             if (ctrl) /* CTRL-S */
+               _cmd_save(ed, EINA_FALSE);
+             else if (_modifier_only_is(ev->modifiers, ECORE_EVENT_MODIFIER_CTRL |
+                                        ECORE_EVENT_MODIFIER_SHIFT)) /* CTRL-SHIFT-S */
+               _cmd_save(ed, EINA_TRUE);
+          }
+     }
+   else if (!strcmp(ev->keyname, "z"))
+     {
+        if (!ed->mainconfig)
+          {
+             if (ctrl) /* CTRL-2 */
+               _cmd_undo(ed);
+             else if (_modifier_only_is(ev->modifiers, ECORE_EVENT_MODIFIER_CTRL |
+                                        ECORE_EVENT_MODIFIER_SHIFT)) /* CTRL-SHIFT-Z */
+               _cmd_redo(ed);
+          }
      }
    return ECORE_CALLBACK_RENEW;
 }
@@ -73,7 +161,7 @@ _win_del_cb(void        *data,
             void        *event EINA_UNUSED)
 {
    Editor *const ed = data;
-   editor_free(ed);
+   _cmd_quit(ed);
 }
 
 static void
@@ -373,7 +461,7 @@ _editor_new_cb(void        *data,
                const char  *source   EINA_UNUSED)
 {
    Editor *const parent_ed = data;
-   editor_new(NULL, parent_ed->debug);
+   _cmd_new(parent_ed);
 }
 
 static void
@@ -383,7 +471,7 @@ _editor_open_cb(void        *data,
                 const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   editor_file_selector_add(ed, EINA_FALSE);
+   _cmd_open(ed);
 }
 
 static void
@@ -393,10 +481,7 @@ _editor_save_cb(void        *data,
                 const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   if (!ed->filename)
-     editor_file_selector_add(ed, EINA_TRUE);
-   else
-     editor_save(ed, ed->filename);
+   _cmd_save(ed, EINA_FALSE);
 }
 
 static void
@@ -406,7 +491,7 @@ _editor_save_as_cb(void        *data,
                    const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   editor_file_selector_add(ed, EINA_TRUE);
+   _cmd_save(ed, EINA_TRUE);
 }
 
 static void
@@ -416,16 +501,17 @@ _editor_undo_cb(void        *data,
                 const char  *source   EINA_UNUSED)
 {
    Editor *const ed = data;
-   snapshot_rollback(ed, -1);
+   _cmd_undo(ed);
 }
 
 static void
-_editor_redo_cb(void        *data     EINA_UNUSED,
+_editor_redo_cb(void        *data,
                 Evas_Object *obj      EINA_UNUSED,
                 const char  *emission EINA_UNUSED,
                 const char  *source   EINA_UNUSED)
 {
-   // TODO
+   Editor *const ed = data;
+   _cmd_redo(ed);
 }
 
 static void

@@ -119,6 +119,7 @@ mainconfig_show(Editor *ed)
    };
    unsigned int i;
 
+   ed->mainconfig++;
    editor_inwin_add(ed);
 
    /* Default values */
@@ -240,4 +241,5 @@ void
 mainconfig_hide(Editor *ed)
 {
    editor_inwin_dismiss(ed);
+   ed->mainconfig--;
 }
