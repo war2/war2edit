@@ -240,13 +240,13 @@ minimap_update(Editor       *ed,
 
    if (u == PUD_UNIT_NONE)
      {
-        col = pud_tile_to_color(ed->pud->era, c->tile);
+        col = pud_minimap_tile_to_color(ed->pud->era, c->tile);
         w = 1;
         h = 1;
      }
    else
      {
-        col = pud_color_for_unit(u, player);
+        col = pud_minimap_color_for_unit(u, player);
         sprite_tile_size_get(u, &w, &h);
      }
 

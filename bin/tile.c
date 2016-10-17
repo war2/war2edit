@@ -299,7 +299,7 @@ tile_calculate(uint8_t tl,
 
    if ((seed & TILE_RANDOMIZE) == TILE_RANDOMIZE)
      {
-        rtile = pud_random_get(tile_code);
+        rtile = pud_random_tile_get(tile_code);
         /* Don't randomize special tiles */
         if (((tile_code & 0x0f00) == 0x0000) &&
             ((tile_code & 0x0030) ||
