@@ -59,7 +59,6 @@ check_compiler_warnings(
     -Wredundant-decls
     -Winline
     -Winvalid-pch
-    -Woverlength-strings
     -Wcast-align
 )
 add_definitions(${COMPILER_WARNINGS} -O0 -g) # FIXME
