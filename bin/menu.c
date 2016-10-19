@@ -384,13 +384,14 @@ _radio_players_changed_cb(void        *data,
                           Evas_Object *obj,
                           void        *event EINA_UNUSED)
 {
-   Editor *ed;
+   Editor *const ed = evas_object_data_get(obj, "editor");
 
-   ed = evas_object_data_get(obj, "editor");
    _radio_changed_common_do(data, (int *)(&(ed->sel_player)));
+   menu_unit_selection_reset(ed);
    DBG("Player selection changed: <%s>", pud_color_to_string(ed->sel_player));
 
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
+   _radio_units_changed_cb(ed->radio_units_reset, ed->unitsmenu, NULL);
 }
 
 /*============================================================================*
