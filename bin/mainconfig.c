@@ -99,6 +99,26 @@ _has_extension_cb(void        *data,
    ed->extension = with_extension;
 }
 
+static Evas_Object *
+_dim_radio_add(Evas_Object *box,
+               Evas_Object *group,
+               Editor *ed,
+               Pud_Dimensions dims)
+{
+   Evas_Object *o;
+
+   o = elm_radio_add(box);
+   elm_radio_state_value_set(o, dims);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
+   elm_object_text_set(o, pud_dimensions_to_string(dims));
+   elm_box_pack_end(box, o);
+   if (group) elm_radio_group_add(o, group);
+   evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
+   evas_object_show(o);
+
+   return o;
+}
 
 /*============================================================================*
  *                                 Public API                                 *
@@ -166,43 +186,13 @@ mainconfig_show(Editor *ed)
    elm_object_content_set(f, b);
    elm_box_align_set(b, 0.0, 0.0);
    evas_object_show(b);
-   o = elm_radio_add(b); /* Size item 1 */
-   elm_radio_state_value_set(o, 1);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "32 x 32");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   grp = o;
-   evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
-   o = elm_radio_add(b); /* Size item 2 */
-   elm_radio_state_value_set(o, 2);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "64 x 64");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   elm_radio_group_add(o, grp);
-   evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
-   o = elm_radio_add(b); /* Size item 3 */
-   elm_radio_state_value_set(o, 3);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "96 x 96");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   elm_radio_group_add(o, grp);
-   evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
-   o = elm_radio_add(b); /* Size item 4 */
-   elm_radio_state_value_set(o, 4);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, 0.0);
-   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, 0.5);
-   elm_object_text_set(o, "128 x 128");
-   elm_box_pack_end(b, o);
-   evas_object_show(o);
-   elm_radio_group_add(o, grp);
-   evas_object_smart_callback_add(o, "changed", _size_changed_cb, ed);
-   elm_radio_value_set(grp, 1);
+
+   grp = _dim_radio_add(b, NULL, ed, PUD_DIMENSIONS_32_32);
+   _dim_radio_add(b, grp, ed, PUD_DIMENSIONS_64_64);
+   _dim_radio_add(b, grp, ed, PUD_DIMENSIONS_96_96);
+   _dim_radio_add(b, grp, ed, PUD_DIMENSIONS_128_128);
+
+   elm_radio_value_set(grp, PUD_DIMENSIONS_32_32);
 
    elm_box_pack_end(b3, menu_map_properties_new(ed, b3));
 
