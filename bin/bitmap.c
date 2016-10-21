@@ -403,14 +403,17 @@ _resource_close_is(const Editor *ed,
                    int           x,
                    int           y)
 {
-   const int nomansland = 6;
+   const int nomansland = 4;
    Eina_Bool gold;
-   int i, j;
-   int w, h;
+   Eina_Bool collector = EINA_TRUE;
+   int i, j, w, h;
    const Cell *c;
 
    switch (unit)
      {
+      case PUD_UNIT_GOLD_MINE:
+         collector = EINA_FALSE;
+         /* Fall through */
       case PUD_UNIT_TOWN_HALL:
       case PUD_UNIT_GREAT_HALL:
       case PUD_UNIT_KEEP:
@@ -420,6 +423,11 @@ _resource_close_is(const Editor *ed,
          gold = EINA_TRUE;
          break;
 
+      case PUD_UNIT_OIL_PATCH:
+      case PUD_UNIT_HUMAN_OIL_WELL:
+      case PUD_UNIT_ORC_OIL_WELL:
+         collector = EINA_FALSE;
+         /* Fall through */
       case PUD_UNIT_ORC_SHIPYARD:
       case PUD_UNIT_HUMAN_SHIPYARD:
       case PUD_UNIT_ORC_REFINERY:
@@ -428,35 +436,55 @@ _resource_close_is(const Editor *ed,
          break;
 
       default:
-            return EINA_FALSE;
+         return EINA_FALSE;
      }
 
    sprite_tile_size_get(unit, (unsigned int*)(&w), (unsigned int*)(&h));
-   for (j = y - nomansland;
-        (j >= 0) && (j < (int)ed->pud->map_h) && (j < y + h + nomansland);
-        j++)
+   for (j = y - nomansland; j < y + h + nomansland; j++)
      {
-        for (i = x - nomansland;
-             (i >= 0) && (i < (int)ed->pud->map_w) && (i < x + w + nomansland);
-             i++)
+        /* Avoid out of bounds access */
+        if ((j < 0) || (j >= (int)ed->pud->map_h)) continue;
+
+        for (i = x - nomansland; i < x + w + nomansland; i++)
           {
+             /* Avoid out of bounds access */
+             if ((i < 0) || (i >= (int)ed->pud->map_w)) continue;
+
              c = &(ed->cells[j][i]);
              if (gold)
                {
-                  if (c->unit_below == PUD_UNIT_GOLD_MINE)
-                    return EINA_TRUE;
+                  if (collector)
+                    {
+                       /* We want to place a Gold collector near a gold mine */
+                       if (c->unit_below == PUD_UNIT_GOLD_MINE)
+                         return EINA_TRUE;
+                    }
+                  else
+                    {
+                       /* We want to place a gold mine near a gold collector */
+                       if (pud_unit_gold_collector_is(c->unit_below))
+                         return EINA_TRUE;
+                    }
                }
              else
                {
-                  switch (c->unit_below)
+                  if (collector)
                     {
-                     case PUD_UNIT_OIL_PATCH:
-                     case PUD_UNIT_HUMAN_OIL_WELL:
-                     case PUD_UNIT_ORC_OIL_WELL:
-                        return EINA_TRUE;
+                       switch (c->unit_below)
+                         {
+                          case PUD_UNIT_OIL_PATCH:
+                          case PUD_UNIT_HUMAN_OIL_WELL:
+                          case PUD_UNIT_ORC_OIL_WELL:
+                             return EINA_TRUE;
 
-                     default:
-                        break;
+                          default:
+                             break;
+                         }
+                    }
+                  else
+                    {
+                       if (pud_unit_oil_collector_is(c->unit_below))
+                         return EINA_TRUE;
                     }
                }
           }
