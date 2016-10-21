@@ -153,6 +153,9 @@ mainconfig_show(Editor *ed)
    elm_box_horizontal_set(box, EINA_FALSE);
    evas_object_show(box);
 
+   /* Show inwin */
+   editor_inwin_set(ed, box, "minimal", NULL, NULL, NULL, NULL);
+
    /* Box to hold map and menus */
    b2 = elm_box_add(box);
    elm_box_horizontal_set(b2, EINA_TRUE);
@@ -221,9 +224,6 @@ mainconfig_show(Editor *ed)
      }
 
    elm_box_pack_end(b3, bb);
-
-   /* Show inwin */
-   editor_inwin_set(ed, box, "minimal", NULL, NULL, NULL, NULL);
    editor_partial_load(ed);
 }
 
