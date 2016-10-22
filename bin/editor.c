@@ -249,12 +249,8 @@ _text_group_get_cb(void        *data,
 
    if (player < 8)
      {
-        int b;
-
-        b = snprintf(buf, sizeof(buf), "Player %i (", player + 1);
-        bytes = snprintf(buf + b, sizeof(buf) - b, "%s)", pud_color_to_string(player));
-        bytes += b;
-        buf[b] -= 0x20; // Uppercase
+        bytes = snprintf(buf, sizeof(buf), "Player %i (%s)",
+                         player + 1, pud_color_to_string(player));
      }
    else
      {
