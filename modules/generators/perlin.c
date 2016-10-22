@@ -145,5 +145,7 @@ generator(unsigned int width,
 
 EINA_MODULE_INIT(perlin_init);
 EINA_MODULE_SHUTDOWN(perlin_shutdown);
+#ifdef EFL_VERSION_1_19
 EINA_MODULE_LICENSE("MIT");
 EINA_MODULE_AUTHOR("Jean Guyomarc'h");
+#endif
