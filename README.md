@@ -16,9 +16,9 @@ Build
 - `cairo` must be installed (https://www.cairographics.org/);
 - `war2tools` must be installed (https://github.com/war2/war2tools)
 
-- Create build directory: `mkdir -b build && cd build`.
+- Create build directory: `mkdir -p build && cd build`.
 - Run cmake: `cmake ..`.
-- Compile: `make`.
+- Compile: `cmake --build .`.
 - Install: `sudo make install`.
 - Launch: `war2edit`.
 
