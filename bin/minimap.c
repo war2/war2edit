@@ -158,9 +158,9 @@ minimap_resize(Editor *ed)
    /* Resize map for current minimap */
    evas_object_size_hint_max_set(ed->minimap.map,
                                  ed->pud->map_w * ratio,
-                                 ed->pud->map_w * ratio);
+                                 ed->pud->map_h * ratio);
    evas_object_size_hint_min_set(ed->minimap.map,
-                                 ed->pud->map_h * ratio,
+                                 ed->pud->map_w * ratio,
                                  ed->pud->map_h * ratio);
 
    /* Configure minimap image */
