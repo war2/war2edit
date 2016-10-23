@@ -23,7 +23,6 @@
 #ifndef __UNITSELECTOR__H_
 #define __UNITSELECTOR__H_
 
-Eina_Bool unitselector_add(Editor *ed);
 void unitselector_show(Editor *ed, unsigned int x, unsigned int y);
 void unitselector_hide(Editor *ed);
 

@@ -390,12 +390,6 @@ _provide_unit_handler(Editor *ed,
    return f;
 }
 
-Eina_Bool
-unitselector_add(Editor *ed EINA_UNUSED)
-{
-   return EINA_TRUE;
-}
-
 static Edje_Object *
 _sel_add(Editor *ed,
          unsigned int cx,

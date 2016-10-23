@@ -743,8 +743,6 @@ editor_new(const char   *pud_file,
    elm_layout_content_set(ed->lay, "war2edit.main.playersmenu", ed->playersmenu_btn);
    evas_object_smart_callback_add(ed->playersmenu_btn, "clicked", _show_players_menu_cb, ed);
 
-   unitselector_add(ed);
-
    /* Menu callbacks */
    elm_layout_signal_callback_add(ed->lay, "war2edit,menu,new", "war2edit",
                                   _editor_new_cb, ed);
