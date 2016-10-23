@@ -306,10 +306,10 @@ minimap_view_move(Editor    *ed,
                   int         y,
                   Eina_Bool   clicked)
 {
-   int bx, by, rw = 0, rh = 0, srw, srh, cx, cy, ox, oy;
+   int bx, by, rw = 0, rh = 0, srw, srh, cx, cy, ox, oy, ow, oh, tx, ty;
 
    evas_object_geometry_get(ed->minimap.rect, NULL, NULL, &rw, &rh);
-   evas_object_geometry_get(ed->minimap.map, &ox, &oy, NULL, NULL);
+   evas_object_geometry_get(ed->minimap.map, &ox, &oy, &ow, &oh);
 
    if (clicked)
      {
@@ -320,9 +320,13 @@ minimap_view_move(Editor    *ed,
    if (x < 0) x = 0;
    if (y < 0) y = 0;
 
-   evas_object_move(ed->minimap.rect,
-                    (x * ed->minimap.ratio) + ox,
-                    (y * ed->minimap.ratio) + oy);
+   tx = (x * ed->minimap.ratio) + ox;
+   ty = (y * ed->minimap.ratio) + oy;
+
+   if (tx - ox + rw > ow) tx = ox + ow - rw;
+   if (ty - oy + rh > oh) ty = oy + oh - rh;
+
+   evas_object_move(ed->minimap.rect, tx, ty);
 
    if (clicked)
      {
