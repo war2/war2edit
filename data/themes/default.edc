@@ -60,7 +60,7 @@ collections {
             }
          }
 
-         external { "menu_mask"; source: "elm/bg"; nomouse;
+         external { "menu_mask"; source: "elm/bg";
             desc { "default";
                rel1.relative: 0.5 0.0;
                rel2.relative: 0.5 0.0;
@@ -459,6 +459,12 @@ collections {
          }
          program { signal: "mouse,clicked,1"; source: "menu_properties";
             action: SIGNAL_EMIT "war2edit,properties,open" "war2edit";
+         }
+         program { signal: "mouse,in"; source: "menu_mask";
+            action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
+         }
+         program { signal: "mouse,out"; source: "menu_mask";
+            action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
          }
          program { signal: "mouse,clicked,1"; source: "menu_btn";
             filter: "menu_btn" "default";
