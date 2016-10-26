@@ -46,6 +46,9 @@ collections {
                align: 0.0 0.0;
             }
          }
+#define BAR_RIGHT_X (-23*4)-5
+#define BAR_LEFT_X (+23*5)+5
+
          rect { "top_zone";
             repeat_events: 1;
             desc { "default";
@@ -56,24 +59,37 @@ collections {
                color: 0 0 0 0;
             }
          }
-         rect { "menu_mask";
-            repeat_events: 1;
+
+         external { "menu_mask"; source: "elm/bg"; nomouse;
             desc { "default";
-               rel.to: "top_zone";
                rel1.relative: 0.5 0.0;
-               rel2.relative: 0.5 1.0;
-               align: 0.0 0.0;
+               rel2.relative: 0.5 0.0;
+               align: 0.5 0.0;
                rel1.offset: 0 -30;
                rel2.offset: 0 -30;
-               color: 255 255 255 0;
             }
             desc { "visible";
                inherit: "default";
-               rel1.offset: (-23*4)-5 0;
-               rel2.offset: (+23*5)+5 5;
-               color: 255 255 255 200;
+               rel1.offset: BAR_RIGHT_X 0;
+               rel2.offset: BAR_LEFT_X 30;
             }
-            effect: SHADOW BOTTOM;
+         }
+         external { "menu_btn"; source: "elm/button";
+            desc { "default";
+               rel1.relative: 0.1 0.0;
+               rel2.relative: 0.1 0.0;
+               FIXED_SIZE(25, 25);
+               align: 0.5 0.0;
+               params {
+                  string: "icon" "view-sort-ascending";
+               }
+            }
+            desc { "visible"; // Understand: menu is visible
+               inherit: "default";
+               params {
+                  string: "icon" "view-sort-descending";
+               }
+            }
          }
 
          external { "menu_new"; source: "elm/icon";
@@ -444,14 +460,8 @@ collections {
          program { signal: "mouse,clicked,1"; source: "menu_properties";
             action: SIGNAL_EMIT "war2edit,properties,open" "war2edit";
          }
-
-         program { signal: "mouse,in"; source: "menu_mask";
-            action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
-         }
-         program { signal: "mouse,out"; source: "menu_mask";
-            action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
-         }
-         program { signal: "mouse,in"; source: "top_zone";
+         program { signal: "mouse,clicked,1"; source: "menu_btn";
+            filter: "menu_btn" "default";
             action: STATE_SET "visible";
             target: "menu_mask";
             target: "menu_new";
@@ -461,9 +471,11 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
+            target: "menu_btn";
             transition: ACCELERATE 0.5;
          }
-         program { signal: "mouse,out"; source: "top_zone";
+         program { signal: "mouse,clicked,1"; source: "menu_btn";
+            filter: "menu_btn" "visible";
             action: STATE_SET "default";
             target: "menu_mask";
             target: "menu_new";
@@ -473,6 +485,7 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
+            target: "menu_btn";
             transition: DECELERATE 0.5;
          }
          program { signal: "war2edit,tileselector,show"; source: "war2edit";
