@@ -84,7 +84,6 @@ struct _Editor
    Evas_Object  *playersmenu;
    Evas_Object  *propertiesmenu;
    Evas_Object  *playersmenu_btn;
-   Evas_Object  *hover;
 
    Eina_Stringshare *filename;
    Cell        **cells;
@@ -272,8 +271,6 @@ editor_player_switch_race(Editor     *ed,
 Evas_Object *
 editor_file_selector_add(Editor    *ed,
                          Eina_Bool  save);
-
-void editor_tileselector_hide(Editor *ed);
 
 Evas_Object *editor_inwin_add(Editor *ed);
 void

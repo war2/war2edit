@@ -432,25 +432,6 @@ editor_error(Editor     *ed,
 }
 
 static void
-_hover_show_cb(void        *data,
-               Evas_Object *obj  EINA_UNUSED,
-               void        *info EINA_UNUSED)
-{
-   Editor *const ed = data;
-   elm_layout_signal_emit(ed->lay, "war2edit,tileselector,show", "war2edit");
-}
-
-static void
-_pop_tileselector_cb(void        *data,
-                       Evas_Object *obj      EINA_UNUSED,
-                       const char  *emission EINA_UNUSED,
-                       const char  *source   EINA_UNUSED)
-{
-   Editor *const ed = data;
-   evas_object_show(ed->hover);
-}
-
-static void
 _editor_new_cb(void        *data,
                Evas_Object *obj      EINA_UNUSED,
                const char  *emission EINA_UNUSED,
@@ -554,15 +535,6 @@ _editor_menu_out_cb(void        *data,
 }
 
 static void
-_hover_dismissed_cb(void        *data,
-                    Evas_Object *obj  EINA_UNUSED,
-                    void        *info EINA_UNUSED)
-{
-   Editor *const ed = data;
-   elm_layout_signal_emit(ed->lay, "war2edit,tileselector,hide", "war2edit");
-}
-
-static void
 _show_menu(Evas_Object *obj)
 {
    int x, y;
@@ -590,6 +562,14 @@ _show_players_menu_cb(void        *data,
    _show_menu(ed->playersmenu);
 }
 
+static void
+_tileselector_cb(void        *data,
+                 Evas_Object *obj  EINA_UNUSED,
+                 void        *info EINA_UNUSED)
+{
+   Editor *const ed = data;
+   elm_layout_signal_emit(ed->lay, "war2edit,tileselector,toggle", "war2edit");
+}
 
 
 Editor *
@@ -706,23 +686,15 @@ editor_new(const char   *pud_file,
    elm_image_file_set(o, title, NULL);
    elm_object_part_content_set(ed->tileselector, "icon", o);
    evas_object_size_hint_align_set(ed->tileselector, 0.0, EVAS_HINT_FILL);
+   evas_object_smart_callback_add(ed->tileselector, "clicked", _tileselector_cb, ed);
    elm_layout_content_set(ed->lay, "war2edit.main.tileselector", ed->tileselector);
 
-   ed->hover = elm_hover_add(ed->win);
-   elm_object_style_set(ed->hover, "popout");
-   elm_hover_parent_set(ed->hover, ed->win);
-   elm_hover_target_set(ed->hover, ed->tileselector);
-   evas_object_smart_callback_add(ed->tileselector, "clicked", _hover_show_cb, ed);
-   elm_layout_signal_callback_add(ed->lay, "war2edit,tileselector,pop",
-                                  "war2edit", _pop_tileselector_cb, ed);
-   evas_object_smart_callback_add(ed->hover, "dismissed", _hover_dismissed_cb, ed);
+   toolbar_add(ed, ed->lay);
 
-   toolbar_add(ed, ed->hover);
-
-   elm_object_part_content_set(ed->hover, "right", ed->segs[3]);
-   elm_object_part_content_set(ed->hover, "top", ed->segs[1]);
-   elm_object_part_content_set(ed->hover, "bottom", ed->segs[2]);
-   elm_object_part_content_set(ed->hover, "middle", ed->segs[0]);
+   elm_layout_content_set(ed->lay, "war2edit.toolbar.actions", ed->segs[3]);
+   elm_layout_content_set(ed->lay, "war2edit.toolbar.brushes", ed->segs[2]);
+   elm_layout_content_set(ed->lay, "war2edit.toolbar.strokes", ed->segs[1]);
+   elm_layout_content_set(ed->lay, "war2edit.toolbar.tints", ed->segs[0]);
 
    /* Unitsmenu button */
    ed->unitsmenu_btn = elm_button_add(ed->lay);
@@ -1408,12 +1380,6 @@ editor_player_switch_race(Editor     *ed,
    editor_units_list_update(ed);
    bitmap_refresh(ed, NULL);
    return EINA_TRUE;
-}
-
-void
-editor_tileselector_hide(Editor *ed)
-{
-   elm_hover_dismiss(ed->hover);
 }
 
 

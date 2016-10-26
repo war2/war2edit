@@ -163,8 +163,7 @@ _seg_action_changed_cb(void        *data,
                        void        *info)
 {
    Editor *const ed = data;
-   editor_tileselector_hide(ed);
-   _seg_changed_cb(data, obj, info);
+   _seg_changed_cb(ed, obj, info);
 }
 
 

@@ -276,18 +276,15 @@ collections {
             desc { "default";
                min: 25 25;
                max: 25 25;
-               rel.to: "war2edit.main.contents";
-               rel1.relative: 0.0 0.0;
-               rel2.relative: 0.0 0.0;
-               rel1.offset: 0 100;
-               rel2.offset: 0 100;
+               rel.to: "war2edit.toolbar.tints";
+               rel1.relative: 1.0 0.0;
                align: 0.0 0.5;
             }
-            desc { "translated";
+            desc { "hidden";
                inherit: "default";
-               rel1.offset: 80 100;
-               rel2.offset: 80 100;
+               rel.to: "war2edit.toolbar.actions";
             }
+            before: "war2edit.toolbar.actions";
          }
          swallow { "war2edit.main.unitsmenu";
             desc { "default";
@@ -296,14 +293,9 @@ collections {
                rel.to: "war2edit.main.contents";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
-               rel1.offset: 0 100+25;
-               rel2.offset: 0 100+25;
+               rel1.offset: 0 32+20+50;
+               rel2.offset: 0 32+20+50;
                align: 0.0 0.5;
-            }
-            desc { "translated";
-               inherit: "default";
-               rel1.offset: 80 100+25;
-               rel2.offset: 80 100+25;
             }
          }
          swallow { "war2edit.main.playersmenu";
@@ -313,14 +305,9 @@ collections {
                rel.to: "war2edit.main.contents";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
-               rel1.offset: 0 100+25+25;
-               rel2.offset: 0 100+25+25;
+               rel1.offset: 0 32+20+50+25;
+               rel2.offset: 0 32+20+50+25;
                align: 0.0 0.5;
-            }
-            desc { "translated";
-               inherit: "default";
-               rel1.offset: 80 100+25+25;
-               rel2.offset: 80 100+25+25;
             }
          }
 
@@ -454,6 +441,58 @@ collections {
             }
          }
 
+         /*=== Toolbar :: ACTIONS ===*/
+         swallow { "war2edit.toolbar.actions";
+            desc { "default";
+               rel1.offset: 0 32;
+               rel2.relative: 0.0 0.0;
+               align: 0.0 0.0;
+            }
+            desc { "hidden";
+               inherit: "default";
+               align: 1.0 0.0;
+            }
+         }
+         swallow { "war2edit.toolbar.brushes";
+            desc { "default";
+               rel.to: "war2edit.toolbar.actions";
+               rel1.relative: 1.0 0.0;
+               rel2.relative: 1.0 0.0;
+               align: 0.0 0.0;
+            }
+            desc { "hidden";
+               inherit: "default";
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+            }
+         }
+         swallow { "war2edit.toolbar.strokes";
+            desc { "default";
+               rel.to: "war2edit.toolbar.brushes";
+               rel1.relative: 1.0 0.0;
+               rel2.relative: 1.0 0.0;
+               align: 0.0 0.0;
+            }
+            desc { "hidden";
+               inherit: "default";
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+            }
+         }
+         swallow { "war2edit.toolbar.tints";
+            desc { "default";
+               rel.to: "war2edit.toolbar.strokes";
+               rel1.relative: 1.0 0.0;
+               rel2.relative: 1.0 0.0;
+               align: 0.0 0.0;
+            }
+            desc { "hidden";
+               inherit: "default";
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+            }
+         }
+
          /*=== Unitselector ===*/
          swallow { "war2edit.main.unitselector";
             desc { "default"; /* aka. hidden */
@@ -547,21 +586,26 @@ collections {
             target: "menu_btn";
             transition: DECELERATE 0.5;
          }
-         program { signal: "war2edit,tileselector,show"; source: "war2edit";
-            action: STATE_SET "translated";
-            target: "war2edit.main.tileselector";
-            transition: ACCELERATE 0.2;
-            after: "tileselector,signal,show";
-         }
-         program { signal: "war2edit,tileselector,hide"; source: "war2edit";
+         program { signal: "war2edit,tileselector,toggle"; source: "war2edit";
             action: STATE_SET "default";
+            filter: "war2edit.toolbar.actions" "hidden";
+            target: "war2edit.toolbar.actions";
+            target: "war2edit.toolbar.brushes";
+            target: "war2edit.toolbar.strokes";
+            target: "war2edit.toolbar.tints";
             target: "war2edit.main.tileselector";
-            transition: ACCELERATE 0.1;
+            transition: ACCELERATE 0.5;
          }
-         program { name: "tileselector,signal,show";
-            action: SIGNAL_EMIT "war2edit,tileselector,pop" "war2edit";
+         program { signal: "war2edit,tileselector,toggle"; source: "war2edit";
+            action: STATE_SET "hidden";
+            filter: "war2edit.toolbar.actions" "default";
+            target: "war2edit.toolbar.actions";
+            target: "war2edit.toolbar.brushes";
+            target: "war2edit.toolbar.strokes";
+            target: "war2edit.toolbar.tints";
+            target: "war2edit.main.tileselector";
+            transition: ACCELERATE 0.5;
          }
-
          program { signal: "mouse,clicked,1"; source: "open_minimap";
             action: STATE_SET "default";
             target: "open_minimap";
