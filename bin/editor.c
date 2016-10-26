@@ -649,6 +649,7 @@ editor_new(const char   *pud_file,
         CRI("Failed to set layout");
         goto err_win_del;
      }
+   ed->edje = elm_layout_edje_get(ed->lay);
    evas_object_show(o);
    elm_win_resize_object_add(ed->win, o);
 

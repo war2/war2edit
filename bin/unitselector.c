@@ -420,7 +420,7 @@ _sel_add(Editor *ed,
         evas_object_del(o);
         return NULL;
      }
-   evas_object_smart_member_add(o, elm_layout_edje_get(ed->lay));
+   evas_object_smart_member_add(o, ed->edje);
 
    evas_object_resize(o, cw, ch);
    evas_object_move(o, cx1, cy1);
@@ -471,7 +471,7 @@ _unitselector_add(Editor       *ed,
         elm_box_pack_end(vbox, o);
         ed->unitselector.sel[2] = _sel_add(ed, cx, cy, 1, 1);
      }
-   evas_object_smart_member_add(vbox, elm_layout_edje_get(ed->lay));
+   evas_object_smart_member_add(vbox, ed->edje);
 
    return vbox;
 }
