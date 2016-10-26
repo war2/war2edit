@@ -633,6 +633,8 @@ editor_new(const char   *pud_file,
    evas_object_show(o);
    elm_win_resize_object_add(ed->win, o);
 
+   elm_layout_signal_emit(ed->lay, "war2edit,notif,hide", "war2edit");
+
    /* Add a box to put widgets in it */
    o = ed->mainbox = elm_box_add(ed->lay);
    EINA_SAFETY_ON_NULL_GOTO(o, err_win_del);
@@ -872,7 +874,7 @@ editor_save(Editor     *ed,
         return EINA_FALSE;
      }
 
-   editor_notif_send(ed, "Saved");
+   editor_notif_send(ed, "PUD \"%s\" saved.", file);
    INF("Map has been saved to \"%s\"", file);
    return EINA_TRUE;
 }

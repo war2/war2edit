@@ -508,24 +508,57 @@ collections {
          }
 
          /*=== Notifications ===*/
-         external { "bg2";
+         external { "bg_notif";
             source: "elm/bg";
             desc { "default";
-               rel.to: "war2edit.main.notif";
+               rel1.to: "war2edit.main.notif";
+               rel2.to: "notif_icon";
+               rel1.offset: -10 -1;
+               rel2.offset: +5 +1;
+            }
+            desc { "hidden";
+               inherit: "default";
+               rel1.offset: 0 -1;
+               rel2.offset: 0 +1;
             }
          }
          text { "war2edit.main.notif";
-            desc { "default"; /* aka. hidden */
-               rel.to: "war2edit.main.contents";
-               rel1.relative: 1.0 0.15;
-               rel2.relative: 1.0 0.15;
-               min: 1 32;
+            effect: FAR_SHADOW BOTTOM;
+            desc { "default";
+               rel.to: "notif_icon";
+               rel2.relative: 0.0 1.0;
+               rel2.offset: -5 0;
+               align: 1.0 0.5;
                text { font: "Sans"; size: 12;
+                  min: 1 0;
                }
             }
-            desc { "visible";
+            desc { "hidden";
                inherit: "default";
-               rel1.relative: 0.7 0.15;
+               rel1.to_x: "war2edit.main.contents";
+               rel1.relative: 1.0 0.0;
+               align: 0.0 0.0;
+               rel2.offset: 0 0;
+            }
+         }
+         external { "notif_icon"; source: "elm/icon";
+            desc { "default";
+               rel.to: "war2edit.main.contents";
+               rel1.relative: 1.0 0.0;
+               rel2.relative: 1.0 0.0;
+               rel1.offset: 0 20;
+               rel2.offset: -30 0;
+               align: 1.0 0.0;
+               FIXED_SIZE(42, 42);
+               params {
+                  string: "icon" "dialog-information";
+               }
+            }
+            desc { "hidden";
+               inherit: "default";
+               align: 0.0 0.0;
+               rel1.offset: 0 20;
+               rel2.offset: 0 0;
             }
          }
       }
@@ -648,13 +681,17 @@ collections {
          }
 
          program { signal: "war2edit,notif,show"; source: "war2edit";
-            action: STATE_SET "visible";
+            action: STATE_SET "default";
             target: "war2edit.main.notif";
+            target: "notif_icon";
+            target: "bg_notif";
             transition: SINUSOIDAL 1.0;
          }
          program { signal: "war2edit,notif,hide"; source: "war2edit";
-            action: STATE_SET "default";
+            action: STATE_SET "hidden";
             target: "war2edit.main.notif";
+            target: "notif_icon";
+            target: "bg_notif";
             transition: ACCELERATE 0.5;
          }
 
