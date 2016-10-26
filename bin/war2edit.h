@@ -29,7 +29,6 @@
 #include <Eina.h>
 #include <cairo.h>
 #include <Elementary.h>
-#include <elm_interface_fileselector.h>
 #include <lzma.h>
 
 typedef struct _Cell Cell;

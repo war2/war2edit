@@ -1478,7 +1478,7 @@ _done_cb(void        *data,
 
    if (!file) goto hide_fileselector;
 
-   save = elm_interface_fileselector_is_save_get(obj);
+   save = elm_fileselector_is_save_get(obj);
    if (save)
      {
         if (ecore_file_is_dir(file))
@@ -1526,7 +1526,7 @@ hide_fileselector:
 static Eina_Bool
 file_save_prompt(Editor *ed)
 {
-   elm_interface_fileselector_is_save_set(ed->fs, EINA_TRUE);
+   elm_fileselector_is_save_set(ed->fs, EINA_TRUE);
    _fs_show(ed);
    return EINA_TRUE;
 }
@@ -1534,7 +1534,7 @@ file_save_prompt(Editor *ed)
 static Eina_Bool
 file_load_prompt(Editor *ed)
 {
-   elm_interface_fileselector_is_save_set(ed->fs, EINA_FALSE);
+   elm_fileselector_is_save_set(ed->fs, EINA_FALSE);
    _fs_show(ed);
    return EINA_TRUE;
 }
@@ -1548,13 +1548,13 @@ editor_file_selector_add(Editor    *ed,
    obj = elm_fileselector_add(ed->win);
    EINA_SAFETY_ON_NULL_RETURN_VAL(obj, NULL);
 
-   elm_interface_fileselector_folder_only_set(obj, EINA_FALSE);
-   elm_interface_fileselector_hidden_visible_set(obj, EINA_FALSE);
-   elm_interface_fileselector_sort_method_set(obj, ELM_FILESELECTOR_SORT_BY_FILENAME_ASC);
-   elm_interface_fileselector_multi_select_set(obj, EINA_FALSE);
-   elm_interface_fileselector_expandable_set(obj, EINA_TRUE);
-   elm_interface_fileselector_mode_set(obj, ELM_FILESELECTOR_LIST);
-   elm_obj_fileselector_buttons_ok_cancel_set(obj, EINA_TRUE);
+   elm_fileselector_folder_only_set(obj, EINA_FALSE);
+   elm_fileselector_hidden_visible_set(obj, EINA_FALSE);
+   elm_fileselector_sort_method_set(obj, ELM_FILESELECTOR_SORT_BY_FILENAME_ASC);
+   elm_fileselector_multi_select_set(obj, EINA_FALSE);
+   elm_fileselector_expandable_set(obj, EINA_TRUE);
+   elm_fileselector_mode_set(obj, ELM_FILESELECTOR_LIST);
+   elm_fileselector_buttons_ok_cancel_set(obj, EINA_TRUE);
    evas_object_size_hint_weight_set(obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(obj, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(obj, "done", _done_cb, ed);
