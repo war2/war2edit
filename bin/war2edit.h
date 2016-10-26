@@ -61,7 +61,6 @@ typedef struct
 
    unsigned char *pixels;
 
-   Edje_Object *cursor;
    int cx, cy, cw, ch;
    Eina_Bool cursor_enabled;
    Eina_Bool cursor_visible;

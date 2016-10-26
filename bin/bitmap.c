@@ -25,6 +25,11 @@
 #define UNIT_BELOW (1 << 0)
 #define UNIT_ABOVE (1 << 1)
 
+#define MSG_POS_ID      1
+#define MSG_SIZE_ID     2
+#define MSG_STATE_ID    3
+#define MSG_VISIBLE_ID  4
+
 /*============================================================================*
  *                                 Private API                                *
  *============================================================================*/
@@ -1484,8 +1489,6 @@ bitmap_add(Editor *ed)
 
    Evas *const e = evas_object_evas_get(ed->win);
    Evas_Object *o;
-   Eina_Bool chk;
-   const char group[] = "war2edit/cursor";
 
    /* The scroller*/
    evas_object_event_callback_add(ed->scroller, EVAS_CALLBACK_RESIZE,
@@ -1533,29 +1536,15 @@ bitmap_add(Editor *ed)
    evas_object_pass_events_set(o, EINA_TRUE);
    evas_object_show(o);
 
-   /* Cursor */
-   o = ed->bitmap.cursor = edje_object_add(e);
-   evas_object_smart_member_add(o, ed->lay);
-   evas_object_pass_events_set(o, EINA_TRUE);
-   evas_object_propagate_events_set(o, EINA_FALSE);
-   chk = edje_object_file_set(o, main_edje_file_get(), group);
-   if (EINA_UNLIKELY(!chk))
-     {
-        ERR("Failed to set edje with file %s, group %s",
-            main_edje_file_get(), group);
-        bitmap_del(ed);
-        return EINA_FALSE;
-     }
-   evas_object_clip_set(o, ed->bitmap.clip);
    evas_object_clip_set(ed->sel.obj, ed->bitmap.clip);
+
+   _bitmap_autoresize(ed);
 
    bitmap_cursor_size_set(ed, 1, 1);
    bitmap_cursor_move(ed, 0, 0);
    ed->bitmap.cursor_visible = EINA_TRUE;
    bitmap_cursor_visibility_set(ed, EINA_FALSE);
    bitmap_cursor_enabled_set(ed, EINA_TRUE);
-
-   _bitmap_autoresize(ed);
 
    return EINA_TRUE;
 }
@@ -1621,7 +1610,6 @@ bitmap_del(Editor *ed)
    evas_object_event_callback_del_full(ed->bitmap.img, EVAS_CALLBACK_MOUSE_UP, _mouse_up_cb, ed);
    cairo_destroy(ed->bitmap.cr);
    cairo_surface_destroy(ed->bitmap.surf);
-   evas_object_del(ed->bitmap.cursor);
    evas_object_del(ed->bitmap.img);
 }
 
@@ -1639,11 +1627,21 @@ bitmap_cursor_size_set(Editor *ed,
                        int     cw,
                        int     ch)
 {
-   evas_object_resize(ed->bitmap.cursor,
-                      cw * ed->bitmap.cell_w,
-                      ch * ed->bitmap.cell_h);
+   Edje_Message_Int_Set *msg;
+
+   if ((ed->bitmap.cw == cw) && (ed->bitmap.ch == ch)) return;
+   if ((!ed->bitmap.cell_w) || (!ed->bitmap.cell_h)) return;
+
    ed->bitmap.cw = cw;
    ed->bitmap.ch = ch;
+
+   msg = alloca(sizeof(*msg) + (sizeof(int) * 2));
+   msg->count = 2;
+   msg->val[0] = cw * ed->bitmap.cell_w;
+   msg->val[1] = ch * ed->bitmap.cell_h;
+
+   edje_object_message_send(ed->edje,
+                            EDJE_MESSAGE_INT_SET, MSG_SIZE_ID, msg);
 }
 
 void
@@ -1662,32 +1660,36 @@ bitmap_cursor_enabled_get(const Editor *ed)
 }
 
 void
-bitmap_cursor_enabled_set(Editor     *ed,
+bitmap_cursor_enabled_set(Editor    *ed,
                           Eina_Bool  enabled)
 {
-   enabled = !!enabled;
+   Edje_Message_Int msg;
 
-   if (ed->bitmap.cursor_enabled == enabled) return;
-   ed->bitmap.cursor_enabled = enabled;
-   edje_object_signal_emit(ed->bitmap.cursor, (enabled == EINA_TRUE)
-                           ? "cursor,enabled"
-                           : "cursor,disabled", "war2edit");
+   enabled = !!enabled;
+   if (ed->bitmap.cursor_enabled != enabled)
+     {
+        ed->bitmap.cursor_enabled = enabled;
+
+        msg.val = enabled;
+        edje_object_message_send(ed->edje,
+                                 EDJE_MESSAGE_INT, MSG_STATE_ID, &msg);
+     }
 }
 
 void
 bitmap_cursor_visibility_set(Editor    *ed,
                              Eina_Bool  visible)
 {
-   visible = !!visible;
+   Edje_Message_Int msg;
 
+   visible = !!visible;
    if (ed->bitmap.cursor_visible != visible)
      {
-        if (visible)
-          evas_object_show(ed->bitmap.cursor);
-        else
-          evas_object_hide(ed->bitmap.cursor);
-
         ed->bitmap.cursor_visible = visible;
+
+        msg.val = visible;
+        edje_object_message_send(ed->edje,
+                                 EDJE_MESSAGE_INT, MSG_VISIBLE_ID, &msg);
      }
 }
 
@@ -1702,18 +1704,22 @@ bitmap_cursor_move(Editor *ed,
                    int     cx,
                    int     cy)
 {
-   int x, y;
+   Edje_Message_Int_Set *msg;
    int ox, oy;
 
-
    if ((ed->bitmap.cx == cx) && (ed->bitmap.cy == cy)) return;
-
-   evas_object_geometry_get(ed->bitmap.img, &ox, &oy, NULL, NULL);
-   bitmap_cells_to_coords(ed, cx, cy, &x, &y);
-   evas_object_move(ed->bitmap.cursor, ox + x, oy + y);
-
    ed->bitmap.cx = cx;
    ed->bitmap.cy = cy;
+
+   elm_interface_scrollable_content_region_get(ed->scroller, &ox, &oy, NULL, NULL);
+
+   msg = alloca(sizeof(*msg) + (sizeof(int) * 2));
+   msg->count = 2;
+   msg->val[0] = cx * ed->bitmap.cell_w - ox;
+   msg->val[1] = cy * ed->bitmap.cell_h - oy;
+
+   edje_object_message_send(ed->edje,
+                            EDJE_MESSAGE_INT_SET, MSG_POS_ID, msg);
 }
 
 void

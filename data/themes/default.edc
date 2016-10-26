@@ -32,8 +32,47 @@ externals {
 collections {
 
    group { "war2edit/main";
-      parts {
+      images {
+         image: "frame.png" COMP;
+      }
+      script {
+         public g_cx, g_cy, g_cw, g_ch, g_valid, g_visible;
 
+         public message(Msg_Type:type, id, ...) {
+            new part = PART:"cursor";
+            custom_state(part, "default", 0.0);
+            switch (id) {
+               case 1: { // Set CX,CY
+                  set_int(g_cx, getarg(2));
+                  set_int(g_cy, getarg(3));
+               }
+               case 2: { // Set CW,CH
+                  set_int(g_cw, getarg(2));
+                  set_int(g_ch, getarg(3));
+               }
+               case 3: { // Set STATE
+                  set_int(g_valid, getarg(2));
+               }
+               case 4: { // Set VISIBILITY
+                  set_int(g_visible, getarg(2));
+               }
+            }
+
+            set_state_val(part, STATE_REL1_OFFSET, get_int(g_cx), get_int(g_cy));
+            set_state_val(part, STATE_REL2_OFFSET, get_int(g_cx), get_int(g_cy));
+            set_state_val(part, STATE_MIN, get_int(g_cw), get_int(g_ch));
+            set_state_val(part, STATE_MAX, get_int(g_cw), get_int(g_ch));
+            if (get_int(g_valid) == 0) { // NOT valid --> INVALID -> WRONG cursor
+               set_state_val(part, STATE_COLOR, 255, 0, 0, 255);
+            } else { // VALID -> OK cursor
+               set_state_val(part, STATE_COLOR, 255, 255, 255, 255);
+            }
+            set_state_val(part, STATE_VISIBLE, get_int(g_visible));
+            set_state(part, "custom", 0.0);
+         }
+      }
+
+      parts {
          rect { "left_bar"; nomouse;
             desc { "default";
                rel1.to: "war2edit.main.contents";
@@ -46,6 +85,20 @@ collections {
                align: 0.0 0.0;
             }
          }
+
+         image { "cursor"; nomouse;
+            desc { "default";
+               image {
+                  normal: "frame.png";
+                  border: 3 3 3 3;
+               }
+               visible: 0;
+               color: 255 255 255 255;
+               align: 0.0 0.0;
+               rel2.relative: 0.0 0.0;
+            }
+         }
+
 #define BAR_RIGHT_X (-23*4)-5
 #define BAR_LEFT_X (+23*5)+5
 
@@ -587,37 +640,7 @@ collections {
       }
    }
 
-   group { "war2edit/cursor";
-      images {
-         image: "frame.png" COMP;
-      }
-      parts {
-         image { "cursor"; nomouse;
-            desc { "default";
-               image {
-                  normal: "frame.png";
-                  border: 3 3 3 3;
-               }
-               min: 1 1;
-               color: 255 255 255 255;
-            }
-            desc { state: "invalid";
-               inherit: "default";
-               color: 255 0 0 255;
-            }
-         }
-      }
-      programs {
-         program { signal: "cursor,disabled"; source: "*";
-            action: STATE_SET "invalid" 0.0;
-            target: "cursor";
-         }
-         program { signal: "cursor,enabled"; source: "*";
-            action: STATE_SET "default" 0.0;
-            target: "cursor";
-         }
-      }
-   }
+
 
    group { "war2edit/unitselector/sel";
       parts {
