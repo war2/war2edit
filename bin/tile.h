@@ -184,6 +184,16 @@ tile_grass_is(uint8_t tl,
 }
 
 static inline Eina_Bool
+tile_light_grass_is(uint8_t tl,
+                    uint8_t tr,
+                    uint8_t bl,
+                    uint8_t br)
+{
+   return ((tl == TILE_GRASS_LIGHT) && (tr == TILE_GRASS_LIGHT) &&
+           (br == TILE_GRASS_LIGHT) && (bl == TILE_GRASS_LIGHT));
+}
+
+static inline Eina_Bool
 tile_trees_is(uint8_t tl,
               uint8_t tr,
               uint8_t bl,
@@ -298,6 +308,9 @@ uint8_t tile_conflict_resolve_get(uint8_t imposed,
 
 #define TILE_GRASS_IS(cptr) \
    tile_grass_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
+
+#define TILE_LIGHT_GRASS_IS(cptr) \
+   tile_light_grass_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
 
 #define TILE_TREES_IS(cptr) \
    tile_trees_is((cptr)->tile_tl, (cptr)->tile_tr, (cptr)->tile_bl, (cptr)->tile_br)
