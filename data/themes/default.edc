@@ -274,8 +274,7 @@ collections {
 
          swallow { "war2edit.main.tileselector";
             desc { "default";
-               min: 25 25;
-               max: 25 25;
+               FIXED_SIZE(25, 25);
                rel.to: "war2edit.toolbar.tints";
                rel1.relative: 1.0 0.0;
                align: 0.0 0.5;
@@ -288,8 +287,7 @@ collections {
          }
          swallow { "war2edit.main.unitsmenu";
             desc { "default";
-               min: 25 25;
-               max: 25 25;
+               FIXED_SIZE(25, 25);
                rel.to: "war2edit.main.contents";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
@@ -300,8 +298,7 @@ collections {
          }
          swallow { "war2edit.main.playersmenu";
             desc { "default";
-               min: 25 25;
-               max: 25 25;
+               FIXED_SIZE(25, 25);
                rel.to: "war2edit.main.contents";
                rel1.relative: 0.0 0.0;
                rel2.relative: 0.0 0.0;
@@ -336,10 +333,8 @@ collections {
             desc { "default";
                rel.to: "war2edit.main.minimap";
                rel1.offset: +3 0;
-               fixed: 1 1;
+               FIXED_SIZE(10, 10);
                align: 1.0 0.0;
-               min: 10 10;
-               max: 10 10;
                params {
                   string: "icon" "document-close";
                }
@@ -350,9 +345,7 @@ collections {
                rel.to: "left_bar";
                rel2.offset: 0 -21-50;
                align: 0.0 1.0;
-               fixed: 1 1;
-               min: 25 25;
-               max: 25 25;
+               FIXED_SIZE(25, 25);
                params {
                   string: "icon" "window-new";
                }
@@ -391,8 +384,7 @@ collections {
             desc { "default";
                rel.to: "war2edit.main.sidepanel";
                rel2.relative: 0.0 0.0;
-               max: 25 25;
-               min: 25 25;
+               FIXED_SIZE(25, 25);
                align: 1.0 0.0;
                params {
                   string: "icon" "document-close";
@@ -413,9 +405,7 @@ collections {
                rel2.offset: -32 0;
                rel1.offset: 0 0;
                align: 1.0 0.0;
-               fixed: 1 1;
-               min: 25 25;
-               max: 25 25;
+               FIXED_SIZE(25, 25);
                params {
                   string: "icon" "view-list-compact";
                }
@@ -738,9 +728,7 @@ collections {
          swallow { "war2edit.unitselector.icon"; nomouse;
             desc { "default";
                rel2.relative: 0.0 0.0;
-               max: 46 38;
-               min: 46 38;
-               fixed: 1 1;
+               FIXED_SIZE(46, 38);
                align: 0.0 0.0;
             }
          }
