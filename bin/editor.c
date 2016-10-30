@@ -170,10 +170,6 @@ _scroll_cb(void        *data,
            void        *info EINA_UNUSED)
 {
    Editor *const ed = data;
-
-   // FIXME BAAAAAAD!!!! when minimap changes the view,
-   // it makes the scroller scroll, then this callback is called,
-   // and it loops until bounce ends....
    bitmap_minimap_view_resize(ed);
 }
 

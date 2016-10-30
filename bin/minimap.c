@@ -23,6 +23,26 @@
 #include "war2edit.h"
 
 static void
+_mouse_coords_convert(const Editor *ed,
+                      int           x,
+                      int           y,
+                      int          *outx,
+                      int          *outy)
+{
+   int cx, cy, ox, oy;
+   float ratio;
+
+   evas_object_geometry_get(ed->minimap.map, &ox, &oy, NULL, NULL);
+
+   ratio = (float)ed->minimap.ratio;
+   cx = rintf((float)(x - ox) / ratio);
+   cy = rintf((float)(y - oy) / ratio);
+
+   *outx = cx;
+   *outy = cy;
+}
+
+static void
 _mouse_down_cb(void        *data,
                Evas        *e    EINA_UNUSED,
                Evas_Object *obj  EINA_UNUSED,
@@ -30,15 +50,9 @@ _mouse_down_cb(void        *data,
 {
    Evas_Event_Mouse_Down *const down = info;
    Editor *const ed = data;
-   int cx, cy, ox, oy;
-   float ratio;
+   int cx, cy;
 
-   evas_object_geometry_get(ed->minimap.map, &ox, &oy, NULL, NULL);
-
-   ratio = (float)ed->minimap.ratio;
-   cx = rintf((float)(down->output.x - ox) / ratio);
-   cy = rintf((float)(down->output.y - oy) / ratio);
-
+   _mouse_coords_convert(ed, down->output.x, down->output.y, &cx, &cy);
    minimap_view_move(ed, cx, cy, EINA_TRUE);
 }
 
@@ -48,12 +62,15 @@ _mouse_move_cb(void        *data EINA_UNUSED,
                Evas_Object *obj  EINA_UNUSED,
                void        *info EINA_UNUSED)
 {
-   // FIXME broken feature due to scrolling callback
- //  Editor *ed = data;
- //  Evas_Event_Mouse_Move *move = info;
+   Editor *const ed = data;
+   Evas_Event_Mouse_Move *const move = info;
+   int cx, cy;
 
- //  if (move->buttons & 1)
- //    minimap_view_move(ed, move->cur.output.x, move->cur.output.y, EINA_TRUE);
+   if (move->buttons & 1)
+     {
+        _mouse_coords_convert(ed, move->cur.output.x, move->cur.output.y, &cx, &cy);
+        minimap_view_move(ed, cx, cy, EINA_TRUE);
+     }
 }
 
 static void
@@ -335,7 +352,7 @@ minimap_view_move(Editor    *ed,
         bitmap_cell_size_get(ed, &cx, &cy);
         bx = x * cx;
         by = y * cy;
-        elm_scroller_region_bring_in(ed->scroller, bx, by, srw, srh);
+        elm_scroller_region_show(ed->scroller, bx, by, srw, srh);
      }
 }
 
