@@ -325,7 +325,7 @@ _unit_show_cb(void        *data,
    d = elm_object_item_data_get(eoi);
    bitmap_cells_to_coords(ed, d->x, d->y, &x, &y);
 
-   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
+   elm_scroller_region_get(ed->scroller, NULL, NULL, &w, &h);
    elm_scroller_region_bring_in(ed->scroller, x - w/2, y - h/2, w, h);
 }
 

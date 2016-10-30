@@ -1022,7 +1022,7 @@ _bind_cb(void        *data,
    Editor *ed;
    Pud_Player player;
 
-   text = elm_wdg_item_part_text_get(evt, "default");
+   text = elm_object_item_part_text_get(evt, "default");
 
    val = eina_hash_find(_values, text);
    if (EINA_UNLIKELY(!val))

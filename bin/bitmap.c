@@ -601,7 +601,7 @@ bitmap_minimap_view_resize(Editor *ed)
    int cell_w, cell_h;
    float wf, hf;
 
-   elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
+   elm_scroller_region_get(ed->scroller, &rx, &ry, &rw, &rh);
    bitmap_cell_size_get(ed, &cell_w, &cell_h);
 
    wf = (float)cell_w;
@@ -624,7 +624,7 @@ _bitmap_autoresize(Editor *ed)
    unitselector_hide(ed);
 
    evas_object_geometry_get(ed->scroller, &x, &y, NULL, NULL);
-   elm_interface_scrollable_content_region_get(ed->scroller, NULL, NULL, &w, &h);
+   elm_scroller_region_get(ed->scroller, NULL, NULL, &w, &h);
 
    if (w > ed->bitmap.max_w) w = ed->bitmap.max_w;
    if (h > ed->bitmap.max_h) h = ed->bitmap.max_h;
@@ -671,7 +671,7 @@ _mouse_move_cb(void        *data,
    if (sel_active_is(ed))
      {
         int rx, ry, rw, rh;
-        elm_interface_scrollable_content_region_get(ed->scroller, &rx, &ry, &rw, &rh);
+        elm_scroller_region_get(ed->scroller, &rx, &ry, &rw, &rh);
         sel_update(ed, ev->cur.canvas.x - ed->sel.x,
                    ev->cur.canvas.y - ed->sel.y);
      }
@@ -1711,7 +1711,7 @@ bitmap_cursor_move(Editor *ed,
    ed->bitmap.cx = cx;
    ed->bitmap.cy = cy;
 
-   elm_interface_scrollable_content_region_get(ed->scroller, &ox, &oy, NULL, NULL);
+   elm_scroller_region_get(ed->scroller, &ox, &oy, NULL, NULL);
 
    msg = alloca(sizeof(*msg) + (sizeof(int) * 2));
    msg->count = 2;

@@ -403,7 +403,7 @@ _sel_add(Editor *ed,
    const char group[] = "war2edit/unitselector/sel";
 
    bitmap_cells_to_coords(ed, cx, cy, &px, &py);
-   elm_interface_scrollable_content_region_get(ed->scroller, &sx, &sy, NULL, NULL);
+   elm_scroller_region_get(ed->scroller, &sx, &sy, NULL, NULL);
    evas_object_geometry_get(ed->scroller, &rx, &ry, NULL, NULL);
    bitmap_cell_size_get(ed, &cell_w, &cell_h);
 
