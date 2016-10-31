@@ -1024,29 +1024,19 @@ editor_load(Editor     *ed,
             const char *file)
 {
    EINA_SAFETY_ON_NULL_RETURN_VAL(ed, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(file, EINA_FALSE);
 
    unsigned int i, count;
    Pud *pud;
 
    DBG("Loading %s\n", file);
 
-   if (file)
+   if (ed->pud) pud_close(ed->pud);
+   ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
+   if (EINA_UNLIKELY(!ed->pud))
      {
-        if (ed->pud) pud_close(ed->pud);
-        ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
-        if (EINA_UNLIKELY(!ed->pud))
-          {
-             ERR("Failed to load editor from file \"%s\"", file);
-             return EINA_FALSE;
-          }
-     }
-   else
-     {
-        if (EINA_UNLIKELY(!ed->pud))
-          {
-             CRI("Loading pud without filename and no initialized PUD");
-             return EINA_FALSE;
-          }
+        ERR("Failed to load editor from file \"%s\"", file);
+        return EINA_FALSE;
      }
 
    pud = ed->pud;
