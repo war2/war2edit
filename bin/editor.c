@@ -385,13 +385,6 @@ editor_free(Editor *ed)
    bitmap_del(ed);
    evas_object_del(ed->win);
    free(ed);
-
-   /*
-    * Because of the log window that is never closed, we need to query how
-    * many editors are still open. If none, let's just terminate.
-    */
-   if (editors_count() == 0)
-     elm_exit();
 }
 
 static void
