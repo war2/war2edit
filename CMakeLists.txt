@@ -83,5 +83,6 @@ pkg_check_modules(LZMA liblzma REQUIRED)
 add_subdirectory(bin)
 add_subdirectory(modules)
 add_subdirectory(data)
+add_subdirectory(macos)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake)

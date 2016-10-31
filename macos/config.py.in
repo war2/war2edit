@@ -1,0 +1,24 @@
+BASE_NAME = "War2Edit"
+EXEC_NAME = "war2edit"
+VERSION = "@PROJECT_VERSION@"
+BIN_LIST = [
+    "efreetd"
+]
+MODULE_LIST = [
+    "ecore",
+    "ecore_evas",
+    "ecore_cocoa",
+    "edje",
+    "efreet",
+    "elementary",
+    "embryo",
+    "eo",
+    "evas",
+    "fonts",
+    "fontconfig",
+    "war2edit",
+]
+
+COPYRIGHT = "Copyright (c) 2014-2016 Jean Guyomarc'h"
+ICON_PATH = "$(PREFIX)/share/icons/war2edit.png"
+BUNDLE_IDENTIFIER = "org.jeanguyomarch.war2edit"
