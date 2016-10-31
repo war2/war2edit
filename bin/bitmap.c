@@ -564,7 +564,8 @@ bitmap_cursor_state_evaluate(Editor       *ed,
                }
              else /* ground */
                {
-                  if (pud_unit_marine_is(ed->sel_unit))
+                  if ((pud_unit_marine_is(ed->sel_unit)) ||
+                      (pud_unit_coast_building_is(ed->sel_unit)))
                     bitmap_cursor_enabled_set(ed, EINA_FALSE);
                   else
                     {
