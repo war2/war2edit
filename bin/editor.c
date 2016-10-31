@@ -1198,7 +1198,7 @@ editor_name_set(Editor     *ed,
                 const char *name,
                 Eina_Bool   changed)
 {
-   const char unsaved_str[] = "*** UNSAVED *** ";
+   const char unsaved_str[] = "(unsaved) - ";
    const unsigned int unsaved_len = sizeof(unsaved_str) - 1;
    char new_title[PATH_MAX];
    unsigned int o1, o2;
