@@ -669,47 +669,20 @@ _frame_add(Evas_Object *parent,
    return f;
 }
 
-static void
-_preview_cache_free(Editor *ed)
-{
-   free(ed->preview.pixels);
-   ed->preview.pixels = NULL;
-}
-
-static void
-_free_px_cb(void        *data,
-            Evas        *e    EINA_UNUSED,
-            Evas_Object *obj  EINA_UNUSED,
-            void        *info EINA_UNUSED)
-{
-   Editor *const ed = data;
-   _preview_cache_free(ed);
-}
-
 void
 menu_map_properties_update(Editor *ed)
 {
    unsigned char *px;
+   int w, h;
 
-   _preview_cache_free(ed);
+   px = minimap_pixels_get(ed, &w, &h);
+   evas_object_image_size_set(ed->preview.obj, w, h);
+   evas_object_image_data_set(ed->preview.obj, px);
+   evas_object_image_data_update_add(ed->preview.obj, 0, 0, w, h);
 
-   px = pud_minimap_bitmap_generate(ed->pud, NULL, PUD_PIXEL_FORMAT_ARGB);
-   if (EINA_UNLIKELY(!px))
-     {
-        CRI("Failed to create minimap image");
-        evas_object_del(ed->preview.obj); ed->preview.obj = NULL;
-     }
-   else
-     {
-        ed->preview.pixels = px;
-        evas_object_image_size_set(ed->preview.obj, ed->pud->map_w, ed->pud->map_h);
-        evas_object_image_data_set(ed->preview.obj, px);
-        evas_object_image_data_update_add(ed->preview.obj, 0, 0, ed->pud->map_w, ed->pud->map_h);
-
-        evas_object_size_hint_min_set(ed->preview.obj, 256, 256);
-        evas_object_size_hint_max_set(ed->preview.obj, 256, 256);
-        evas_object_show(ed->preview.obj);
-     }
+   evas_object_size_hint_min_set(ed->preview.obj, 256, 256);
+   evas_object_size_hint_max_set(ed->preview.obj, 256, 256);
+   evas_object_show(ed->preview.obj);
 }
 
 static void
@@ -838,7 +811,6 @@ menu_map_properties_new(Editor      *ed,
    evas_object_image_colorspace_set(ed->preview.obj, EVAS_COLORSPACE_ARGB8888);
    evas_object_size_hint_weight_set(ed->preview.obj, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(ed->preview.obj, 0.0, EVAS_HINT_FILL);
-   evas_object_event_callback_add(ed->preview.obj, EVAS_CALLBACK_FREE, _free_px_cb, ed);
    menu_map_properties_update(ed);
 
    /* */

@@ -89,7 +89,6 @@ struct _Editor
    Cell        **cells;
 
    struct {
-      unsigned char *pixels;
       Evas_Object *obj;
    } preview;
 

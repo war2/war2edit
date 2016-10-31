@@ -368,3 +368,13 @@ minimap_view_resize(Editor       *ed,
      h = ed->pud->map_h * ed->minimap.ratio;
    evas_object_resize(ed->minimap.rect, w, h);
 }
+
+unsigned char *
+minimap_pixels_get(const Editor *ed,
+                   int *width,
+                   int *height)
+{
+   if (width) *width = ed->pud->map_w;
+   if (height) *height = ed->pud->map_h;
+   return ed->minimap.data[0];
+}

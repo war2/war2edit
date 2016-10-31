@@ -51,4 +51,9 @@ void minimap_view_resize(Editor *ed, unsigned int w, unsigned int h);
 void minimap_show(Editor *ed);
 Eina_Bool minimap_reload(Editor *ed);
 
+unsigned char *
+minimap_pixels_get(const Editor *ed,
+                   int *width,
+                   int *height);
+
 #endif /* ! _MINIMAP_H_ */
