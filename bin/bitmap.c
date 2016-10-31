@@ -280,6 +280,7 @@ _click_handle(Editor *ed,
         bitmap_cursor_enabled_set(ed, EINA_FALSE);
         EINA_RECTANGLE_SET(&zone, x - 6, y - 6, 12, 12); // XXX Zone is random
         bitmap_refresh(ed, &zone);
+        editor_changed(ed);
      }
    else if (action != EDITOR_SEL_ACTION_SELECTION)
      {
@@ -323,6 +324,7 @@ _click_handle(Editor *ed,
                                     editor_sel_tint_get(ed), x + i, y + j);
             }
         snapshot_push_done(ed);
+        editor_changed(ed);
      }
 }
 

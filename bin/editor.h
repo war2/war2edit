@@ -169,6 +169,8 @@ struct _Editor
    int prev_x;
    int prev_y;
    Eina_Bool was_oob;
+
+   Eina_Bool saved;
 };
 
 
@@ -236,7 +238,7 @@ Editor *editor_new(const char *pud_file, unsigned int debug);
 Eina_Bool editor_load(Editor *ed, const char *file);
 Eina_Bool editor_save(Editor *ed, const char *file);
 void editor_error(Editor *ed, const char *fmt, ...) EINA_PRINTF(2,3);
-void editor_name_set(Editor *ed, const char *name);
+void editor_name_set(Editor *ed, const char *name, Eina_Bool changed);
 Eina_Bool editor_unit_ref(Editor *ed, unsigned int x, unsigned int y, Unit type);
 Eina_Bool editor_unit_unref(Editor *ed, unsigned int x, unsigned int y, Unit type);
 uint16_t
@@ -291,5 +293,7 @@ Eina_Bool editor_tiles_sync(Editor *ed);
       CRI(msg_, ## __VA_ARGS__); \
       editor_error(ed_, msg_, ## __VA_ARGS__); \
    } while (0)
+
+void editor_changed(Editor *ed);
 
 #endif /* ! _EDITOR_H_ */

@@ -579,6 +579,7 @@ editor_new(const char   *pud_file,
    EINA_SAFETY_ON_NULL_GOTO(ed, err_ret);
 
    if (pud_file) ed->filename = eina_stringshare_add(pud_file);
+   ed->saved = EINA_TRUE;
 
    ed->debug = debug;
    ed->zoom = 1.0;
@@ -783,7 +784,7 @@ editor_new(const char   *pud_file,
    snapshot_add(ed);
 
    /* Set window's title */
-   editor_name_set(ed, title);
+   editor_name_set(ed, title, EINA_FALSE);
 
    /* Add to list of editor windows */
    _editors = eina_list_append(_editors, ed);
@@ -865,6 +866,8 @@ editor_save(Editor     *ed,
 
    editor_notif_send(ed, "PUD \"%s\" saved.", file);
    INF("Map has been saved to \"%s\"", file);
+   ed->saved = EINA_TRUE;
+   editor_name_set(ed, file, EINA_FALSE);
    return EINA_TRUE;
 }
 
@@ -1192,12 +1195,23 @@ editor_unit_unref(Editor       *ed,
 
 void
 editor_name_set(Editor     *ed,
-                const char *name)
+                const char *name,
+                Eina_Bool   changed)
 {
-   EINA_SAFETY_ON_NULL_RETURN(ed);
-   EINA_SAFETY_ON_NULL_RETURN(name);
+   const char unsaved_str[] = "*** UNSAVED *** ";
+   const unsigned int unsaved_len = sizeof(unsaved_str) - 1;
+   char new_title[PATH_MAX];
+   unsigned int o1, o2;
 
-   elm_win_title_set(ed->win, name);
+   o1 = (strncmp(name, unsaved_str, unsaved_len) == 0) ? unsaved_len : 0;
+   o2 = (changed) ? unsaved_len : 0;
+
+   eina_strlcpy(new_title + o2, name + o1, sizeof(new_title) - o2);
+
+   /* Prepend the unsaved prefix */
+   if (o2) memcpy(new_title, unsaved_str, unsaved_len);
+
+   elm_win_title_set(ed->win, new_title);
 }
 
 uint16_t
@@ -1240,7 +1254,10 @@ void
 editor_handle_delete(Editor *ed)
 {
    if (!sel_empty_is(ed))
-     sel_del(ed);
+     {
+        sel_del(ed);
+        editor_changed(ed);
+     }
 }
 
 Editor *
@@ -1645,4 +1662,16 @@ editor_partial_load(Editor *ed)
      }
    bitmap_refresh(ed, NULL);
    minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
+}
+
+void
+editor_changed(Editor *ed)
+{
+   DBG("Editor has changed");
+
+   if (ed->saved == EINA_TRUE)
+     {
+        ed->saved = EINA_FALSE;
+        editor_name_set(ed, elm_win_title_get(ed->win), EINA_TRUE);
+     }
 }
