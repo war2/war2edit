@@ -23,7 +23,6 @@
 #include "war2edit.h"
 
 static Eina_Hash *_plugins = NULL;
-static Eina_Prefix *_prefix = NULL;
 
 static void
 _module_close_cb(void *mod)
@@ -35,15 +34,6 @@ _module_close_cb(void *mod)
 Eina_Bool
 plugins_init(void)
 {
-   _prefix = eina_prefix_new("war2edit", NULL, "WAR2EDIT", "war2edit",
-                             "default.edj", PACKAGE_BIN_DIR, PACKAGE_LIB_DIR,
-                             PACKAGE_DATA_DIR, PACKAGE_DATA_DIR);
-   if (EINA_UNLIKELY(!_prefix))
-     {
-        CRI("Failed to create prefix");
-        goto fail;
-     }
-
    _plugins = eina_hash_stringshared_new(_module_close_cb);
    if (EINA_UNLIKELY(!_plugins))
      {
@@ -65,11 +55,6 @@ plugins_shutdown(void)
         eina_hash_free(_plugins);
         _plugins = NULL;
      }
-   if (_prefix)
-     {
-        eina_prefix_free(_prefix);
-        _prefix = NULL;
-     }
 }
 
 const Eina_Module *
@@ -90,7 +75,7 @@ plugins_request(const char *type,
    else
      {
         bytes = snprintf(path, sizeof(path), "%s/war2edit/%s/%s/%s.so",
-                         eina_prefix_lib_get(_prefix), type, PACKAGE_VERSION, name);
+                         elm_app_lib_dir_get(), type, PACKAGE_VERSION, name);
      }
    path[sizeof(path) - 1] = '\0';
 
