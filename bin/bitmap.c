@@ -1456,17 +1456,26 @@ bitmap_tile_set(Editor    *ed,
 {
    Cell *c = &(ed->cells[y][x]);
    uint16_t tile;
-   Eina_Bool same, chk;
+   Eina_Bool same, chk, do_wall = EINA_FALSE;
 
    /* Are we replacing the tile by an equivalent one? */
    same = ((c->tile_tl == tl) && (c->tile_tr == tr) &&
            (c->tile_bl == bl) && (c->tile_br == br));
+
+   /* Are we deleting an existing wall? */
+   if (TILE_WALL_IS(c) && (!tile_wall_is(tl, tr, bl, br)))
+     do_wall = EINA_TRUE;
 
    /* Set tile internals */
    c->tile_tl = tl;
    c->tile_tr = tr;
    c->tile_bl = bl;
    c->tile_br = br;
+
+   if (do_wall)
+     {
+        _calculate_wall_at(ed, (unsigned int)x, (unsigned int)y);
+     }
 
    tile = tile_calculate(c->tile_tl, c->tile_tr,
                          c->tile_bl, c->tile_br,
@@ -1480,7 +1489,9 @@ bitmap_tile_set(Editor    *ed,
 
    chk = _bitmap_full_tile_set(ed, x, y, tile);
    if (EINA_UNLIKELY(!chk))
-     WRN("Failed to full set a tile");
+     {
+        ERR("Failed to full set a tile");
+     }
    return chk;
 }
 
