@@ -45,9 +45,7 @@ snapshot_new(uint8_t *buf,
         return NULL;
      }
 
-   INF("Size is %zu, sizeof shot is %zu", size, sizeof(*shot));
    shot->mem = (uint8_t *)shot + sizeof(*shot);
-   INF("shot is %p, shot->mem is %p", shot, shot->mem);
    memcpy(shot->mem, buf, size);
    shot->size = size;
    return shot;
@@ -56,7 +54,6 @@ snapshot_new(uint8_t *buf,
 static void
 snapshot_free(Snapshot *shot)
 {
-   WRN("Freeing snapshot %p", shot);
    free(shot);
 }
 
@@ -214,7 +211,7 @@ snapshot_push_done(Editor *ed)
     */
    if (++ed->snapshot.requests == 1)
      {
-        ecore_timer_add(3.0, _snapshot_delayed_cb, ed);
+        ecore_timer_add(1.0, _snapshot_delayed_cb, ed);
      }
    DBG("Trigerring snapshot");
 }
