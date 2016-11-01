@@ -1125,7 +1125,7 @@ editor_load(Editor     *ed,
    unsigned int i, count;
    Pud *pud;
 
-   DBG("Loading %s\n", file);
+   DBG("Loading \"%s\"", file);
 
    if (ed->pud) pud_close(ed->pud);
    ed->pud = pud_open(file, PUD_OPEN_MODE_R | PUD_OPEN_MODE_W);
