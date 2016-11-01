@@ -118,8 +118,8 @@ collections {
                rel1.relative: 0.5 0.0;
                rel2.relative: 0.5 0.0;
                align: 0.5 0.0;
-               rel1.offset: 0 -30;
-               rel2.offset: 0 -30;
+               rel1.offset: BAR_RIGHT_X -30;
+               rel2.offset: BAR_LEFT_X -30;
             }
             desc { "visible";
                inherit: "default";
@@ -129,16 +129,18 @@ collections {
          }
          external { "menu_btn"; source: "elm/button";
             desc { "default";
-               rel1.relative: 0.1 0.0;
-               rel2.relative: 0.1 0.0;
+               rel.to: "menu_mask";
+               rel2.relative: 0.0 1.0;
+               rel1.offset: 0 30;
                FIXED_SIZE(25, 25);
-               align: 0.5 0.0;
+               align: 1.0 0.0;
                params {
                   string: "icon" "view-sort-ascending";
                }
             }
             desc { "visible"; // Understand: menu is visible
                inherit: "default";
+               rel1.offset: 0 0;
                params {
                   string: "icon" "view-sort-descending";
                }
