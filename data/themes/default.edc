@@ -386,8 +386,7 @@ collections {
             }
             desc { "menu_toggled";
                inherit: "default";
-               rel1.relative: 0.8 0.0;
-               rel1.offset: -17 0;
+               rel1.offset: -200 0;
             }
          }
          swallow { "war2edit.main.sidepanel";
