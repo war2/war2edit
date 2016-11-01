@@ -829,6 +829,8 @@ editor_new(const char   *pud_file,
    elm_layout_signal_callback_add(ed->lay, "war2edit,about,open", "war2edit",
                                   _editor_about_cb, ed);
 
+   elm_layout_signal_emit(ed->lay, "war2edit,menu,show", "war2edit");
+
    /* Show window */
    evas_object_show(ed->win);
 

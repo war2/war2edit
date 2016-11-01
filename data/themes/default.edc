@@ -602,7 +602,11 @@ collections {
          program { signal: "mouse,out"; source: "menu_mask";
             action: SIGNAL_EMIT "war2edit,menu,out" "war2edit";
          }
+         program { signal: "war2edit,menu,show"; source: "war2edit";
+            after: "menu,set,visible";
+         }
          program { signal: "mouse,clicked,1"; source: "menu_btn";
+            name: "menu,set,visible";
             filter: "menu_btn" "default";
             action: STATE_SET "visible";
             target: "menu_mask";
