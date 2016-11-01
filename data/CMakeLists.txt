@@ -83,6 +83,7 @@ install(
    ${CMAKE_CURRENT_SOURCE_DIR}/images/tools.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/units.png
    ${CMAKE_CURRENT_SOURCE_DIR}/images/players.png
+   ${CMAKE_CURRENT_SOURCE_DIR}/images/war2edit.png
 
    DESTINATION share/${CMAKE_PROJECT_NAME}/images
 )

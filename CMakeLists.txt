@@ -86,3 +86,8 @@ add_subdirectory(data)
 add_subdirectory(macos)
 
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake)
+
+install(
+   FILES ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS
+   DESTINATION share/${CMAKE_PROJECT_NAME}
+)

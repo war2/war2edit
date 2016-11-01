@@ -100,7 +100,7 @@ collections {
          }
 
 #define BAR_RIGHT_X (-23*4)-5
-#define BAR_LEFT_X (+23*5)+5
+#define BAR_LEFT_X (+23*6)+5
 
          rect { "top_zone";
             repeat_events: 1;
@@ -269,6 +269,24 @@ collections {
             desc { "visible";
                inherit: "default";
                rel1.offset: 23*4 5;
+            }
+         }
+         external { "menu_about"; source: "elm/icon";
+            repeat_events: 1;
+            desc { "default";
+               rel.to: "top_zone";
+               rel1.relative: 0.5 0.0;
+               rel2.relative: 0.5 1.0;
+               rel1.offset: 23*5 -30;
+               align: 0.0 0.0;
+               FIXED_SIZE(20, 20);
+               params {
+                  string: "icon" "help-about";
+               }
+            }
+            desc { "visible";
+               inherit: "default";
+               rel1.offset: 23*5 5;
             }
          }
 
@@ -575,6 +593,9 @@ collections {
          program { signal: "mouse,clicked,1"; source: "menu_properties";
             action: SIGNAL_EMIT "war2edit,properties,open" "war2edit";
          }
+         program { signal: "mouse,clicked,1"; source: "menu_about";
+            action: SIGNAL_EMIT "war2edit,about,open" "war2edit";
+         }
          program { signal: "mouse,in"; source: "menu_mask";
             action: SIGNAL_EMIT "war2edit,menu,in" "war2edit";
          }
@@ -592,6 +613,7 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
+            target: "menu_about";
             target: "menu_btn";
             transition: ACCELERATE 0.5;
          }
@@ -606,6 +628,7 @@ collections {
             target: "menu_undo";
             target: "menu_redo";
             target: "menu_properties";
+            target: "menu_about";
             target: "menu_btn";
             transition: DECELERATE 0.5;
          }

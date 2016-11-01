@@ -524,6 +524,107 @@ _editor_menu_out_cb(void        *data,
 }
 
 static void
+_editor_about_cb(void        *data,
+                 Evas_Object *obj      EINA_UNUSED,
+                 const char  *emission EINA_UNUSED,
+                 const char  *source   EINA_UNUSED)
+{
+   /*
+    * This about panel is inspired from the Ephoto one.
+    * Good job okra for the panel :) But I've done it better :p
+    */
+
+   Editor *const ed = data;
+   Evas_Object *box, *o, *im, *p;
+   char buf[PATH_MAX], b[PATH_MAX];
+   int bytes, len;
+   FILE *f;
+
+   /* Init inwin */
+   p = editor_inwin_add(ed);
+
+   /* Box for contents holding */
+   box = elm_box_add(p);
+   elm_box_horizontal_set(box, EINA_FALSE);
+   evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   evas_object_show(box);
+
+   /* Create image with logo */
+   im = elm_image_add(box);
+   evas_object_size_hint_min_set(im, 200, 100);
+   evas_object_size_hint_max_set(im, 200, 100);
+   snprintf(buf, sizeof(buf), "%s/images/war2edit.png", elm_app_data_dir_get());
+   buf[sizeof(buf) - 1] = '\0';
+   elm_image_file_set(im, buf, NULL);
+   elm_box_pack_start(box, im);
+   evas_object_show(im);
+
+   /* Info label */
+   o = elm_label_add(box);
+   snprintf(buf, sizeof(buf), "<hilight><b>War2Edit<br/>Version: %s</b></hilight>", PACKAGE_VERSION);
+   buf[sizeof(buf) - 1] = '\0';
+   elm_object_text_set(o, buf);
+   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_pack_end(box, o);
+   evas_object_show(o);
+
+   /* Open AUTHORS file */
+   snprintf(buf, sizeof(buf), "%s/AUTHORS", elm_app_data_dir_get());
+   buf[sizeof(buf) - 1] = '\0';
+   f = fopen(buf, "r");
+   if (EINA_UNLIKELY(!f))
+     {
+        CRI("Failed to open \"%s\". Authors won't show up", buf);
+        /* We recover from this, don't fail */
+     }
+
+   /* Detailed text */
+   o = elm_entry_add(box);
+   elm_entry_editable_set(o, EINA_FALSE);
+   elm_entry_context_menu_disabled_set(o, EINA_TRUE);
+   evas_object_size_hint_weight_set(o, 0.0, 0.0);
+   elm_entry_line_wrap_set(o, ELM_WRAP_NONE);
+   evas_object_size_hint_align_set(o, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   bytes = snprintf(
+      buf, sizeof(buf),
+      "War2Edit is an augmented clone of Blizzard's original Warcraft II "
+      "World Map Editor.<br/>"
+      "Create and edit the best PUD files for Warcraft II!<br/>"
+      "<br/>"
+      "See the website: <a href=https://war2.github.io/war2edit>"
+      "https://github.com/war2/war2edit</a>.<br/>"
+      "Source code: <a href=https://github.com/war2/war2edit>"
+      "https://github.com/war2/war2edit</a>.<br/>"
+      "<br/>"
+      "<b>Authors:</b><br/>"
+   );
+
+   if (EINA_LIKELY(f != NULL))
+     {
+        while (fgets(b, sizeof(b), f))
+          {
+             int blen;
+
+             len = strlen(b);
+             /* Trash last \n if exists - correct len */
+             if (b[len - 1] == '\n') b[--len] = '\0';
+
+             blen = snprintf(buf + bytes, sizeof(buf) - bytes, "- %s<br/>", b);
+             bytes += blen;
+          }
+        fclose(f);
+     }
+   buf[sizeof(buf) - 1] = '\0';
+   elm_object_text_set(o, buf);
+   elm_box_pack_end(box, o);
+   evas_object_show(o);
+
+   editor_inwin_set(ed, box, "minimal", "Close", NULL, NULL, NULL);
+}
+
+static void
 _show_menu(Evas_Object *obj)
 {
    int x, y;
@@ -727,11 +828,10 @@ editor_new(const char   *pud_file,
                                   _editor_menu_in_cb, ed);
    elm_layout_signal_callback_add(ed->lay, "war2edit,menu,out", "war2edit",
                                   _editor_menu_out_cb, ed);
-
-
+   elm_layout_signal_callback_add(ed->lay, "war2edit,about,open", "war2edit",
+                                  _editor_about_cb, ed);
 
    /* Show window */
-
    evas_object_show(ed->win);
 
    menu_unit_selection_reset(ed);
