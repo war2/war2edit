@@ -290,3 +290,14 @@ toolbar_actions_segment_unselect(Editor *ed)
    eoi = elm_segment_control_item_selected_get(ed->segs[SEG_ACTION]);
    elm_segment_control_item_selected_set(eoi, EINA_FALSE);
 }
+
+void
+toolbar_actions_selected_set(Editor    *ed,
+                             int        index,
+                             Eina_Bool  selected)
+{
+   Elm_Object_Item *eoi;
+
+   eoi = elm_segment_control_item_get(ed->segs[SEG_ACTION], index);
+   elm_segment_control_item_selected_set(eoi, !!selected);
+}

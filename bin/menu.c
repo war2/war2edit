@@ -316,6 +316,7 @@ _player_properties_cb(void        *data,
    editor_inwin_set(ed, menu_player_properties_new(ed, editor_inwin_add(ed)),
                     "minimal", "Close", NULL, NULL, NULL);
    menu_unit_selection_reset(ed);
+   toolbar_actions_selected_set(ed, 0, EINA_TRUE);
 }
 
 static void
@@ -392,6 +393,7 @@ _radio_players_changed_cb(void        *data,
 
    menu_units_side_enable(ed, ed->pud->side.players[ed->sel_player]);
    _radio_units_changed_cb(ed->radio_units_reset, ed->unitsmenu, NULL);
+   toolbar_actions_selected_set(ed, 0, EINA_TRUE);
 }
 
 /*============================================================================*

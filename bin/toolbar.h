@@ -25,5 +25,6 @@
 
 Eina_Bool toolbar_add(Editor *ed, Evas_Object *box);
 void toolbar_actions_segment_unselect(Editor *ed);
+void toolbar_actions_selected_set(Editor *ed, int index, Eina_Bool selected);
 
 #endif /* ! _TOOLBAR_H_ */
