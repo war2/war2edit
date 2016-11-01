@@ -30,13 +30,11 @@ _mouse_coords_convert(const Editor *ed,
                       int          *outy)
 {
    int cx, cy, ox, oy;
-   float ratio;
 
    evas_object_geometry_get(ed->minimap.map, &ox, &oy, NULL, NULL);
 
-   ratio = (float)ed->minimap.ratio;
-   cx = rintf((float)(x - ox) / ratio);
-   cy = rintf((float)(y - oy) / ratio);
+   cx = rintf((float)(x - ox) / ed->minimap.ratio);
+   cy = rintf((float)(y - oy) / ed->minimap.ratio);
 
    *outx = cx;
    *outy = cy;
@@ -132,7 +130,8 @@ minimap_add(Editor *ed)
 Eina_Bool
 minimap_resize(Editor *ed)
 {
-   unsigned int w, i, ratio;
+   unsigned int w, i;
+   float ratio;
    void *ptr;
 
    INF("Resizing minimap");
@@ -140,10 +139,10 @@ minimap_resize(Editor *ed)
    /* Define a ratio to resize the minimap (way too small overwise) */
    switch (ed->pud->dims)
      {
-      case PUD_DIMENSIONS_32_32:   ratio = 5; break;
-      case PUD_DIMENSIONS_64_64:   ratio = 3; break;
-      case PUD_DIMENSIONS_96_96:   ratio = 2; break;
-      case PUD_DIMENSIONS_128_128: ratio = 2; break;
+      case PUD_DIMENSIONS_32_32:   ratio = 6.0f; break;
+      case PUD_DIMENSIONS_64_64:   ratio = 3.0f; break;
+      case PUD_DIMENSIONS_96_96:   ratio = 2.0f; break;
+      case PUD_DIMENSIONS_128_128: ratio = 1.5f; break;
       default:
          CRI("ed->pud->dims is %i. This MUST NEVER happen", ed->pud->dims);
          goto fail;
@@ -174,11 +173,11 @@ minimap_resize(Editor *ed)
 
    /* Resize map for current minimap */
    evas_object_size_hint_max_set(ed->minimap.map,
-                                 ed->pud->map_w * ratio,
-                                 ed->pud->map_h * ratio);
+                                 (float)ed->pud->map_w * ratio,
+                                 (float)ed->pud->map_h * ratio);
    evas_object_size_hint_min_set(ed->minimap.map,
-                                 ed->pud->map_w * ratio,
-                                 ed->pud->map_h * ratio);
+                                 (float)ed->pud->map_w * ratio,
+                                 (float)ed->pud->map_h * ratio);
 
    /* Configure minimap image */
    evas_object_image_size_set(ed->minimap.map, ed->pud->map_w, ed->pud->map_h);
@@ -330,15 +329,15 @@ minimap_view_move(Editor    *ed,
 
    if (clicked)
      {
-        x -= rw / (2 * ed->minimap.ratio);
-        y -= rh / (2 * ed->minimap.ratio);
+        x -= rw / (2.0f * ed->minimap.ratio);
+        y -= rh / (2.0f * ed->minimap.ratio);
      }
 
    if (x < 0) x = 0;
    if (y < 0) y = 0;
 
-   tx = (x * ed->minimap.ratio) + ox;
-   ty = (y * ed->minimap.ratio) + oy;
+   tx = rintf(((float)x * ed->minimap.ratio) + (float)ox);
+   ty = rintf(((float)y * ed->minimap.ratio) + (float)oy);
 
    if (tx - ox + rw > ow) tx = ox + ow - rw;
    if (ty - oy + rh > oh) ty = oy + oh - rh;
@@ -360,12 +359,14 @@ minimap_view_resize(Editor       *ed,
                     unsigned int  w,
                     unsigned int  h)
 {
-   w *= ed->minimap.ratio;
-   h *= ed->minimap.ratio;
-   if (w > ed->pud->map_w * ed->minimap.ratio)
-     w = ed->pud->map_w * ed->minimap.ratio;
-   if (h > ed->pud->map_h * ed->minimap.ratio)
-     h = ed->pud->map_h * ed->minimap.ratio;
+   const float wf = (float)w;
+   const float hf = (float)h;
+   w = rintf(wf * ed->minimap.ratio);
+   h = rintf(hf * ed->minimap.ratio);
+   if (wf > (float)ed->pud->map_w * ed->minimap.ratio)
+     w = rintf((float)ed->pud->map_w * ed->minimap.ratio);
+   if (hf > (float)ed->pud->map_h * ed->minimap.ratio)
+     h = rintf((float)ed->pud->map_h * ed->minimap.ratio);
    evas_object_resize(ed->minimap.rect, w, h);
 }
 

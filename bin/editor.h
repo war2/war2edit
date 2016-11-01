@@ -109,7 +109,7 @@ struct _Editor
       unsigned char **data;
       Evas_Object    *map;
       Evas_Object    *rect;
-      unsigned int    ratio;
+      float           ratio;
    } minimap;
 
    struct {
