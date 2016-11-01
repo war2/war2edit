@@ -283,7 +283,7 @@ toolbar_add(Editor      *ed,
 }
 
 void
-toolbar_actions_segment_unselect(const Editor *ed)
+toolbar_actions_segment_unselect(Editor *ed)
 {
    Elm_Object_Item *eoi;
 

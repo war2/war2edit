@@ -24,6 +24,6 @@
 #define _TOOLBAR_H_
 
 Eina_Bool toolbar_add(Editor *ed, Evas_Object *box);
-void toolbar_actions_segment_unselect(const Editor *ed);
+void toolbar_actions_segment_unselect(Editor *ed);
 
 #endif /* ! _TOOLBAR_H_ */
