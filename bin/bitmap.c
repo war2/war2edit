@@ -715,6 +715,8 @@ _mouse_move_cb(void        *data,
                     bitmap_cursor_enabled_set(ed, EINA_FALSE);
                }
           }
+        else
+          bitmap_cursor_enabled_set(ed, EINA_TRUE);
      }
 
    if (bitmap_cursor_enabled_get(ed))
