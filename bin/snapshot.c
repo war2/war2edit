@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Jean Guyomarc'h
+ * Copyright (c) 2016 Jean Guyomarc'h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -56,26 +56,31 @@ snapshot_new(uint8_t *buf,
 static void
 snapshot_free(Snapshot *shot)
 {
+   WRN("Freeing snapshot %p", shot);
    free(shot);
-}
-
-static inline void
-_undo_menu_disabled_set(Editor    *ed,
-                        Eina_Bool  disable)
-{
-   elm_object_item_disabled_set(ed->snapshot.menu_undo, disable);
 }
 
 static Eina_Bool
 _snapshot_delayed_cb(void *data)
 {
    Editor *const ed = data;
+   Snapshot *shot;
 
    DBG("Doing snapshot");
    snapshot_force_push(ed);
+   if (ed->snapshot.redos)
+     {
+        INF("Purging old redos");
+        EINA_INLIST_FREE(ed->snapshot.redos, shot)
+          {
+             ed->snapshot.redos = eina_inlist_remove(ed->snapshot.redos,
+                                                     EINA_INLIST_GET(shot));
+             snapshot_free(shot);
+          }
+     }
    ed->snapshot.requests = 0;
 
-   _undo_menu_disabled_set(ed, EINA_FALSE);
+   // TODO ENABLE undo menu
 
    return ECORE_CALLBACK_CANCEL;
 }
@@ -175,11 +180,10 @@ snapshot_add(Editor *ed)
    ed->snapshot.buf_len = (1 << 14); /* 16KiB */
    ed->snapshot.buffer = malloc(ed->snapshot.buf_len);
 
-   _undo_menu_disabled_set(ed, EINA_TRUE);
+   // TODO Set UNDO menu to DISABLED
 
    /* Create the initial snapshot */
    return snapshot_force_push(ed);
-
 }
 
 void
@@ -196,15 +200,9 @@ snapshot_del(Editor *ed)
 }
 
 void
-snapshot_menu_connect(Editor          *ed   EINA_UNUSED,
-                  Elm_Object_Item *snapshot EINA_UNUSED,
-                  Elm_Object_Item *redo EINA_UNUSED)
-{
-}
-
-void
 snapshot_push(Editor *ed EINA_UNUSED)
 {
+   /* Nothing to do */
 }
 
 void
@@ -227,44 +225,80 @@ snapshot_rollback(Editor *ed,
 {
    unsigned int count;
    int i;
-
-   if (offset >= 0)
-     {
-        CRI("Rollback means get back in version, forever. "
-            "You can advance in a rollback.");
-        return EINA_FALSE;
-     }
-
-   /* Cannot snapshot when the list is empty */
-   count = eina_inlist_count(ed->snapshot.items);
-   if (count <= 1)
-     {
-        DBG("No elements in stack. Cannot snapshot");
-        return EINA_FALSE;
-     }
-
+   int magic;
+   Eina_Inlist **ptr;
    Eina_Inlist *l;
    Snapshot *shot;
    lzma_stream stream = LZMA_STREAM_INIT;
    lzma_ret ret;
+   Eina_Bool redo;
 
-   DBG("snapshot with %u elements", count);
+   /*
+    * Offset > 0 is used to go back to the future :)
+    * That means it is a redo operation: restore a state that has been
+    * undone.
+    *
+    * Offset < 0 is used to rollback
+    * That's an undo operation
+    *
+    * If we rollback ZERO versions, we don't have to do anything
+    */
+   if (offset > 0)
+     {
+        ptr = &(ed->snapshot.redos);
+        redo = EINA_TRUE;
+        magic = 0;
+     }
+   else if (offset < 0)
+     {
+        ptr = &(ed->snapshot.items);
+        redo = EINA_FALSE;
+        magic = 1;
+     }
+   else
+     return EINA_TRUE;
 
-   l = eina_inlist_last(ed->snapshot.items);
+   /* Cannot snapshot when the list is empty */
+   count = eina_inlist_count(*ptr);
+   DBG("Elements in stack: %u", count);
+   if (count <= (unsigned int)magic)
+     {
+        INF("No elements in stack. Cannot rollback");
+        return EINA_FALSE;
+     }
+   DBG("Snapshots stack with %u elements", count);
+   DBG("Offset is %i, abs() -> %i", offset, abs(offset));
+
+   l = eina_inlist_last(*ptr);
+
    /* Pop compressed blob */
    for (i = 0; i < abs(offset); i++)
      {
-        ed->snapshot.items = eina_inlist_remove(ed->snapshot.items, l);
-        DBG("Deleting element N-%i", i); // FIXME FREE DATA????
-        l = eina_inlist_last(ed->snapshot.items);
+        if (count > 1)
+          {
+             *ptr = eina_inlist_remove(*ptr, l);
+          }
+
+        if (!redo)
+          {
+             ed->snapshot.redos = eina_inlist_append(ed->snapshot.redos, l);
+             WRN("Pushing snapshot in redo stack (list %p, shot %p). count is now %u",
+                 l, EINA_INLIST_CONTAINER_GET(l, Snapshot),eina_inlist_count(ed->snapshot.redos));
+          }
+
+        DBG("Deleting element N-%i", i);
+        l = eina_inlist_last(*ptr);
         count--;
      }
 
-   if (count == 1)
-     _undo_menu_disabled_set(ed, EINA_TRUE);
+   if (count == (unsigned int)magic)
+     {
+        // TODO Set menu undo to DISABLED
+     }
 
    shot = EINA_INLIST_CONTAINER_GET(l, Snapshot);
-   DBG("Using snapshot %p. There is now %u elements", shot, count);
+   *ptr = eina_inlist_remove(*ptr, l);
+   DBG("Using snapshot %p from list %p. There is now %u elements", shot, l, count);
 
    ret = lzma_stream_decoder(&stream, UINT32_MAX, LZMA_CONCATENATED);
    if (ret != LZMA_OK)

@@ -139,8 +139,8 @@ struct _Editor
    Eina_Array  *human_menus;
 
    struct {
-      Elm_Object_Item *menu_undo;
       Eina_Inlist *items;
+      Eina_Inlist *redos;
       uint8_t *buffer;
       size_t buf_len;
       int requests;

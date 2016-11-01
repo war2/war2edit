@@ -87,9 +87,7 @@ _cmd_undo(Editor *ed)
 static inline void
 _cmd_redo(Editor *ed)
 {
-   // TODO
-   (void) ed;
-   CRI("IMPLEMENT ME");
+   snapshot_rollback(ed, +1);
 }
 
 static inline Eina_Bool
