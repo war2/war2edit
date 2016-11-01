@@ -330,7 +330,9 @@ _provide_unit_handler(Editor *ed,
               ctor_taken |= CTOR_RES;
               ctor_taken |= CTOR_PLAYER;
            }
-         else
+         else if ((c->unit_below != PUD_UNIT_CRITTER) &&
+                  (c->unit_below != PUD_UNIT_CIRCLE_OF_POWER) &&
+                  (c->unit_below != PUD_UNIT_DARK_PORTAL))
            {
               ctor_taken |= CTOR_PLAYER;
            }
