@@ -1410,14 +1410,34 @@ _free_surf_cb(void        *data,
 }
 
 Evas_Object *
+editor_image_new(Evas_Object *parent,
+                 unsigned char *pixels,
+                 int width,
+                 int height)
+{
+   Evas_Object *im, *imm;
+
+   im = elm_icon_add(parent);
+   evas_object_size_hint_weight_set(im, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(im, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   imm = elm_image_object_get(im);
+   evas_object_image_colorspace_set(imm, EVAS_COLORSPACE_ARGB8888);
+   evas_object_image_size_set(imm, width, height);
+   evas_object_image_data_set(imm, pixels);
+   evas_object_show(im);
+
+   return im;
+}
+
+Evas_Object *
 editor_icon_image_new(Evas_Object *parent,
                       Pud_Icon     icon,
                       Pud_Era      era,
                       Pud_Player   color)
 {
-   Evas_Object *im, *imm;
    cairo_surface_t *surf;
    unsigned char *px;
+   Evas_Object *im;
 
    surf = atlas_icon_colorized_get(era, icon, color);
    if (EINA_UNLIKELY(!surf))
@@ -1433,14 +1453,7 @@ editor_icon_image_new(Evas_Object *parent,
         goto fail;
      }
 
-   im = elm_icon_add(parent);
-   evas_object_size_hint_weight_set(im, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(im, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   imm = elm_image_object_get(im);
-   evas_object_image_colorspace_set(imm, EVAS_COLORSPACE_ARGB8888);
-   evas_object_image_size_set(imm, ICON_WIDTH, ICON_HEIGHT);
-   evas_object_image_data_set(imm, px);
-   evas_object_show(im);
+   im = editor_image_new(parent, px, ICON_WIDTH, ICON_HEIGHT);
    evas_object_event_callback_add(im, EVAS_CALLBACK_FREE, _free_surf_cb, surf);
 
    return im;

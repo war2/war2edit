@@ -295,4 +295,10 @@ Eina_Bool editor_tiles_sync(Editor *ed);
 
 void editor_changed(Editor *ed);
 
+Evas_Object *
+editor_image_new(Evas_Object *parent,
+                 unsigned char *pixels,
+                 int width,
+                 int height);
+
 #endif /* ! _EDITOR_H_ */
