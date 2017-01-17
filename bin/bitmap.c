@@ -143,7 +143,7 @@ _calculate_wall_at(Editor       *ed,
      {
         _WALL_SET(x - 1, y, br, tr);
      }
-   if (x < ed->pud->map_w)
+   if (x < ed->pud->map_w - 1)
      {
         _WALL_SET(x + 1, y, tr, br);
      }
@@ -151,7 +151,7 @@ _calculate_wall_at(Editor       *ed,
      {
         _WALL_SET(x, y - 1, tl, bl);
      }
-   if (y < ed->pud->map_h)
+   if (y < ed->pud->map_h - 1)
      {
         _WALL_SET(x, y + 1, bl, tl);
      }
