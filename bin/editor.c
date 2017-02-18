@@ -1420,10 +1420,13 @@ editor_image_new(Evas_Object *parent,
    im = elm_icon_add(parent);
    evas_object_size_hint_weight_set(im, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(im, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   imm = elm_image_object_get(im);
-   evas_object_image_colorspace_set(imm, EVAS_COLORSPACE_ARGB8888);
-   evas_object_image_size_set(imm, width, height);
-   evas_object_image_data_set(imm, pixels);
+   if (EINA_LIKELY(pixels != NULL))
+     {
+        imm = elm_image_object_get(im);
+        evas_object_image_colorspace_set(imm, EVAS_COLORSPACE_ARGB8888);
+        evas_object_image_size_set(imm, width, height);
+        evas_object_image_data_set(imm, pixels);
+     }
    evas_object_show(im);
 
    return im;
@@ -1531,7 +1534,7 @@ _continue_load_cb(void        *data,
         return;
      }
 
-   editor_free(old_ed);
+   //editor_free(old_ed);
 }
 
 static void

@@ -79,6 +79,7 @@ _show_cb(void        *data,
 {
    Editor *const ed = data;
    evas_object_show(ed->minimap.rect);
+   minimap_render(ed, 0, 0, ed->pud->map_w, ed->pud->map_h);
 }
 
 static void
@@ -92,6 +93,7 @@ _hide_cb(void        *data,
 }
 
 
+
 Eina_Bool
 minimap_add(Editor *ed)
 {
@@ -99,11 +101,7 @@ minimap_add(Editor *ed)
    Evas *evas;
 
    evas = evas_object_evas_get(ed->lay);
-   o = ed->minimap.map = evas_object_image_filled_add(evas);
-   evas_object_image_colorspace_set(o, EVAS_COLORSPACE_ARGB8888);
-   evas_object_size_hint_weight_set(o, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(o, 0.0, 0.0);
-   evas_object_show(o);
+   o = ed->minimap.map = editor_image_new(ed->lay, NULL, 0, 0);
 
    evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
                                   _mouse_down_cb, ed);
@@ -133,6 +131,7 @@ minimap_resize(Editor *ed)
    unsigned int w, i;
    float ratio;
    void *ptr;
+   Evas_Object *map;
 
    INF("Resizing minimap");
 
@@ -171,6 +170,9 @@ minimap_resize(Editor *ed)
    for (i = 1; i < ed->pud->map_h; ++i)
      ed->minimap.data[i] = ed->minimap.data[i - 1] + w;
 
+   /* Get the real map object */
+   map = elm_image_object_get(ed->minimap.map);
+
    /* Resize map for current minimap */
    evas_object_size_hint_max_set(ed->minimap.map,
                                  (float)ed->pud->map_w * ratio,
@@ -180,8 +182,8 @@ minimap_resize(Editor *ed)
                                  (float)ed->pud->map_h * ratio);
 
    /* Configure minimap image */
-   evas_object_image_size_set(ed->minimap.map, ed->pud->map_w, ed->pud->map_h);
-   evas_object_image_data_set(ed->minimap.map, ed->minimap.data[0]);
+   evas_object_image_size_set(map, ed->pud->map_w, ed->pud->map_h);
+   evas_object_image_data_set(map, ed->minimap.data[0]);
 
    return EINA_TRUE;
 fail_free:
@@ -303,7 +305,8 @@ minimap_render(Editor *ed,
                unsigned int  h)
 {
    if (ed->bitmap.norender) return;
-   evas_object_image_data_update_add(ed->minimap.map, x, y, w, h);
+   evas_object_image_data_update_add(elm_image_object_get(ed->minimap.map),
+                                     x, y, w, h);
 }
 
 void
