@@ -393,6 +393,7 @@ collections {
             desc { "default";
                rel.to: "sidepanel_bg";
                visible: 0;
+               fixed: 1 1;
             }
             desc { "menu_toggled";
                inherit: "default";
