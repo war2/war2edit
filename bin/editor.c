@@ -928,7 +928,7 @@ editor_save(Editor     *ed,
          EDITOR_ERROR(ed,
                       "An extra start location was found at %u,%u (%s)",
                       err.data.unit->x, err.data.unit->y,
-                      pud_color_to_string(err.data.unit->owner));
+                      pud_color_to_string(err.data.unit->player));
          return EINA_FALSE;
 
       case PUD_ERROR_EMPTY_PLAYER:
@@ -1035,7 +1035,7 @@ editor_sync(Editor *ed)
                   u->x = x;
                   u->y = y;
                   u->type = c->unit_below;
-                  u->owner = c->player_below;
+                  u->player = c->player_below;
                   u->alter = c->alter_below;
                }
              if (c->anchor_above)
@@ -1050,7 +1050,7 @@ editor_sync(Editor *ed)
                   u->x = x;
                   u->y = y;
                   u->type = c->unit_above;
-                  u->owner = c->player_above;
+                  u->player = c->player_above;
                   u->alter = c->alter_above;
                }
              if (c->start_location != CELL_NOT_START_LOCATION)
@@ -1068,7 +1068,7 @@ editor_sync(Editor *ed)
                     u->type = PUD_UNIT_HUMAN_START;
                   else
                     u->type = PUD_UNIT_ORC_START;
-                  u->owner = c->start_location;
+                  u->player = c->start_location;
                   u->alter = 0;
                }
 
@@ -1772,7 +1772,7 @@ editor_partial_load(Editor *ed)
      {
         u = &(pud->units[i]);
         sprite_tile_size_get(u->type, &sw, &sh);
-        bitmap_unit_set(ed, u->type, u->owner,
+        bitmap_unit_set(ed, u->type, u->player,
                         sprite_info_random_get(), u->x, u->y, sw, sh,
                         u->alter);
      }
