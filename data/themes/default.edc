@@ -342,11 +342,13 @@ collections {
                rel2.relative: 0.0 1.0;
                align: 0.0 1.0;
                rel2.offset: 0 -21;
+               fixed: 1 1;
             }
             desc { "minimap_hidden";
                rel.to: "left_bar";
                align: 1.0 1.0;
                rel2.offset: -6 -21;
+               fixed: 1 1;
             }
          }
          external { "minimap_close_btn"; source: "elm/icon";
