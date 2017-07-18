@@ -1100,7 +1100,7 @@ editor_sync(Editor *ed)
    return EINA_TRUE;
 
 fail:
-   EDITOR_ERROR(ed, "Failed to synchronize PUD file. Please open console for details.");
+   EDITOR_ERROR(ed, "Failed to synchronize PUD file.");
    return EINA_FALSE;
 }
 
