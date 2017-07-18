@@ -1144,10 +1144,16 @@ editor_load(Editor     *ed,
    if (!ed->bitmap.img) bitmap_add(ed);
    else bitmap_resize(ed);
 
+   count = pud->units_count;
    minimap_show(ed);
    editor_partial_load(ed);
 
-   count = pud->units_count;
+   if (EINA_UNLIKELY(count != pud->units_count))
+     {
+        CRI("Loading did alterate the map");
+        return EINA_FALSE;
+     }
+
    pud->units_count = 0;
    for (i = 0; i < count; i++)
      {
