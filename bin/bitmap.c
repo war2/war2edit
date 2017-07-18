@@ -1407,7 +1407,8 @@ static Eina_Bool
 _bitmap_full_tile_set(Editor   *ed,
                       int       x,
                       int       y,
-                      uint16_t  tile)
+                      uint16_t  tile,
+                      Eina_Bool force)
 {
    /* Safety checks */
    EINA_SAFETY_ON_TRUE_RETURN_VAL(((unsigned int)x >= ed->pud->map_w) ||
@@ -1416,7 +1417,7 @@ _bitmap_full_tile_set(Editor   *ed,
 
    Cell *c = &(ed->cells[y][x]);
 
-   if (c->unit_below != PUD_UNIT_NONE)
+   if ((c->unit_below != PUD_UNIT_NONE) && force)
      {
         /*
          * Big fat-*ss condition!
@@ -1490,7 +1491,7 @@ bitmap_tile_set(Editor    *ed,
         tile |= (c->tile & 0x000f);
      }
 
-   chk = _bitmap_full_tile_set(ed, x, y, tile);
+   chk = _bitmap_full_tile_set(ed, x, y, tile, force);
    if (EINA_UNLIKELY(!chk))
      {
         ERR("Failed to full set a tile");
