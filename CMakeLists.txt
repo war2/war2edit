@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2016 Jean Guyomarc'h
+# Copyright (c) 2014-2017 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -61,10 +61,9 @@ check_compiler_warnings(
     -Winvalid-pch
     -Wcast-align
 )
-add_definitions(${COMPILER_WARNINGS} -O0 -g) # FIXME
 
 set(PROJECT_DESCRIPTION "Warcraft II Map Editor")
-set(PROJECT_URL "https://jeanguyomarch.github.io/war2edit/")
+set(PROJECT_URL "https://war2.github.io/war2edit/")
 
 find_package(PkgConfig)
 
@@ -85,7 +84,9 @@ add_subdirectory(modules)
 add_subdirectory(data)
 add_subdirectory(macos)
 
-add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake)
+add_custom_target(uninstall
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake
+)
 
 install(
    FILES ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS

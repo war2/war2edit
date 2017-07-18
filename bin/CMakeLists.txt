@@ -18,7 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-link_directories(${EINA_LIBRARY_DIRS}
+link_directories(
+   ${EINA_LIBRARY_DIRS}
    ${EET_LIBRARY_DIRS}
    ${EVAS_LIBRARY_DIRS}
    ${ECORE_LIBRARY_DIRS}
@@ -26,7 +27,8 @@ link_directories(${EINA_LIBRARY_DIRS}
    ${LIBPUD_LIBRARY_DIRS}
    ${LIBWAR2_LIBRARY_DIRS}
    ${CAIRO_LIBRARY_DIRS}
-   ${LZMA_LIBRARY_DIRS})
+   ${LZMA_LIBRARY_DIRS}
+)
 
 add_executable(war2edit
    main.c
@@ -106,7 +108,9 @@ target_compile_definitions(war2edit
    PRIVATE PACKAGE_VERSION=\"${PROJECT_VERSION}\"
    PRIVATE _DEFAULT_SOURCE=1
 )
-
+target_compile_options(war2edit PRIVATE
+  ${COMPILER_WARNINGS}
+)
 
 install(
    TARGETS war2edit
